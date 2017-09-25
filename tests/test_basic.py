@@ -35,4 +35,3 @@ async def test_getting_resource(event_loop):
     assert isinstance(resource.meta.client, AioBaseClient)
 
     await resource.close()
-

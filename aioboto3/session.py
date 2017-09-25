@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 """
-This class essentially overrides the boto3 session init, passing in an async botocore session
+This class essentially overrides the boto3 session init, passing in
+an async botocore session
 """
 
 
@@ -70,4 +71,3 @@ class Session(boto3.session.Session):
         result = super(Session, self).resource(*args, **kwargs)
 
         return result
-
