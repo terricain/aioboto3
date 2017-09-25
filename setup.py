@@ -24,7 +24,8 @@ setup_requirements = [
 
 test_requirements = [
     'pytest',
-    'pytest-asyncio'
+    'pytest-asyncio',
+    'flake8'
     # TODO: put package test requirements here
 ]
 
