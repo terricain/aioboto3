@@ -29,7 +29,7 @@ test_requirements = [
 
 setup(
     name='aioboto3',
-    version='0.1.0',
+    version='1.0.0',
     description="Async boto3 wrapper",
     long_description=readme + '\n\n' + history,
     author="Terry Cain",
