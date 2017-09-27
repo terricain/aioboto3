@@ -10,6 +10,7 @@ cryptography==1.7
 PyYAML==3.11
 pytest==2.9.2
 pytest-runner==2.11.1
+pytest-asyncio==0.8.0
 moto[server]==1.1.13
 requests==2.18.4
 Sphinx==1.6.1
