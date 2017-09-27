@@ -30,7 +30,7 @@ Example
 
 Simple example of using aioboto3 to put items into a dynamodb table
 
-.. code-block:: python3
+.. code-block:: python
 
     import asyncio
     import aioboto3
@@ -62,6 +62,7 @@ Documentation
 -------------
 
 Docs are here - https://aioboto3.readthedocs.io/en/latest/
+
 Examples here - https://aioboto3.readthedocs.io/en/latest/usage.html
 
 
