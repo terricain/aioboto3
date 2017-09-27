@@ -98,7 +98,7 @@ def random_table_name():
 @pytest.fixture
 def dynamodb_resource(region, config, event_loop, dynamodb2_server):
     session = Session(region_name=region, loop=event_loop, **moto_config())
-    resource = session.resource('dynamodb', endpoint_url=dynamodb2_server, config=config)
+    resource = session.resource('dynamodb', region_name=region, endpoint_url=dynamodb2_server, config=config)
     yield resource
 
     # Clean up
