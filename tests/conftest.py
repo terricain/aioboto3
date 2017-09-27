@@ -78,7 +78,7 @@ def region():
 
 @pytest.fixture
 def signature_version():
-    return 's3'
+    return 'v4'
 
 
 @pytest.fixture
