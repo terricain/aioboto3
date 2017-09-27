@@ -10,7 +10,7 @@ Async AWS SDK for Python
         :target: https://travis-ci.org/terrycain/aioboto3
 
 .. image:: https://readthedocs.org/projects/aioboto3/badge/?version=latest
-        :target: https://aioboto3.readthedocs.io/en/latest/?badge=latest
+        :target: https://aioboto3.readthedocs.io
         :alt: Documentation Status
 
 .. image:: https://pyup.io/repos/github/terrycain/aioboto3/shield.svg
@@ -61,7 +61,8 @@ Simple example of using aioboto3 to put items into a dynamodb table
 Documentation
 -------------
 
-TODO paste link
+Docs are here - https://aioboto3.readthedocs.io/en/latest/
+Examples here - https://aioboto3.readthedocs.io/en/latest/usage.html
 
 
 Features
