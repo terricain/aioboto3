@@ -5,11 +5,45 @@ import sys
 from boto3.resources.factory import ResourceFactory
 from boto3.resources.model import ResourceModel
 from boto3.resources.base import ServiceResource, ResourceMeta
+from boto3.resources.action import ServiceAction
+from boto3.docs import docstring
+from botocore import xform_name
+from boto3.resources.params import create_request_parameters
+import inspect
 
 
 PY_35 = sys.version_info >= (3, 5)
 
 logger = logging.getLogger(__name__)
+
+
+class AIOServiceAction(ServiceAction):
+    def __call__(self, parent, *args, **kwargs):
+        """
+        Perform the action's request operation after building operation
+        parameters and build any defined resources from the response.
+
+        :type parent: :py:class:`~boto3.resources.base.ServiceResource`
+        :param parent: The resource instance to which this action is attached.
+        :rtype: dict or ServiceResource or list(ServiceResource)
+        :return: The response, either as a raw dict or resource instance(s).
+        """
+        operation_name = xform_name(self._action_model.request.operation)
+
+        # First, build predefined params and then update with the
+        # user-supplied kwargs, which allows overriding the pre-built
+        # params if needed.
+        params = create_request_parameters(parent, self._action_model.request)
+        params.update(kwargs)
+
+        logger.debug('Calling %s:%s with %r', parent.meta.service_name,
+                    operation_name, params)
+
+        response = yield from getattr(parent.meta.client, operation_name)(**params)
+
+        logger.debug('Response: %r', response)
+
+        return self._response_handler(parent, params, response)
 
 
 class AIOBoto3ServiceResource(ServiceResource):
@@ -126,3 +160,63 @@ class AIOBoto3ResourceFactory(ResourceFactory):
                 class_attributes=attrs, base_classes=base_classes,
                 service_context=service_context)
         return type(str(cls_name), tuple(base_classes), attrs)
+
+    def _create_action(factory_self, action_model, resource_name,
+                       service_context, is_load=False):
+        """
+        Creates a new method which makes a request to the underlying
+        AWS service.
+        """
+        # Create the action in in this closure but before the ``do_action``
+        # method below is invoked, which allows instances of the resource
+        # to share the ServiceAction instance.
+        action = AIOServiceAction(
+            action_model, factory=factory_self,
+            service_context=service_context
+        )
+
+        # A resource's ``load`` method is special because it sets
+        # values on the resource instead of returning the response.
+        if is_load:
+            # We need a new method here because we want access to the
+            # instance via ``self``.
+            @asyncio.coroutine
+            def do_action(self, *args, **kwargs):
+                response = action(self, *args, **kwargs)
+                self.meta.data = response
+
+            # Create the docstring for the load/reload mehtods.
+            lazy_docstring = docstring.LoadReloadDocstring(
+                action_name=action_model.name,
+                resource_name=resource_name,
+                event_emitter=factory_self._emitter,
+                load_model=action_model,
+                service_model=service_context.service_model,
+                include_signature=False
+            )
+        else:
+            # We need a new method here because we want access to the
+            # instance via ``self``.
+            @asyncio.coroutine
+            def do_action(self, *args, **kwargs):
+                response = action(self, *args, **kwargs)
+
+                if hasattr(self, 'load'):
+                    # Clear cached data. It will be reloaded the next
+                    # time that an attribute is accessed.
+                    # TODO: Make this configurable in the future?
+                    self.meta.data = None
+
+                return response
+
+            lazy_docstring = docstring.ActionDocstring(
+                resource_name=resource_name,
+                event_emitter=factory_self._emitter,
+                action_model=action_model,
+                service_model=service_context.service_model,
+                include_signature=False
+            )
+
+        do_action.__name__ = str(action_model.name)
+        do_action.__doc__ = lazy_docstring
+        return do_action

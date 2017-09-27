@@ -18,23 +18,79 @@ Async AWS SDK for Python
      :alt: Updates
 
 
-Async boto3 wrapper
+This package is mostly just a wrapper combining the great work of boto3_ and aiobotocore_.
+
+aiobotocore allows you to use near enough all of the boto3 client commands in an async manner just by prefixing the command with `await`. With aioboto3 you can now
+use the higher level apis provided by boto3 in an asynchronous manner. Mainly I developed this as I wanted to use the boto3 dynamodb Table object in some async
+microservices.
 
 
-* Free software: GNU General Public License v3
-* Documentation: https://aioboto3.readthedocs.io.
+Example
+-------
+
+Simple example of using aioboto3 to put items into a dynamodb table
+
+.. code-block:: python3
+
+    import asyncio
+    import aioboto3
+    from boto3.dynamodb.conditions import Key
+
+
+    async def main():
+        async with aioboto3.resource('dynamodb', region_name='eu-central-1') as dynamo_resource:
+            table = dynamo_resource.Table('test_table')
+
+            await table.put_item(
+                Item={'pk': 'test1', 'col1': 'some_data'}
+            )
+
+            result = await table.query(
+                KeyConditionExpression=Key('pk').eq('test1')
+            )
+
+            print(result['Items'])
+
+    loop = asyncio.get_event_loop()
+    loop.run_until_complete(main())
+
+    # Outputs:
+    #  [{'col1': 'some_data', 'pk': 'test1'}]
+
+
+Documentation
+-------------
+
+TODO paste link
 
 
 Features
---------
+========
 
-* TODO
+* Closely mimics the usage of boto3.
+
+Todo
+====
+
+* More Examples
+* Set up docs
+* Look into monkey-patching the aws xray sdk to be more async if it needs to be.
+
 
 Credits
----------
+-------
 
 This package was created with Cookiecutter_ and the `audreyr/cookiecutter-pypackage`_ project template.
+It also makes use of the aiobotocore_ and boto3_ libraries. All the credit goes to them, this is mainly a wrapper with some examples.
 
+.. _aiobotocore: https://github.com/aio-libs/aiobotocore
+.. _boto3: https://github.com/boto/boto3
 .. _Cookiecutter: https://github.com/audreyr/cookiecutter
 .. _`audreyr/cookiecutter-pypackage`: https://github.com/audreyr/cookiecutter-pypackage
 
+
+License
+-------
+
+* Free software: GNU General Public License v3
+* Documentation: https://aioboto3.readthedocs.io.

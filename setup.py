@@ -14,19 +14,17 @@ with open('HISTORY.rst') as history_file:
 requirements = [
     'aiobotocore',
     'boto3'
-    # TODO: put package requirements here
 ]
 
 setup_requirements = [
-    'pytest-runner',
-    # TODO(terrycain): put setup requirements (distutils extensions, etc.) here
+    'pytest-runner'
 ]
 
 test_requirements = [
     'pytest',
     'pytest-asyncio',
-    'flake8'
-    # TODO: put package test requirements here
+    'flake8',
+    ''
 ]
 
 setup(

@@ -25,8 +25,7 @@ def set_stream_logger(name='boto3', level=logging.DEBUG, format_string=None):
     """
     Add a stream handler for the given name and level to the logging module.
     By default, this logs all boto3 messages to ``stdout``.
-        >>> import aioboto3
-        >>> aioboto3.set_stream_logger('boto3.resources', logging.INFO)
+
     :type name: string
     :param name: Log name
     :type level: int
