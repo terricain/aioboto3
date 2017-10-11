@@ -9,7 +9,6 @@ from boto3.resources.action import ServiceAction
 from boto3.docs import docstring
 from botocore import xform_name
 from boto3.resources.params import create_request_parameters
-import inspect
 
 
 PY_35 = sys.version_info >= (3, 5)
@@ -37,7 +36,7 @@ class AIOServiceAction(ServiceAction):
         params.update(kwargs)
 
         logger.debug('Calling %s:%s with %r', parent.meta.service_name,
-                    operation_name, params)
+                     operation_name, params)
 
         response = yield from getattr(parent.meta.client, operation_name)(**params)
 

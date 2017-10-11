@@ -2,9 +2,7 @@ import pytest
 import requests
 import shutil
 import signal
-import os
 import subprocess as sp
-import sys
 import time
 
 
@@ -60,4 +58,3 @@ def dynamodb2_server():
     process = start_service('dynamodb2', host, port)
     yield url
     stop_process(process)
-

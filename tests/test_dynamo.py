@@ -39,6 +39,3 @@ async def test_dynamo_resource_put(event_loop, dynamodb_resource, random_table_n
 
     result = await table.scan()
     assert result['Count'] == 1
-
-
-

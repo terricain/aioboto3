@@ -12,8 +12,8 @@ with open('HISTORY.rst') as history_file:
     history = history_file.read()
 
 requirements = [
-    'aiobotocore',
-    'boto3'
+    'aiobotocore==0.4.5',
+    'boto3==1.7.5'
 ]
 
 setup_requirements = [
@@ -23,8 +23,7 @@ setup_requirements = [
 test_requirements = [
     'pytest',
     'pytest-asyncio',
-    'flake8',
-    ''
+    'flake8'
 ]
 
 setup(
