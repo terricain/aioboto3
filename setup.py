@@ -13,7 +13,7 @@ with open('HISTORY.rst') as history_file:
 
 requirements = [
     'aiobotocore==0.4.5',
-    'boto3==1.7.5'
+    'boto3==1.4.7'
 ]
 
 setup_requirements = [
