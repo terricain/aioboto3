@@ -9,7 +9,7 @@ coverage==4.4.1
 cryptography==2.1.2
 PyYAML==3.12
 pytest==3.2.3
-pytest-runner==2.12.1
+pytest-runner==3.0
 moto[server]==1.1.24
 requests==2.18.4
 Sphinx==1.6.5
