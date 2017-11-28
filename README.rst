@@ -101,10 +101,3 @@ It also makes use of the aiobotocore_ and boto3_ libraries. All the credit goes 
 .. _boto3: https://github.com/boto/boto3
 .. _Cookiecutter: https://github.com/audreyr/cookiecutter
 .. _`audreyr/cookiecutter-pypackage`: https://github.com/audreyr/cookiecutter-pypackage
-
-
-License
--------
-
-* Free software: GNU General Public License v3
-* Documentation: https://aioboto3.readthedocs.io.
