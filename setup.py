@@ -37,7 +37,7 @@ setup(
     packages=find_packages(include=['aioboto3']),
     include_package_data=True,
     install_requires=requirements,
-    license="GNU General Public License v3",
+    license="Apache 2",
     zip_safe=False,
     keywords='aioboto3',
     classifiers=[
