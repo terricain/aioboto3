@@ -78,6 +78,7 @@ As this library literally wraps boto3, its inevitable that some things won't mag
 - ``s3_client.copy``  This is performed by the s3transfer module. I believe ``s3_client.copy_object`` performs the same function
 
 Fixed:
+
 - ``s3_client.download_file*``  This is performed by the s3transfer module. -- Patched with get_object
 - ``s3_client.upload_file*``  This is performed by the s3transfer module. -- Patched with put_object
 
