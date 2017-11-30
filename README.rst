@@ -20,7 +20,7 @@ Async AWS SDK for Python
 
 This package is mostly just a wrapper combining the great work of boto3_ and aiobotocore_.
 
-aiobotocore allows you to use near enough all of the boto3 client commands in an async manner just by prefixing the command with `await`. 
+aiobotocore allows you to use near enough all of the boto3 client commands in an async manner just by prefixing the command with `await`.
 
 With aioboto3 you can now usxe the higher level APIs provided by boto3 in an asynchronous manner. Mainly I developed this as I wanted to use the boto3 dynamodb Table object in some async
 microservices.
@@ -69,6 +69,17 @@ Simple example of using aioboto3 to put items into a dynamodb table
     # Outputs:
     #  [{'col1': 'some_data', 'pk': 'test1'}]
 
+
+Things that either dont work or have been patched
+-------------------------------------------------
+
+As this library literally wraps boto3, its inevitable that some things won't magically be async.
+
+- ``s3_client.copy``  This is performed by the s3transfer module. I believe ``s3_client.copy_object`` performs the same function
+
+Fixed:
+- ``s3_client.download_file*``  This is performed by the s3transfer module. -- Patched with get_object
+- ``s3_client.upload_file*``  This is performed by the s3transfer module. -- Patched with put_object
 
 Documentation
 -------------

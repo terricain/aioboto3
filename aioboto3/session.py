@@ -8,6 +8,7 @@ an async botocore session
 import aiobotocore.session
 import boto3.session
 import boto3.resources.base
+import boto3.utils
 
 from aioboto3.resources import AIOBoto3ResourceFactory
 
@@ -66,6 +67,50 @@ class Session(boto3.session.Session):
             self._session.get_component('event_emitter'))
         self._setup_loader()
         self._register_default_handlers()
+
+    def _register_default_handlers(self):
+
+        # S3 customizations
+        self._session.register(
+            'creating-client-class.s3',
+            boto3.utils.lazy_call(
+                'aioboto3.s3.inject.inject_s3_transfer_methods'))
+        self._session.register(
+            'creating-resource-class.s3.Bucket',
+            boto3.utils.lazy_call(
+                'boto3.s3.inject.inject_bucket_methods'))
+        self._session.register(
+            'creating-resource-class.s3.Object',
+            boto3.utils.lazy_call(
+                'boto3.s3.inject.inject_object_methods'))
+        self._session.register(
+            'creating-resource-class.s3.ObjectSummary',
+            boto3.utils.lazy_call(
+                'boto3.s3.inject.inject_object_summary_methods'))
+
+        # DynamoDb customizations
+        self._session.register(
+            'creating-resource-class.dynamodb',
+            boto3.utils.lazy_call(
+                'boto3.dynamodb.transform.register_high_level_interface'),
+            unique_id='high-level-dynamodb')
+        self._session.register(
+            'creating-resource-class.dynamodb.Table',
+            boto3.utils.lazy_call(
+                'boto3.dynamodb.table.register_table_methods'),
+            unique_id='high-level-dynamodb-table')
+
+        # EC2 Customizations
+        self._session.register(
+            'creating-resource-class.ec2.ServiceResource',
+            boto3.utils.lazy_call(
+                'boto3.ec2.createtags.inject_create_tags'))
+
+        self._session.register(
+            'creating-resource-class.ec2.Instance',
+            boto3.utils.lazy_call(
+                'boto3.ec2.deletetags.inject_delete_tags',
+                event_emitter=self.events))
 
     def resource(self, *args, **kwargs):
         result = super(Session, self).resource(*args, **kwargs)

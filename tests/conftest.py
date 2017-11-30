@@ -2,6 +2,7 @@ import asyncio
 import pytest
 import random
 import string
+import uuid
 
 from aiobotocore.config import AioConfig
 from aioboto3.session import Session
@@ -96,6 +97,10 @@ def random_table_name():
 
 
 @pytest.fixture
+def bucket_name():
+    return 'test-bucket-' + str(uuid.uuid4())
+
+@pytest.fixture
 def dynamodb_resource(region, config, event_loop, dynamodb2_server):
     session = Session(region_name=region, loop=event_loop, **moto_config())
     resource = session.resource('dynamodb', region_name=region, endpoint_url=dynamodb2_server, config=config)
@@ -103,6 +108,16 @@ def dynamodb_resource(region, config, event_loop, dynamodb2_server):
 
     # Clean up
     yield from resource.close()
+
+
+@pytest.fixture
+def s3_client(region, config, event_loop, s3_server, bucket_name):
+    session = Session(region_name=region, loop=event_loop, **moto_config())
+    client = session.client('s3', region_name=region, endpoint_url=s3_server, config=config)
+    yield client
+
+    # Clean up
+    yield from client.close()
 
 
 pytest_plugins = ['mock_server']
