@@ -63,7 +63,7 @@ def dynamodb2_server():
 @pytest.yield_fixture(scope="session")
 def s3_server():
     host = "localhost"
-    port = 5001
+    port = 5002
     url = "http://{host}:{port}".format(host=host, port=port)
     process = start_service('s3', host, port)
     yield url
