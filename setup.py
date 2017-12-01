@@ -34,7 +34,7 @@ setup(
     author="Terry Cain",
     author_email='terry@terrys-home.co.uk',
     url='https://github.com/terrycain/aioboto3',
-    packages=find_packages(include=['aioboto3']),
+    packages=find_packages(include=['aioboto3*']),
     include_package_data=True,
     install_requires=requirements,
     license="Apache 2",
