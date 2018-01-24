@@ -12,8 +12,8 @@ with open('HISTORY.rst') as history_file:
     history = history_file.read()
 
 requirements = [
-    'aiobotocore==0.4.5',
-    'boto3==1.4.7'
+    'aiobotocore==0.5.2',
+    'boto3>=1.4.7'
 ]
 
 setup_requirements = [
