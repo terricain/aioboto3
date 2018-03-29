@@ -81,6 +81,7 @@ Fixed:
 
 - ``s3_client.download_file*``  This is performed by the s3transfer module. -- Patched with get_object
 - ``s3_client.upload_file*``  This is performed by the s3transfer module. -- Patched with put_object
+- ``dynamodb_resource.Table.batch_writer``  This now returns an async context manager which performs the same function
 
 Documentation
 -------------

@@ -47,6 +47,41 @@ Put an item into a DynamoDB table, then query it using the nice `Key().eq()` abs
     #  [{'col1': 'some_data', 'pk': 'test1'}]
 
 
+Use the batch writer to take care of dynamodb writing retries etc...
+
+.. code-block:: python3
+
+    import asyncio
+    import aioboto3
+    from boto3.dynamodb.conditions import Key
+
+
+    async def main():
+        async with aioboto3.resource('dynamodb', region_name='eu-central-1') as dynamo_resource:
+            table = dynamo_resource.Table('test_table')
+
+            # As the default batch size is 25, all of these will be written in one batch
+            async with table.batch_writer() as dynamo_writer:
+                await dynamo_writer.put_item(Item={'pk': 'test1', 'col1': 'some_data'})
+                await dynamo_writer.put_item(Item={'pk': 'test2', 'col1': 'some_data'})
+                await dynamo_writer.put_item(Item={'pk': 'test3', 'col1': 'some_data'})
+                await dynamo_writer.put_item(Item={'pk': 'test4', 'col1': 'some_data'})
+                await dynamo_writer.put_item(Item={'pk': 'test5', 'col1': 'some_data'})
+
+            result = await table.scan()
+
+            print(result['Count'])
+
+    loop = asyncio.get_event_loop()
+    loop.run_until_complete(main())
+
+    # Outputs:
+    #  5
+
+
+The ``batch_writer()`` can take a keyword argument of ``flush_amount`` which will change the desired flush amount and a keyword argument
+of ``on_exit_loop_sleep``. The ``on_exit_loop_sleep`` argument will add an async sleep in the flush loop when you exit the context manager.
+
 Misc
 ----
 

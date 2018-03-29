@@ -97,7 +97,7 @@ class Session(boto3.session.Session):
         self._session.register(
             'creating-resource-class.dynamodb.Table',
             boto3.utils.lazy_call(
-                'boto3.dynamodb.table.register_table_methods'),
+                'aioboto3.dynamodb.table.register_table_methods'),
             unique_id='high-level-dynamodb-table')
 
         # EC2 Customizations
