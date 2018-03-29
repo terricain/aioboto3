@@ -100,24 +100,29 @@ def random_table_name():
 def bucket_name():
     return 'test-bucket-' + str(uuid.uuid4())
 
+
 @pytest.fixture
-def dynamodb_resource(region, config, event_loop, dynamodb2_server):
+def dynamodb_resource(request, region, config, event_loop, dynamodb2_server):
     session = Session(region_name=region, loop=event_loop, **moto_config())
     resource = session.resource('dynamodb', region_name=region, endpoint_url=dynamodb2_server, config=config)
     yield resource
 
-    # Clean up
-    yield from resource.close()
+    def fin():
+        event_loop.run_until_complete(resource.close())
+
+    request.addfinalizer(fin)
 
 
 @pytest.fixture
-def s3_client(region, config, event_loop, s3_server, bucket_name):
+def s3_client(request, region, config, event_loop, s3_server, bucket_name):
     session = Session(region_name=region, loop=event_loop, **moto_config())
     client = session.client('s3', region_name=region, endpoint_url=s3_server, config=config)
     yield client
 
-    # Clean up
-    yield from client.close()
+    def fin():
+        event_loop.run_until_complete(client.close())
+
+    request.addfinalizer(fin)
 
 
 pytest_plugins = ['mock_server']
