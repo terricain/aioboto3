@@ -38,7 +38,7 @@ class AIOServiceAction(ServiceAction):
         logger.debug('Calling %s:%s with %r', parent.meta.service_name,
                      operation_name, params)
 
-        response = yield from getattr(parent.meta.client, operation_name)(**params)
+        response = getattr(parent.meta.client, operation_name)(**params)
 
         logger.debug('Response: %r', response)
 
