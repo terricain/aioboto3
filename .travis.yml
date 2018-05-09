@@ -2,8 +2,8 @@
 
 language: python
 python:
+  - 3.6
   - 3.5
-  - 3.6-dev
 
 install: pip install -U tox-travis
 
@@ -28,6 +28,6 @@ deploy:
       TFhmYlcwY09GR3NTNE5KNE5qNTFMVEx5eDlIT1RwZmZQWnB2K1dmOUd1YTMycG1YWkVqc0JtUzhn
       bkJhMGZxTW15M3JUQkhTV0pKQTFRME5YZ2M3QW5nTGtrbHZkZG1IaHdCTUk1ZFd4S0RSRHY0bnM9
   on:
-    python: 3.6-dev
+    python: 3.6
     repo: terrycain/aioboto3
     tags: true

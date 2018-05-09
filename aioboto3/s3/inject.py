@@ -71,11 +71,12 @@ async def download_fileobj(self, Bucket, Key, Fileobj, ExtraArgs=None, Callback=
 
     try:
         resp = await self.get_object(Bucket=Bucket, Key=Key)
-    except Exception as err:
-        if issubclass(err.__class__, ClientError) and err.response['Error']['Code'] == 'NoSuchKey':
+    except ClientError as err:
+        if err.response['Error']['Code'] == 'NoSuchKey':
             # Convert to 404 so it looks the same when boto3.download_file fails
             raise ClientError({'Error': {'Code': '404', 'Message': 'Not Found'}}, 'HeadObject')
         raise
+
     body = resp['Body']
 
     while True:
@@ -87,7 +88,7 @@ async def download_fileobj(self, Bucket, Key, Fileobj, ExtraArgs=None, Callback=
         if Callback:
             try:
                 Callback(len(data))
-            except:
+            except:  # noqa: E722
                 pass
 
         Fileobj.write(data)

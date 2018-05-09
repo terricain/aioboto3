@@ -52,7 +52,7 @@ async def test_dynamo_resource_batch_write_flush_on_exit_context(event_loop, dyn
 
     table = dynamodb_resource.Table(random_table_name)
     async with table.batch_writer() as dynamo_writer:
-        r = await dynamo_writer.put_item(Item={'pk': 'test', 'test_col1': 'col'})
+        await dynamo_writer.put_item(Item={'pk': 'test', 'test_col1': 'col'})
 
     result = await table.scan()
     assert result['Count'] == 1
@@ -90,4 +90,3 @@ async def test_dynamo_resource_batch_write_flush_amount(event_loop, dynamodb_res
     # On exit it should flush so count should be 6
     result = await table.scan()
     assert result['Count'] == 9
-

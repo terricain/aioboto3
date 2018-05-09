@@ -1,6 +1,4 @@
-import asyncio
 import logging
-import sys
 
 from boto3.resources.factory import ResourceFactory
 from boto3.resources.model import ResourceModel
@@ -10,8 +8,6 @@ from boto3.docs import docstring
 from botocore import xform_name
 from boto3.resources.params import create_request_parameters
 
-
-PY_35 = sys.version_info >= (3, 5)
 
 logger = logging.getLogger(__name__)
 
@@ -38,7 +34,34 @@ class AIOServiceAction(ServiceAction):
         logger.debug('Calling %s:%s with %r', parent.meta.service_name,
                      operation_name, params)
 
-        response = getattr(parent.meta.client, operation_name)(**params)
+        response = yield from getattr(parent.meta.client, operation_name)(**params)
+
+        logger.debug('Response: %r', response)
+
+        return self._response_handler(parent, params, response)
+
+    async def async_call(self, parent, *args, **kwargs):
+        """
+        Perform the action's request operation after building operation
+        parameters and build any defined resources from the response.
+
+        :type parent: :py:class:`~boto3.resources.base.ServiceResource`
+        :param parent: The resource instance to which this action is attached.
+        :rtype: dict or ServiceResource or list(ServiceResource)
+        :return: The response, either as a raw dict or resource instance(s).
+        """
+        operation_name = xform_name(self._action_model.request.operation)
+
+        # First, build predefined params and then update with the
+        # user-supplied kwargs, which allows overriding the pre-built
+        # params if needed.
+        params = create_request_parameters(parent, self._action_model.request)
+        params.update(kwargs)
+
+        logger.debug('Calling %s:%s with %r', parent.meta.service_name,
+                     operation_name, params)
+
+        response = await getattr(parent.meta.client, operation_name)(**params)
 
         logger.debug('Response: %r', response)
 
@@ -46,15 +69,12 @@ class AIOServiceAction(ServiceAction):
 
 
 class AIOBoto3ServiceResource(ServiceResource):
-    if PY_35:
-        @asyncio.coroutine
-        def __aenter__(self):
-            return self
+    async def __aenter__(self):
+        return self
 
-        @asyncio.coroutine
-        def __aexit__(self, exc_type, exc_val, exc_tb):
-            yield from self.meta.client.close()
-            return False
+    async def __aexit__(self, exc_type, exc_val, exc_tb):
+        await self.meta.client.close()
+        return False
 
     def close(self):
         return self.meta.client.close()
@@ -179,9 +199,9 @@ class AIOBoto3ResourceFactory(ResourceFactory):
         if is_load:
             # We need a new method here because we want access to the
             # instance via ``self``.
-            @asyncio.coroutine
-            def do_action(self, *args, **kwargs):
-                response = action(self, *args, **kwargs)
+            async def do_action(self, *args, **kwargs):
+                # response = action(self, *args, **kwargs)
+                response = await action.async_call(self, *args, **kwargs)
                 self.meta.data = response
 
             # Create the docstring for the load/reload mehtods.
@@ -196,9 +216,8 @@ class AIOBoto3ResourceFactory(ResourceFactory):
         else:
             # We need a new method here because we want access to the
             # instance via ``self``.
-            @asyncio.coroutine
-            def do_action(self, *args, **kwargs):
-                response = action(self, *args, **kwargs)
+            async def do_action(self, *args, **kwargs):
+                response = await action.async_call(self, *args, **kwargs)
 
                 if hasattr(self, 'load'):
                     # Clear cached data. It will be reloaded the next
