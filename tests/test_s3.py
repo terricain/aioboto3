@@ -67,7 +67,16 @@ async def test_s3_upload_fileobj(event_loop, s3_client, bucket_name):
     fh.write(data)
     fh.seek(0)
 
-    await s3_client.upload_fileobj(fh, bucket_name, 'test_file')
+    callbacks = []
+
+    def callback(bytes_sent):
+        callbacks.append(bytes_sent)
+
+    await s3_client.upload_fileobj(fh, bucket_name, 'test_file', Callback=callback)
+
+    # We should of got 1 callback saying its written 12 bytes
+    assert len(callbacks) == 1
+    assert callbacks[0] == 12
 
     resp = await s3_client.get_object(Bucket=bucket_name, Key='test_file')
     assert (await resp['Body'].read()) == data
