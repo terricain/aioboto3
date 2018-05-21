@@ -142,7 +142,6 @@ async def upload_fileobj(self, Fileobj: BinaryIO, Bucket: str, Key: str, ExtraAr
 
     # I was debating setting up a queue etc...
     # If its too slow I'll then be bothered
-    #
     multipart_chunksize = 8388608 if Config is None else Config.multipart_chunksize
     io_chunksize = 262144 if Config is None else Config.io_chunksize
     # max_concurrency = 10 if Config is None else Config.max_concurrency
