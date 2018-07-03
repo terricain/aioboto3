@@ -3,7 +3,6 @@ from typing import Optional, Callable, BinaryIO, Dict, Any
 
 from botocore.exceptions import ClientError
 from boto3 import utils
-from boto3.s3.inject import copy
 from boto3.s3.transfer import S3TransferConfig
 
 
@@ -162,7 +161,10 @@ async def upload_fileobj(self, Fileobj: BinaryIO, Bucket: str, Key: str, ExtraAr
             part += 1
             multipart_payload = b''
             while len(multipart_payload) < multipart_chunksize:
-                data = Fileobj.read(io_chunksize)
+                if asyncio.iscoroutinefunction(Fileobj.read):  # handles if we pass in aiofiles obj
+                    data = await Fileobj.read(io_chunksize)
+                else:
+                    data = Fileobj.read(io_chunksize)
 
                 if data == b'':  # End of file
                     running = False
@@ -218,3 +220,20 @@ async def upload_file(self, Filename, Bucket, Key, ExtraArgs=None, Callback=None
     """
     with open(Filename, 'rb') as open_file:
         await upload_fileobj(self, open_file, Bucket, Key, ExtraArgs=ExtraArgs, Callback=Callback, Config=Config)
+
+
+async def copy(self, CopySource, Bucket, Key, ExtraArgs=None, Callback=None, Config=None):
+    assert 'Bucket' in CopySource
+    assert 'Key' in CopySource
+
+    try:
+        resp = await self.get_object(Bucket=CopySource['Bucket'], Key=CopySource['Key'])
+    except ClientError as err:
+        if err.response['Error']['Code'] == 'NoSuchKey':
+            # Convert to 404 so it looks the same when boto3.download_file fails
+            raise ClientError({'Error': {'Code': '404', 'Message': 'Not Found'}}, 'HeadObject')
+        raise
+
+    file_obj = resp['Body']
+
+    await self.upload_fileobj(file_obj, Bucket, Key, ExtraArgs=ExtraArgs, Callback=Callback, Config=Config)
