@@ -25,7 +25,7 @@ aiobotocore allows you to use near enough all of the boto3 client commands in an
 With aioboto3 you can now usxe the higher level APIs provided by boto3 in an asynchronous manner. Mainly I developed this as I wanted to use the boto3 dynamodb Table object in some async
 microservices.
 
-Whilst all resources in boto3 should work I havent tested them all, so if what your after is not in the table below then try it out, if it works drop me an issue with a simple test case
+While all resources in boto3 should work I havent tested them all, so if what your after is not in the table below then try it out, if it works drop me an issue with a simple test case
 and I'll add it to the table.
 
 +---------------------------+--------------------+
