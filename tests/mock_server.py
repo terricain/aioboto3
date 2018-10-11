@@ -5,7 +5,6 @@ import signal
 import subprocess as sp
 import time
 
-
 _proxy_bypass = {
   "http": None,
   "https": None,
@@ -17,12 +16,17 @@ def start_service(service_name, host, port):
     args = [moto_svr_path, service_name, "-H", host, "-p", str(port)]
     # For debugging
     # args = '{0} {1} -H {2} -p {3} 2>&1 | tee -a /tmp/moto.log'.format(moto_svr_path, service_name, host, port)
-    process = sp.Popen(args, stdin=sp.PIPE, stdout=sp.PIPE, stderr=sp.DEVNULL)  # shell=True
+    process = sp.Popen(args, stdin=sp.PIPE, stdout=sp.PIPE, stderr=sp.PIPE)  # shell=True
     url = "http://{host}:{port}".format(host=host, port=port)
 
     for i in range(0, 30):
-        if process.poll() is not None:
-            break
+        output = process.poll()
+        if output is not None:
+            print('moto_server exited status {0}'.format(output))
+            stdout, stderr = process.communicate()
+            print('moto_server stdout: {0}'.format(stdout))
+            print('moto_server stderr: {0}'.format(stderr))
+            pytest.fail("Can not start service: {}".format(service_name))
 
         try:
             # we need to bypass the proxies due to monkeypatches
