@@ -2,6 +2,18 @@
 History
 =======
 
+5.0.0 (2018-10-12)
+------------------
+
+* Updated lots of dependencies
+* Changed s3.upload_fileobj from using put_object to doing a multipart upload
+* Created s3.copy shim that runs get_object then does multipart upload, could do with a better implementation though.
+
+4.1.2 (2018-08-28)
+------------------
+
+* updated pypi credentials
+
 4.1.0 (2018-08-28)
 ------------------
 
