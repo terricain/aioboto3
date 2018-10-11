@@ -1,8 +1,9 @@
 import asyncio
+from typing import Optional, Callable, BinaryIO, Dict, Any
 
 from botocore.exceptions import ClientError
 from boto3 import utils
-from boto3.s3.inject import copy
+from boto3.s3.transfer import S3TransferConfig
 
 
 def inject_s3_transfer_methods(class_attributes, **kwargs):
@@ -95,7 +96,9 @@ async def download_fileobj(self, Bucket, Key, Fileobj, ExtraArgs=None, Callback=
         await asyncio.sleep(0.0)
 
 
-async def upload_fileobj(self, Fileobj, Bucket, Key, ExtraArgs=None, Callback=None, Config=None):
+async def upload_fileobj(self, Fileobj: BinaryIO, Bucket: str, Key: str, ExtraArgs: Optional[Dict[str, Any]]=None,
+                         Callback: Optional[Callable[[int], None]]=None,
+                         Config: Optional[S3TransferConfig]=None):
     """Upload a file-like object to S3.
 
     The file-like object must be in binary mode.
@@ -133,8 +136,73 @@ async def upload_fileobj(self, Fileobj, Bucket, Key, ExtraArgs=None, Callback=No
     :param Config: The transfer configuration to be used when performing the
         upload.
     """
+    if not ExtraArgs:
+        ExtraArgs = {}
 
-    await self.put_object(Bucket=Bucket, Key=Key, Body=Fileobj)
+    # I was debating setting up a queue etc...
+    # If its too slow I'll then be bothered
+    multipart_chunksize = 8388608 if Config is None else Config.multipart_chunksize
+    io_chunksize = 262144 if Config is None else Config.io_chunksize
+    # max_concurrency = 10 if Config is None else Config.max_concurrency
+    # max_io_queue = 100 if config is None else Config.max_io_queue
+
+    # Start multipart upload
+
+    resp = await self.create_multipart_upload(Bucket=Bucket, Key=Key, **ExtraArgs)
+    upload_id = resp['UploadId']
+
+    part = 0
+    parts = []
+    running = True
+    sent_bytes = 0
+
+    try:
+        while running:
+            part += 1
+            multipart_payload = b''
+            while len(multipart_payload) < multipart_chunksize:
+                if asyncio.iscoroutinefunction(Fileobj.read):  # handles if we pass in aiofiles obj
+                    data = await Fileobj.read(io_chunksize)
+                else:
+                    data = Fileobj.read(io_chunksize)
+
+                if data == b'':  # End of file
+                    running = False
+                    break
+                multipart_payload += data
+
+            # Submit part to S3
+            resp = await self.upload_part(
+                Body=multipart_payload,
+                Bucket=Bucket,
+                Key=Key,
+                PartNumber=part,
+                UploadId=upload_id
+            )
+            parts.append({'ETag': resp['ETag'], 'PartNumber': part})
+            sent_bytes += len(multipart_payload)
+            try:
+                Callback(sent_bytes)  # Attempt to call the callback, if it fails, ignore, if no callback, ignore
+            except:  # noqa: E722
+                pass
+
+        # By now the uploads must have been done
+        await self.complete_multipart_upload(
+            Bucket=Bucket,
+            Key=Key,
+            UploadId=upload_id,
+            MultipartUpload={'Parts': parts}
+        )
+    except:  # noqa: E722
+        # Cancel multipart upload
+        await self.abort_multipart_upload(
+            Bucket=Bucket,
+            Key=Key,
+            UploadId=upload_id
+        )
+
+        # Dont know what errors it returns so this is a placeholder
+        raise ClientError({'Error': {'Code': '404', 'Message': 'Not Found'}}, 'HeadObject')
 
 
 async def upload_file(self, Filename, Bucket, Key, ExtraArgs=None, Callback=None, Config=None):
@@ -152,3 +220,20 @@ async def upload_file(self, Filename, Bucket, Key, ExtraArgs=None, Callback=None
     """
     with open(Filename, 'rb') as open_file:
         await upload_fileobj(self, open_file, Bucket, Key, ExtraArgs=ExtraArgs, Callback=Callback, Config=Config)
+
+
+async def copy(self, CopySource, Bucket, Key, ExtraArgs=None, Callback=None, Config=None):
+    assert 'Bucket' in CopySource
+    assert 'Key' in CopySource
+
+    try:
+        resp = await self.get_object(Bucket=CopySource['Bucket'], Key=CopySource['Key'])
+    except ClientError as err:
+        if err.response['Error']['Code'] == 'NoSuchKey':
+            # Convert to 404 so it looks the same when boto3.download_file fails
+            raise ClientError({'Error': {'Code': '404', 'Message': 'Not Found'}}, 'HeadObject')
+        raise
+
+    file_obj = resp['Body']
+
+    await self.upload_fileobj(file_obj, Bucket, Key, ExtraArgs=ExtraArgs, Callback=Callback, Config=Config)

@@ -67,7 +67,16 @@ async def test_s3_upload_fileobj(event_loop, s3_client, bucket_name):
     fh.write(data)
     fh.seek(0)
 
-    await s3_client.upload_fileobj(fh, bucket_name, 'test_file')
+    callbacks = []
+
+    def callback(bytes_sent):
+        callbacks.append(bytes_sent)
+
+    await s3_client.upload_fileobj(fh, bucket_name, 'test_file', Callback=callback)
+
+    # We should of got 1 callback saying its written 12 bytes
+    assert len(callbacks) == 1
+    assert callbacks[0] == 12
 
     resp = await s3_client.get_object(Bucket=bucket_name, Key='test_file')
     assert (await resp['Body'].read()) == data
@@ -84,4 +93,26 @@ async def test_s3_upload_file(event_loop, s3_client, bucket_name):
     await s3_client.upload_file(filename, bucket_name, 'test_file')
 
     resp = await s3_client.get_object(Bucket=bucket_name, Key='test_file')
+    assert (await resp['Body'].read()) == data
+
+
+@pytest.mark.asyncio
+async def test_s3_copy(event_loop, s3_client, bucket_name):
+    data = b'Hello World\n'
+
+    # TODO ============================================= generate largeish file
+
+    filename = '/tmp/aioboto3_temp_s3_upload.txt'
+    await s3_client.create_bucket(Bucket=bucket_name)
+
+    # Upload file
+    open(filename, 'wb').write(data)
+    await s3_client.upload_file(filename, bucket_name, 'test_file')
+
+    # Copy file
+    copy_source = {'Bucket': bucket_name, 'Key': 'test_file'}
+    await s3_client.copy(copy_source, bucket_name, 'test_file2')
+
+    # Get copied file
+    resp = await s3_client.get_object(Bucket=bucket_name, Key='test_file2')
     assert (await resp['Body'].read()) == data

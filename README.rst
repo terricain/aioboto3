@@ -88,8 +88,10 @@ As this library literally wraps boto3, its inevitable that some things won't mag
 Fixed:
 
 - ``s3_client.download_file*``  This is performed by the s3transfer module. -- Patched with get_object
-- ``s3_client.upload_file*``  This is performed by the s3transfer module. -- Patched with put_object
+- ``s3_client.upload_file*``  This is performed by the s3transfer module. -- Patched with custom multipart upload
 - ``dynamodb_resource.Table.batch_writer``  This now returns an async context manager which performs the same function
+
+
 
 Documentation
 -------------
