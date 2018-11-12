@@ -6,7 +6,7 @@ watchdog==0.9.0
 flake8==3.5.0
 tox==3.5.2
 coverage==4.5.1
-cryptography==2.3.1
+cryptography==2.4.1
 PyYAML==4.2b4
 pytest==3.8.2
 pytest-runner==4.2
