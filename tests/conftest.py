@@ -4,7 +4,8 @@ import random
 import string
 import uuid
 
-from aiobotocore.config import AioConfig
+# from aiobotocore.config import AioConfig
+from aioboto3.aiobotocore.config import AioConfig
 from aioboto3.session import Session
 
 
