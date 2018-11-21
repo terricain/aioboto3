@@ -5,7 +5,9 @@ an async botocore session
 """
 
 
-import aiobotocore.session
+# import aiobotocore.session as aiobotocore_session
+import aioboto3.aiobotocore.session as aiobotocore_session
+
 import boto3.session
 import boto3.resources.base
 import boto3.utils
@@ -40,7 +42,7 @@ class Session(boto3.session.Session):
             self._session = botocore_session
         else:
             # Create a new default session
-            self._session = aiobotocore.session.get_session(loop=loop)
+            self._session = aiobotocore_session.get_session(loop=loop)
 
         # Setup custom user-agent string if it isn't already customized
         if self._session.user_agent_name == 'Botocore':

@@ -12,9 +12,12 @@ with open('HISTORY.rst') as history_file:
     history = history_file.read()
 
 requirements = [
-    'aiobotocore~=0.9.4',
-    'boto3>=1.4.7,<=1.7.58',
-    'botocore>=1.10.58,<1.10.59'
+    # 'aiobotocore~=0.9.4',  # Copied into project :(
+
+    'boto3>=1.9.24,<=1.9.25',
+    'botocore>=1.12.24,<1.12.25',
+    'aiohttp>=3.3.1',  # aiobotocore deps
+    'wrapt>=1.10.10',  # aiobotocore deps
 ]
 
 setup_requirements = [

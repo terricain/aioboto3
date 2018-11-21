@@ -18,6 +18,8 @@ Async AWS SDK for Python
      :alt: Updates
 
 
+**aiobotocore has been copied into this project, and updated until https://github.com/aio-libs/aiobotocore/pull/639 is merged**
+
 This package is mostly just a wrapper combining the great work of boto3_ and aiobotocore_.
 
 aiobotocore allows you to use near enough all of the boto3 client commands in an async manner just by prefixing the command with `await`.
