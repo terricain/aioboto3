@@ -12,6 +12,7 @@ install: pip install -U tox-travis
 script:
   - tox
   - python setup.py check
+  - python setup.py build_sphinx
 
 deploy:
   provider: pypi
