@@ -64,11 +64,12 @@ Ready to contribute? Here's how to set up `aioboto3` for local development.
 
     $ git clone git@github.com:your_name_here/aioboto3.git
 
-3. Install your local copy into a virtualenv. Assuming you have virtualenvwrapper installed, this is how you set up your fork for local development::
+3. Install your local copy into a virtualenv::
 
-    $ mkvirtualenv aioboto3
     $ cd aioboto3/
-    $ python setup.py develop
+    $ python -m venv env
+    $ . env/bin/activate
+    $ pip install -r requirements_dev.txt
 
 4. Create a branch for local development::
 
@@ -78,7 +79,7 @@ Ready to contribute? Here's how to set up `aioboto3` for local development.
 
 5. When you're done making changes, check that your changes pass flake8 and the tests, including testing other Python versions with tox::
 
-    $ flake8 aioboto3 tests
+    $ flake8
     $ python setup.py test or py.test
     $ tox
 
@@ -101,7 +102,7 @@ Before you submit a pull request, check that it meets these guidelines:
 2. If the pull request adds functionality, the docs should be updated. Put
    your new functionality into a function with a docstring, and add the
    feature to the list in README.rst.
-3. The pull request should work for Python 2.6, 2.7, 3.3, 3.4 and 3.5, and for PyPy. Check
+3. The pull request should work for Python 3.5 through 3.7. Check
    https://travis-ci.org/terrycain/aioboto3/pull_requests
    and make sure that the tests pass for all supported Python versions.
 
