@@ -14,4 +14,4 @@ moto[server]==1.3.7
 requests==2.20.1
 Sphinx==1.8.2
 pytest-asyncio==0.9.0
-idna==2.7
+idna==2.8
