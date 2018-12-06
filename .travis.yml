@@ -9,7 +9,9 @@ python:
 
 install: pip install -U tox-travis
 
-script: tox
+script:
+  - tox
+  - python setup.py check
 
 deploy:
   provider: pypi
