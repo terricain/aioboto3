@@ -8,7 +8,7 @@ tox==3.5.3
 coverage==4.5.2
 cryptography==2.4.2
 PyYAML==4.2b4
-pytest==4.0.1
+pytest==4.0.2
 pytest-runner==4.2
 moto[server]==1.3.7
 requests==2.20.1
