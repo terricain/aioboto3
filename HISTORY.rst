@@ -2,6 +2,18 @@
 History
 =======
 
+
+6.0.1 (2018-11-22)
+------------------
+
+* Fixed dependencies
+
+6.0.0 (2018-11-21)
+------------------
+
+* Fixed readthedocs
+* Vendored aiobotocore for later botocore version
+
 5.0.0 (2018-10-12)
 ------------------
 

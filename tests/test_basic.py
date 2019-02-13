@@ -4,8 +4,7 @@
 """Tests for `aioboto3` package."""
 
 import pytest
-# from aiobotocore.client import AioBaseClient
-from aioboto3.aiobotocore.client import AioBaseClient
+from aiobotocore.client import AioBaseClient
 
 import aioboto3
 
