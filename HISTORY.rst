@@ -2,6 +2,12 @@
 History
 =======
 
+6.1.0 (2019-02-13)
+------------------
+
+* nvllsvm cleaned up the packaging, requirements, travis, sphinx...
+* Unvendored aiobotocore
+
 
 6.0.1 (2018-11-22)
 ------------------
