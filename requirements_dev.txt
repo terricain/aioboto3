@@ -3,7 +3,7 @@ pip>=8.1.2
 bumpversion==0.5.3
 wheel>=0.29.0
 watchdog==0.9.0
-flake8==3.7.5
+flake8==3.7.6
 tox==3.7.0
 coverage==4.5.2
 cryptography==2.5
