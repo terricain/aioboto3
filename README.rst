@@ -83,13 +83,24 @@ Things that either dont work or have been patched
 
 As this library literally wraps boto3, its inevitable that some things won't magically be async.
 
-- ``s3_client.copy``  This is performed by the s3transfer module. I believe ``s3_client.copy_object`` performs the same function
-
 Fixed:
 
 - ``s3_client.download_file*``  This is performed by the s3transfer module. -- Patched with get_object
 - ``s3_client.upload_file*``  This is performed by the s3transfer module. -- Patched with custom multipart upload
+- ``s3_client.copy``  This is performed by the s3transfer module. -- Patched to use get_object -> upload_fileobject
 - ``dynamodb_resource.Table.batch_writer``  This now returns an async context manager which performs the same function
+
+
+Amazon S3 Client-Size Encryption
+--------------------------------
+
+Boto3 doesn't support AWS Client-Side encryption so until they do I've added basic support for it. Docs here CSE_
+
+This library currently supports Client-side encryption using KMS-Managed master keys performing envelope encryption
+using either AES/CBC/PKCS5Padding or preferably AES/GCM/NoPadding. The files generated are compatible with the Java Encryption SDK
+so I will assume they are compatible with the Ruby, PHP, Go and C++ libraries as well.
+
+Non-KMS managed keys are not yet supported but if you have use of that, raise an issue and i'll look into it.
 
 
 
@@ -124,3 +135,4 @@ It also makes use of the aiobotocore_ and boto3_ libraries. All the credit goes 
 .. _boto3: https://github.com/boto/boto3
 .. _Cookiecutter: https://github.com/audreyr/cookiecutter
 .. _`audreyr/cookiecutter-pypackage`: https://github.com/audreyr/cookiecutter-pypackage
+.. _CSE: https://aioboto3.readthedocs.io/en/latest/cse.html

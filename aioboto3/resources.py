@@ -169,7 +169,7 @@ class AIOBoto3ResourceFactory(ResourceFactory):
         # Create the name based on the requested service and resource
         cls_name = resource_name
         if service_context.service_name == resource_name:
-            cls_name = 'AIOServiceResource'
+            cls_name = 'ServiceResource'
         cls_name = service_context.service_name + '.' + cls_name
 
         base_classes = [AIOBoto3ServiceResource]

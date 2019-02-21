@@ -9,6 +9,7 @@ Contents:
    readme
    installation
    usage
+   cse
    contributing
    authors
    history
