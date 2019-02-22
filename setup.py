@@ -25,6 +25,10 @@ test_requirements = [
     'flake8'
 ]
 
+extras_require = {
+    's3cse': ['cryptography>=2.3.1']
+}
+
 setup(
     name='aioboto3',
     version='6.1.0',
@@ -52,5 +56,6 @@ setup(
     test_suite='tests',
     tests_require=test_requirements,
     setup_requires=setup_requirements,
+    extras_require=extras_require,
     python_requires='>=3.5',
 )
