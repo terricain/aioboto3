@@ -12,13 +12,13 @@ Decryption
 
 Firstly get the object from S3, it'll have various crypto goodies in the object's metadata.
 
-metadata: ``x-amz-unencrypted-content-length`` - Resultant length of the plaintext
-metadata: ``x-amz-key-v2`` - this is the base64'd kms encrypted aes key.
-metadata: ``x-amz-matdesc`` - JSON KMS encryption context, has which KMS key encrypted the aes key
-metadata: ``x-amz-iv`` - AES IVs
-metadata: ``x-amz-cek-alg`` - Which AES aglorithm was used, AES/CBC/PKCS5Padding or AES/GCM/NoPadding
-metadata: ``x-amz-tag-len`` - If using AES-GCM then this is a fixed value of 128 otherwise it is not present
-metadata: ``x-amz-wrap-alg`` - Always KMS when using KMS managed master keys
+- metadata: ``x-amz-unencrypted-content-length`` - Resultant length of the plaintext
+- metadata: ``x-amz-key-v2`` - this is the base64'd kms encrypted aes key.
+- metadata: ``x-amz-matdesc`` - JSON KMS encryption context, has which KMS key encrypted the aes key
+- metadata: ``x-amz-iv`` - AES IVs
+- metadata: ``x-amz-cek-alg`` - Which AES aglorithm was used, AES/CBC/PKCS5Padding or AES/GCM/NoPadding
+- metadata: ``x-amz-tag-len`` - If using AES-GCM then this is a fixed value of 128 otherwise it is not present
+- metadata: ``x-amz-wrap-alg`` - Always KMS when using KMS managed master keys
 
 Send ``x-amz-key-v2`` and ``x-amz-matdesc`` to KMS, that will return the decrypted AES key
 
