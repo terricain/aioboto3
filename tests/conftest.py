@@ -2,6 +2,7 @@ import pytest
 import random
 import string
 import uuid
+import mock
 
 from aiobotocore.config import AioConfig
 from aioboto3.session import Session
@@ -50,6 +51,11 @@ def bucket_name():
 
 
 @pytest.fixture
+def kms_key_alias():
+    return 'alias/test-' + uuid.uuid4().hex
+
+
+@pytest.fixture
 def dynamodb_resource(request, region, config, event_loop, dynamodb2_server):
     session = Session(region_name=region, loop=event_loop, **moto_config())
 
@@ -80,6 +86,56 @@ def s3_client(request, region, config, event_loop, s3_server, bucket_name):
         event_loop.run_until_complete(client.close())
 
     request.addfinalizer(fin)
+
+
+@pytest.fixture
+def s3_moto_patch(request, region, config, event_loop, s3_server):
+    from aioboto3 import client as orig_client, resource as orig_resource
+
+    s3_url = s3_server
+
+    def fake_client(*args, **kwargs):
+        nonlocal s3_url
+        if 'endpoint_url' not in kwargs and args[0] == 's3':
+            kwargs['endpoint_url'] = s3_url
+        return orig_client(*args, **kwargs)
+
+    def fake_res(*args, **kwargs):
+        nonlocal s3_url
+        if 'endpoint_url' not in kwargs and args[0] == 's3':
+            kwargs['endpoint_url'] = s3_url
+        return orig_resource(*args, **kwargs)
+
+    client_patcher = mock.patch('aioboto3.client', fake_client)
+    resource_patcher = mock.patch('aioboto3.resource', fake_res)
+
+    client_patcher.start()
+    resource_patcher.start()
+
+    yield fake_client, fake_res
+
+    client_patcher.stop()
+    resource_patcher.stop()
+
+
+@pytest.fixture
+def kms_moto_patch(request, region, config, event_loop, kms_server):
+    from aioboto3 import client as orig_client
+
+    kms_url = kms_server
+
+    def fake_client(*args, **kwargs):
+        nonlocal kms_url
+        if 'endpoint_url' not in kwargs and args[0] == 'kms':
+            kwargs['endpoint_url'] = kms_url
+        return orig_client(*args, **kwargs)
+
+    client_patcher = mock.patch('aioboto3.client', fake_client)
+    client_patcher.start()
+
+    yield fake_client
+
+    client_patcher.stop()
 
 
 pytest_plugins = ['mock_server']
