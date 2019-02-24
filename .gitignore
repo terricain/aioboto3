@@ -1,4 +1,5 @@
 resources/S3-CMK/.gradle/
+resources/S3-CMK/keys
 resources/S3-CMK/.idea
 
 # Byte-compiled / optimized / DLL files

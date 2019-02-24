@@ -1,37 +1,45 @@
 package demo;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
+import java.io.*;
+import java.security.*;
+import java.security.spec.InvalidKeySpecException;
+import java.security.spec.PKCS8EncodedKeySpec;
+import java.security.spec.X509EncodedKeySpec;
 
 import com.amazonaws.AmazonServiceException;
-import com.amazonaws.SdkClientException;
 import com.amazonaws.auth.profile.ProfileCredentialsProvider;
 import com.amazonaws.regions.RegionUtils;
+import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3Encryption;
+import com.amazonaws.services.s3.AmazonS3EncryptionClient;
 import com.amazonaws.services.s3.AmazonS3EncryptionClientBuilder;
-import com.amazonaws.services.s3.model.CryptoConfiguration;
-import com.amazonaws.services.s3.model.CryptoMode;
-import com.amazonaws.services.s3.model.KMSEncryptionMaterialsProvider;
-import com.amazonaws.services.s3.model.S3Object;
-import com.amazonaws.services.s3.model.S3ObjectInputStream;
+import com.amazonaws.services.s3.model.*;
+
+import javax.crypto.KeyGenerator;
+import javax.crypto.SecretKey;
+import javax.crypto.spec.SecretKeySpec;
+
 
 public class UploadObjectKMSKey {
+    private static void kms_crypto(String clientRegion, String bucketName, String keyName) {
+        String kmsKeyId = System.getenv("KMS_ID");
+        boolean authenticated_crypto = System.getenv("AUTHENTICATED_CRYPTO") != null;
 
-    public static void main(String[] args) throws IOException {
-        String bucketName = System.getenv("S3_BUCKET_NAME");
-        String keyName = System.getenv("S3_KEY");
-        String clientRegion = System.getenv("KMS_REGION");
-        String kms_cmk_id = System.getenv("KMS_ID");
-        int readChunkSize = 4096;
+        System.out.println("KMS Key: " + kmsKeyId);
+        System.out.println("Authenticated Encryption: " + authenticated_crypto);
 
         try {
             // Create the encryption client.
-            KMSEncryptionMaterialsProvider materialProvider = new KMSEncryptionMaterialsProvider(kms_cmk_id);
+            KMSEncryptionMaterialsProvider materialProvider = new KMSEncryptionMaterialsProvider(kmsKeyId);
 
-            // This does AES/CBC/PKCS5Padding
-            //CryptoConfiguration cryptoConfig = new CryptoConfiguration().withAwsKmsRegion(RegionUtils.getRegion(clientRegion));
+            CryptoConfiguration cryptoConfig;
 
-            // This does AES/GCM/NoPadding
-            CryptoConfiguration cryptoConfig = new CryptoConfiguration(CryptoMode.AuthenticatedEncryption).withAwsKmsRegion(RegionUtils.getRegion(clientRegion));
+            if (authenticated_crypto) {
+                // This does AES/GCM/NoPadding
+                cryptoConfig = new CryptoConfiguration(CryptoMode.AuthenticatedEncryption).withAwsKmsRegion(RegionUtils.getRegion(clientRegion));
+            } else {
+                // This does AES/CBC/PKCS5Padding
+                cryptoConfig = new CryptoConfiguration().withAwsKmsRegion(RegionUtils.getRegion(clientRegion));
+            }
 
             AmazonS3Encryption encryptionClient = AmazonS3EncryptionClientBuilder.standard()
                     .withCredentials(new ProfileCredentialsProvider())
@@ -42,15 +50,22 @@ public class UploadObjectKMSKey {
             // Upload an object using the encryption client.
             String origContent = "S3 Encrypted Object Using KMS-Managed Customer Master Key.";
             int origContentLength = origContent.length();
-            encryptionClient.putObject(bucketName, keyName, origContent);
+            // encryptionClient.putObject(bucketName, keyName, origContent);
 
             // Download the object. The downloaded object is still encrypted.
-            S3Object downloadedObject = encryptionClient.getObject(bucketName, keyName);
+            //S3Object downloadedObject = encryptionClient.getObject(bucketName, keyName);
+
+            GetObjectRequest a = new GetObjectRequest(bucketName, keyName);
+            a.setRange(3);
+
+            S3Object downloadedObject = encryptionClient.getObject(a);
+
+
             S3ObjectInputStream input = downloadedObject.getObjectContent();
 
             // Decrypt and read the object and close the input stream.
-            byte[] readBuffer = new byte[readChunkSize];
-            ByteArrayOutputStream baos = new ByteArrayOutputStream(readChunkSize);
+            byte[] readBuffer = new byte[4096];
+            ByteArrayOutputStream baos = new ByteArrayOutputStream(4096);
             int bytesRead = 0;
             int decryptedContentLength = 0;
 
@@ -69,10 +84,236 @@ public class UploadObjectKMSKey {
             // it, so it returned an error response.
             e.printStackTrace();
         }
-        catch(SdkClientException e) {
-            // Amazon S3 couldn't be contacted for a response, or the client
-            // couldn't parse the response from Amazon S3.
+        catch(IOException e) {
+            // The call was transmitted successfully, but Amazon S3 couldn't process
+            // it, so it returned an error response.
             e.printStackTrace();
         }
+
+    }
+
+    private static void symmetric_crypto(String clientRegion, String bucketName, String keyName) throws Exception {
+        String masterKeyDir = System.getenv("KEY_DIR");
+        String masterKeyName = "secret.key";
+
+        System.out.println("symmetric Encryption");
+
+        KeyGenerator symKeyGenerator = KeyGenerator.getInstance("AES");
+        symKeyGenerator.init(256);
+        SecretKey symKey = symKeyGenerator.generateKey();
+
+        saveSymmetricKey(masterKeyDir, masterKeyName, symKey);
+        symKey = loadSymmetricAESKey(masterKeyDir, masterKeyName, "AES");
+
+        try {
+            EncryptionMaterials encryptionMaterials = new EncryptionMaterials(symKey);
+            AmazonS3Encryption encryptionClient = AmazonS3EncryptionClientBuilder.standard()
+                    .withCredentials(new ProfileCredentialsProvider())
+                    .withEncryptionMaterials(new StaticEncryptionMaterialsProvider(encryptionMaterials))
+                    .withRegion(clientRegion)
+                    .build();
+
+            // Upload an object using the encryption client.
+            String origContent = "S3 Encrypted Object Using symmetric.";
+            int origContentLength = origContent.length();
+            encryptionClient.putObject(bucketName, keyName, origContent);
+
+            // Download the object. The downloaded object is still encrypted.
+            S3Object downloadedObject = encryptionClient.getObject(bucketName, keyName);
+            S3ObjectInputStream input = downloadedObject.getObjectContent();
+
+            // Decrypt and read the object and close the input stream.
+            byte[] readBuffer = new byte[4096];
+            ByteArrayOutputStream baos = new ByteArrayOutputStream(4096);
+            int bytesRead = 0;
+            int decryptedContentLength = 0;
+
+            while ((bytesRead = input.read(readBuffer)) != -1) {
+                baos.write(readBuffer, 0, bytesRead);
+                decryptedContentLength += bytesRead;
+            }
+            input.close();
+
+            // Verify that the original and decrypted contents are the same size.
+            System.out.println("Original content length: " + origContentLength);
+            System.out.println("Decrypted content length: " + decryptedContentLength);
+        }
+        catch(AmazonServiceException e) {
+            // The call was transmitted successfully, but Amazon S3 couldn't process
+            // it, so it returned an error response.
+            e.printStackTrace();
+        }
+        catch(IOException e) {
+            // The call was transmitted successfully, but Amazon S3 couldn't process
+            // it, so it returned an error response.
+            e.printStackTrace();
+        }
+
+    }
+
+    private static void asymmetric_crypto(String clientRegion, String bucketName, String keyName) throws Exception {
+        String masterKeyDir = System.getenv("KEY_DIR");
+        String pubKeyName = "secret.pub";
+        String privKeyName = "secret.priv";
+
+        System.out.println("asymmetric Encryption");
+
+        KeyPairGenerator keyGenerator = KeyPairGenerator.getInstance("RSA");
+        keyGenerator.initialize(1024, new SecureRandom());
+        KeyPair origKeyPair = keyGenerator.generateKeyPair();
+
+        // To see how it works, save and load the key pair to and from the file system.
+        saveKeyPair(masterKeyDir, pubKeyName, privKeyName, origKeyPair);
+        KeyPair keyPair = loadKeyPair(masterKeyDir, pubKeyName, privKeyName, "RSA");
+
+        try {
+            EncryptionMaterials encryptionMaterials = new EncryptionMaterials(keyPair);
+            AmazonS3Encryption encryptionClient = AmazonS3EncryptionClientBuilder.standard()
+                    .withCredentials(new ProfileCredentialsProvider())
+                    .withEncryptionMaterials(new StaticEncryptionMaterialsProvider(encryptionMaterials))
+                    .withRegion(clientRegion)
+                    .build();
+
+            // Upload an object using the encryption client.
+            String origContent = "S3 Encrypted Object Using asymmetric encryption.";
+            int origContentLength = origContent.length();
+            encryptionClient.putObject(bucketName, keyName, origContent);
+
+            // Download the object. The downloaded object is still encrypted.
+
+
+            S3Object downloadedObject = encryptionClient.getObject(bucketName, keyName);
+            S3ObjectInputStream input = downloadedObject.getObjectContent();
+
+            // Decrypt and read the object and close the input stream.
+            byte[] readBuffer = new byte[4096];
+            ByteArrayOutputStream baos = new ByteArrayOutputStream(4096);
+            int bytesRead = 0;
+            int decryptedContentLength = 0;
+
+            while ((bytesRead = input.read(readBuffer)) != -1) {
+                baos.write(readBuffer, 0, bytesRead);
+                decryptedContentLength += bytesRead;
+            }
+            input.close();
+
+            // Verify that the original and decrypted contents are the same size.
+            System.out.println("Original content length: " + origContentLength);
+            System.out.println("Decrypted content length: " + decryptedContentLength);
+        }
+        catch(AmazonServiceException e) {
+            // The call was transmitted successfully, but Amazon S3 couldn't process
+            // it, so it returned an error response.
+            e.printStackTrace();
+        }
+        catch(IOException e) {
+            // The call was transmitted successfully, but Amazon S3 couldn't process
+            // it, so it returned an error response.
+            e.printStackTrace();
+        }
+
+    }
+
+    private static void saveSymmetricKey(String masterKeyDir, String masterKeyName, SecretKey secretKey) throws IOException {
+        X509EncodedKeySpec x509EncodedKeySpec = new X509EncodedKeySpec(secretKey.getEncoded());
+        FileOutputStream keyOutputStream = new FileOutputStream(masterKeyDir + File.separator + masterKeyName);
+        keyOutputStream.write(x509EncodedKeySpec.getEncoded());
+        keyOutputStream.close();
+    }
+
+    private static SecretKey loadSymmetricAESKey(String masterKeyDir, String masterKeyName, String algorithm)
+            throws IOException, NoSuchAlgorithmException, InvalidKeySpecException, InvalidKeyException {
+        // Read the key from the specified file.
+        File keyFile = new File(masterKeyDir + File.separator + masterKeyName);
+        FileInputStream keyInputStream = new FileInputStream(keyFile);
+        byte[] encodedPrivateKey = new byte[(int) keyFile.length()];
+        keyInputStream.read(encodedPrivateKey);
+        keyInputStream.close();
+
+        // Reconstruct and return the master key.
+        return new SecretKeySpec(encodedPrivateKey, "AES");
+    }
+
+
+    private static void saveKeyPair(String dir,
+                                    String publicKeyName,
+                                    String privateKeyName,
+                                    KeyPair keyPair) throws IOException {
+        PrivateKey privateKey = keyPair.getPrivate();
+        PublicKey publicKey = keyPair.getPublic();
+
+        // Write the public key to the specified file.
+        X509EncodedKeySpec x509EncodedKeySpec = new X509EncodedKeySpec(publicKey.getEncoded());
+        FileOutputStream publicKeyOutputStream = new FileOutputStream(dir + File.separator + publicKeyName);
+        publicKeyOutputStream.write(x509EncodedKeySpec.getEncoded());
+        publicKeyOutputStream.close();
+
+        // Write the private key to the specified file.
+        PKCS8EncodedKeySpec pkcs8EncodedKeySpec = new PKCS8EncodedKeySpec(privateKey.getEncoded());
+        FileOutputStream privateKeyOutputStream = new FileOutputStream(dir + File.separator + privateKeyName);
+        privateKeyOutputStream.write(pkcs8EncodedKeySpec.getEncoded());
+        privateKeyOutputStream.close();
+    }
+
+    private static KeyPair loadKeyPair(String dir,
+                                       String publicKeyName,
+                                       String privateKeyName,
+                                       String algorithm)
+            throws IOException, NoSuchAlgorithmException, InvalidKeySpecException {
+        // Read the public key from the specified file.
+        File publicKeyFile = new File(dir + File.separator + publicKeyName);
+        FileInputStream publicKeyInputStream = new FileInputStream(publicKeyFile);
+        byte[] encodedPublicKey = new byte[(int) publicKeyFile.length()];
+        publicKeyInputStream.read(encodedPublicKey);
+        publicKeyInputStream.close();
+
+        // Read the private key from the specified file.
+        File privateKeyFile = new File(dir + File.separator + privateKeyName);
+        FileInputStream privateKeyInputStream = new FileInputStream(privateKeyFile);
+        byte[] encodedPrivateKey = new byte[(int) privateKeyFile.length()];
+        privateKeyInputStream.read(encodedPrivateKey);
+        privateKeyInputStream.close();
+
+        // Convert the keys into a key pair.
+        KeyFactory keyFactory = KeyFactory.getInstance(algorithm);
+        X509EncodedKeySpec publicKeySpec = new X509EncodedKeySpec(encodedPublicKey);
+        PublicKey publicKey = keyFactory.generatePublic(publicKeySpec);
+
+        PKCS8EncodedKeySpec privateKeySpec = new PKCS8EncodedKeySpec(encodedPrivateKey);
+        PrivateKey privateKey = keyFactory.generatePrivate(privateKeySpec);
+
+        return new KeyPair(publicKey, privateKey);
+    }
+
+
+    public static void main(String[] args) throws IOException {
+        String bucketName = System.getenv("S3_BUCKET_NAME");
+        String keyName = System.getenv("S3_KEY");
+        String clientRegion = System.getenv("REGION");
+        String cryptoType = System.getenv("CRYPTO_TYPE");
+
+        System.out.println("S3: s3://" + bucketName + "/" + keyName);
+        System.out.println("Region: " + clientRegion);
+
+        try {
+            switch (cryptoType) {
+                case "kms":
+                    UploadObjectKMSKey.kms_crypto(clientRegion, bucketName, keyName);
+                    break;
+                case "asymmetric":
+                    UploadObjectKMSKey.asymmetric_crypto(clientRegion, bucketName, keyName);
+                    break;
+                case "symmetric":
+                    UploadObjectKMSKey.symmetric_crypto(clientRegion, bucketName, keyName);
+                    break;
+
+                default:
+                    System.out.println("Crypto type " + cryptoType + " unsupported");
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+
     }
 }
