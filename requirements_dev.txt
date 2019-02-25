@@ -7,7 +7,7 @@ flake8==3.7.5
 tox==3.7.0
 coverage==4.5.2
 cryptography==2.5
-PyYAML==4.2b4
+PyYAML==5.1b1
 pytest==4.2.1
 pytest-runner==4.2
 pytest-asyncio==0.10.0
