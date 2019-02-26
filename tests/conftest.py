@@ -56,6 +56,11 @@ def kms_key_alias():
 
 
 @pytest.fixture
+def s3_key_name():
+    return uuid.uuid4().hex
+
+
+@pytest.fixture
 def dynamodb_resource(request, region, config, event_loop, dynamodb2_server):
     session = Session(region_name=region, loop=event_loop, **moto_config())
 

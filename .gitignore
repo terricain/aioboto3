@@ -1,6 +1,7 @@
-resources/S3-CMK/.gradle/
-resources/S3-CMK/keys
-resources/S3-CMK/.idea
+resources/S3-CSE/.gradle/
+resources/S3-CSE/keys
+resources/S3-CSE/.idea
+resources/S3-CSE/out
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

@@ -100,10 +100,10 @@ public class UploadObjectKMSKey {
 
         KeyGenerator symKeyGenerator = KeyGenerator.getInstance("AES");
         symKeyGenerator.init(256);
-        SecretKey symKey = symKeyGenerator.generateKey();
+        // SecretKey symKey = symKeyGenerator.generateKey();
 
-        saveSymmetricKey(masterKeyDir, masterKeyName, symKey);
-        symKey = loadSymmetricAESKey(masterKeyDir, masterKeyName, "AES");
+        // saveSymmetricKey(masterKeyDir, masterKeyName, symKey);
+        SecretKey symKey = loadSymmetricAESKey(masterKeyDir, masterKeyName, "AES");
 
         try {
             EncryptionMaterials encryptionMaterials = new EncryptionMaterials(symKey);

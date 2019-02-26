@@ -13,7 +13,7 @@ from cryptography.hazmat.primitives.ciphers.aead import AESGCM
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives.ciphers import Cipher
 from cryptography.hazmat.primitives.ciphers.algorithms import AES
-from cryptography.hazmat.primitives.ciphers.modes import CBC, CTR
+from cryptography.hazmat.primitives.ciphers.modes import CBC, CTR, ECB
 from cryptography.hazmat.primitives.padding import PKCS7
 from cryptography.exceptions import InvalidTag
 
@@ -63,13 +63,55 @@ class CryptoContext(object):
         """
         raise NotImplementedError()
 
-    async def get_encryption_aes_key(self) -> Tuple[bytes, str, str]:
+    async def get_encryption_aes_key(self) -> Tuple[bytes, Dict[str, str], str]:
         """
         Get encryption key to encrypt an S3 object
 
         :return: Raw AES key bytes, Stringified JSON x-amz-matdesc, Base64 encoded x-amz-key-v2
         """
         raise NotImplementedError()
+
+
+class SymmetricCryptoContext(CryptoContext):
+    def __init__(self, key: bytes):
+        self.key = key
+        self._backend = default_backend()
+        self._cipher = Cipher(AES(self.key), ECB(), backend=self._backend)
+
+    async def get_decryption_aes_key(self, key: bytes, material_description: Dict[str, Any]) -> bytes:
+        """
+        Get decryption key for a given S3 object
+
+        :param key: Base64 decoded version of x-amz-key-v2
+        :param material_description: JSON decoded x-amz-matdesc
+        :return: Raw AES key bytes
+        """
+
+        # So it seems when java just calls Cipher.getInstance('AES') it'll default to AES/ECB/PKCS5Padding
+        aesecb = self._cipher.decryptor()
+        padded_result = aesecb.update(key) + aesecb.finalize()
+
+        unpadder = PKCS7(AES.block_size).unpadder()
+        result = unpadder.update(padded_result) + unpadder.finalize()
+
+        return result
+
+    async def get_encryption_aes_key(self) -> Tuple[bytes, Dict[str, str], str]:
+        """
+        Get encryption key to encrypt an S3 object
+
+        :return: Raw AES key bytes, Stringified JSON x-amz-matdesc, Base64 encoded x-amz-key-v2
+        """
+
+        random_bytes = os.urandom(32)
+
+        padder = PKCS7(AES.block_size).padder()
+        padded_result = padder.update(random_bytes) + padder.finalize()
+
+        aesecb = self._cipher.encryptor()
+        encrypted_result = aesecb.update(padded_result) + aesecb.finalize()
+
+        return random_bytes, {}, base64.b64encode(encrypted_result)
 
 
 class KMSCryptoContext(CryptoContext):
@@ -95,7 +137,7 @@ class KMSCryptoContext(CryptoContext):
         aes_key: bytes = kms_data['Plaintext']
         return aes_key
 
-    async def get_encryption_aes_key(self) -> Tuple[bytes, str, str]:
+    async def get_encryption_aes_key(self) -> Tuple[bytes, Dict[str, str], str]:
         if self.kms_key is None:
             raise ValueError('KMS Key not provided during initalisation, cannot encrypt')
 
@@ -107,7 +149,28 @@ class KMSCryptoContext(CryptoContext):
         )
 
         aes_key: bytes = kms_response['Plaintext']
-        return aes_key, json.dumps(encryption_context), base64.b64encode(kms_response['CiphertextBlob']).decode()
+        return aes_key, encryption_context, base64.b64encode(kms_response['CiphertextBlob']).decode()
+
+
+class MockKMSCryptoContext(KMSCryptoContext):
+    def __init__(self, aes_key: bytes, material_description: dict, encrypted_key: bytes, authenticated_encryption: bool = True):
+        super(MockKMSCryptoContext, self).__init__()
+        self.aes_key = aes_key
+        self.material_description = material_description
+        self.encrypted_key = encrypted_key
+        self.authenticated_encryption = authenticated_encryption
+
+    async def setup(self):
+        pass
+
+    async def close(self):
+        pass
+
+    async def get_decryption_aes_key(self, key: bytes, material_description: Dict[str, Any]) -> bytes:
+        return self.aes_key
+
+    async def get_encryption_aes_key(self) -> Tuple[bytes, Dict[str, str], str]:
+        return self.aes_key, self.material_description.copy(), base64.b64encode(self.encrypted_key).decode()
 
 
 class S3CSE(object):
@@ -263,7 +326,7 @@ class S3CSE(object):
                     raise DecryptError('Failed to decrypt, AEAD tag is incorrect. Possible key or IV are incorrect')
 
         else:
-            if range:
+            if range_start:
                 raise DecryptError('Cannot decrypt AES-CBC file with range')
 
             # AES/CBC/PKCS5Padding
@@ -289,7 +352,7 @@ class S3CSE(object):
 
         Metadata = Metadata if Metadata is not None else {}
 
-        aes_key, key_metadata, matdesc_metadata = await self._crypto_context.get_encryption_aes_key()
+        aes_key, matdesc_metadata, key_metadata = await self._crypto_context.get_encryption_aes_key()
 
         if is_kms and authenticated_crypto:
             Metadata['x-amz-cek-alg'] = 'AES/GCM/NoPadding'
@@ -316,7 +379,7 @@ class S3CSE(object):
         # For all V1 and V2
         Metadata['x-amz-unencrypted-content-length'] = str(len(Body))
         Metadata['x-amz-iv'] = base64.b64encode(iv).decode()
-        Metadata['x-amz-matdesc'] = matdesc_metadata
+        Metadata['x-amz-matdesc'] = json.dumps(matdesc_metadata)
 
         if is_kms:
             Metadata['x-amz-wrap-alg'] = 'kms'
