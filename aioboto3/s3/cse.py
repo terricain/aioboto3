@@ -247,22 +247,20 @@ class KMSCryptoContext(CryptoContext):
             CiphertextBlob=key,
             EncryptionContext=material_description
         )
-        aes_key: bytes = kms_data['Plaintext']
-        return aes_key
+        return kms_data['Plaintext']
 
     async def get_encryption_aes_key(self) -> Tuple[bytes, Dict[str, str], str]:
         if self.kms_key is None:
             raise ValueError('KMS Key not provided during initalisation, cannot decrypt key encrypting key')
 
         encryption_context = {'kms_cmk_id': self.kms_key}
-        kms_response = await self._kms_client.generate_data_key(
+        kms_resp = await self._kms_client.generate_data_key(
             KeyId=self.kms_key,
             EncryptionContext=encryption_context,
             KeySpec='AES_256'
         )
 
-        aes_key: bytes = kms_response['Plaintext']
-        return aes_key, encryption_context, base64.b64encode(kms_response['CiphertextBlob']).decode()
+        return kms_resp['Plaintext'], encryption_context, base64.b64encode(kms_resp['CiphertextBlob']).decode()
 
 
 class MockKMSCryptoContext(KMSCryptoContext):
