@@ -67,11 +67,11 @@ metadata and a base64'd encrypted form of the AES key.
 +---------------------------------------------------+-------------------------------------------+
 | CryptoContext Class                               | Description                               |
 +===================================================+===========================================+
-| :class:`~aioboto3.s3.cse.KMSCryptoContext`        | Performs CSE using KMS managed keys       |
+| :class:`aioboto3.s3.cse.KMSCryptoContext`         | Performs CSE using KMS managed keys       |
 +---------------------------------------------------+-------------------------------------------+
-| :class:`~aioboto3.s3.cse.AsymmetricCryptoContext` | Performs CSE using public / private keys  |
+| :class:`aioboto3.s3.cse.AsymmetricCryptoContext`  | Performs CSE using public / private keys  |
 +---------------------------------------------------+-------------------------------------------+
-| :class:`~aioboto3.s3.cse.SymmetricCryptoContext`  | Performs CSE using a single symmetric key |
+| :class:`aioboto3.s3.cse.SymmetricCryptoContext`   | Performs CSE using a single symmetric key |
 +---------------------------------------------------+-------------------------------------------+
 
 
