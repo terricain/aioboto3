@@ -95,9 +95,9 @@ async def download_fileobj(self, Bucket, Key, Fileobj, ExtraArgs=None, Callback=
         await asyncio.sleep(0.0)
 
 
-async def upload_fileobj(self, Fileobj: BinaryIO, Bucket: str, Key: str, ExtraArgs: Optional[Dict[str, Any]]=None,
-                         Callback: Optional[Callable[[int], None]]=None,
-                         Config: Optional[S3TransferConfig]=None):
+async def upload_fileobj(self, Fileobj: BinaryIO, Bucket: str, Key: str, ExtraArgs: Optional[Dict[str, Any]] = None,
+                         Callback: Optional[Callable[[int], None]] = None,
+                         Config: Optional[S3TransferConfig] = None):
     """Upload a file-like object to S3.
 
     The file-like object must be in binary mode.

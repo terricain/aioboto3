@@ -104,12 +104,17 @@ def s3_moto_patch(request, region, config, event_loop, s3_server):
         nonlocal s3_url
         if 'endpoint_url' not in kwargs and args[0] == 's3':
             kwargs['endpoint_url'] = s3_url
+            kwargs['aws_access_key_id'] = 'ABCDEFGABCDEFGABCDEF'
+            kwargs['aws_secret_access_key'] = 'YTYHRSshtrsTRHSrsTHRSTrthSRThsrTHsr'
+
         return orig_client(*args, **kwargs)
 
     def fake_res(*args, **kwargs):
         nonlocal s3_url
         if 'endpoint_url' not in kwargs and args[0] == 's3':
             kwargs['endpoint_url'] = s3_url
+            kwargs['aws_access_key_id'] = 'ABCDEFGABCDEFGABCDEF'
+            kwargs['aws_secret_access_key'] = 'YTYHRSshtrsTRHSrsTHRSTrthSRThsrTHsr'
         return orig_resource(*args, **kwargs)
 
     client_patcher = mock.patch('aioboto3.client', fake_client)
@@ -135,6 +140,8 @@ def kms_moto_patch(request, region, config, event_loop, kms_server):
         nonlocal kms_url
         if 'endpoint_url' not in kwargs and args[0] == 'kms':
             kwargs['endpoint_url'] = kms_url
+            kwargs['aws_access_key_id'] = 'ABCDEFGABCDEFGABCDEF'
+            kwargs['aws_secret_access_key'] = 'YTYHRSshtrsTRHSrsTHRSTrthSRThsrTHsr'
         return orig_client(*args, **kwargs)
 
     client_patcher = mock.patch('aioboto3.client', fake_client)

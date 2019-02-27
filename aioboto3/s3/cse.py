@@ -130,7 +130,8 @@ class AsymmetricCryptoContext(CryptoContext):
 
         random_bytes = os.urandom(32)
 
-        ciphertext = await self._loop.run_in_executor(None, lambda: (self.public_key.encrypt(random_bytes, padding.PKCS1v15())))
+        ciphertext = await self._loop.run_in_executor(
+            None, lambda: (self.public_key.encrypt(random_bytes, padding.PKCS1v15())))
 
         return random_bytes, {}, base64.b64encode(ciphertext).decode()
 
@@ -202,10 +203,12 @@ class SymmetricCryptoContext(CryptoContext):
         random_bytes = os.urandom(32)
 
         padder = PKCS7(AES.block_size).padder()
-        padded_result = await self._loop.run_in_executor(None, lambda: (padder.update(random_bytes) + padder.finalize()))
+        padded_result = await self._loop.run_in_executor(
+            None, lambda: (padder.update(random_bytes) + padder.finalize()))
 
         aesecb = self._cipher.encryptor()
-        encrypted_result = await self._loop.run_in_executor(None, lambda: (aesecb.update(padded_result) + aesecb.finalize()))
+        encrypted_result = await self._loop.run_in_executor(
+            None, lambda: (aesecb.update(padded_result) + aesecb.finalize()))
 
         return random_bytes, {}, base64.b64encode(encrypted_result).decode()
 
@@ -224,7 +227,8 @@ class KMSCryptoContext(CryptoContext):
     :param loop: Event loop
     """
 
-    def __init__(self, keyid: Optional[str] = None, kms_client_args: Optional[dict] = None, authenticated_encryption: bool = True):
+    def __init__(self, keyid: Optional[str] = None, kms_client_args: Optional[dict] = None,
+                 authenticated_encryption: bool = True):
         self.kms_key = keyid
         self.authenticated_encryption = authenticated_encryption
 
@@ -262,7 +266,8 @@ class KMSCryptoContext(CryptoContext):
 
 
 class MockKMSCryptoContext(KMSCryptoContext):
-    def __init__(self, aes_key: bytes, material_description: dict, encrypted_key: bytes, authenticated_encryption: bool = True):
+    def __init__(self, aes_key: bytes, material_description: dict, encrypted_key: bytes,
+                 authenticated_encryption: bool = True):
         super(MockKMSCryptoContext, self).__init__()
         self.aes_key = aes_key
         self.material_description = material_description
@@ -377,7 +382,9 @@ class S3CSE(object):
             body = await self._decrypt_v1(file_data, metadata, actual_range_start)
         else:
             # Crypto V2
-            body = await self._decrypt_v2(file_data, metadata, whole_file_length, actual_range_start, desired_range_start, desired_range_end)
+            body = await self._decrypt_v2(file_data, metadata, whole_file_length,
+                                          actual_range_start, desired_range_start,
+                                          desired_range_end)
 
         s3_response['Body'] = DummyAIOFile(body)
 
@@ -411,7 +418,8 @@ class S3CSE(object):
         return result
 
     async def _decrypt_v2(self, file_data: bytes, metadata: Dict[str, str], entire_file_length: int,
-                          range_start: Optional[int] = None, desired_start: Optional[int] = None, desired_end: Optional[int] = None) -> bytes:
+                          range_start: Optional[int] = None, desired_start: Optional[int] = None,
+                          desired_end: Optional[int] = None) -> bytes:
 
         decryption_key = base64.b64decode(metadata['x-amz-key-v2'])
         material_description = json.loads(metadata['x-amz-matdesc'])
@@ -464,10 +472,12 @@ class S3CSE(object):
 
             # AES/CBC/PKCS5Padding
             aescbc = Cipher(AES(aes_key), CBC(iv), backend=self._backend).decryptor()
-            padded_result = await self._loop.run_in_executor(None, lambda: (aescbc.update(file_data) + aescbc.finalize()))
+            padded_result = await self._loop.run_in_executor(
+                None, lambda: (aescbc.update(file_data) + aescbc.finalize()))
 
             unpadder = PKCS7(AES.block_size).unpadder()
-            result = await self._loop.run_in_executor(None, lambda: (unpadder.update(padded_result) + unpadder.finalize()))
+            result = await self._loop.run_in_executor(
+                None, lambda: (unpadder.update(padded_result) + unpadder.finalize()))
 
         return result
 
