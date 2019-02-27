@@ -1,33 +1,35 @@
 # JAVA S3 Client-Side Encryption Example
 
-Its horrible java, controlled via ENV vars
+Its horrible java
 
-You'll also need bouncycastle set up, then you can run `gradle run`
+You'll also need bouncycastle set up, then you can run `gradle fatJar`
+
+## Options
+
+This will output the options of the jar
+
+```
+java -jar build/libs/s3cse-1.0.jar -h
+```
 
 ## KMS Encryption
 
-AUTHENTICATED_CRYPTO=1;S3_KEY=test-kms-cse
-
-* CRYPTO_TYPE=kms - Use KMS crypto
-* S3_BUCKET_NAME - Bucket name
-* S3_KEY - path to create file in bucket
-* REGION - KMS Region
-* KMS_ID - KMS key id or `alias/blah`
-* AUTHENTICATED_CRYPTO=1 - if you want AES-GCM crypto, make sure this env var is present
+```
+java -jar build/libs/s3cse-1.0.jar --crypto-type kms --bucket-name bucket1 --key-name test-cse-kms \
+                                   --region eu-west-1 --kms-key-id alias/someKey --authenticated-crypto
+```
 
 
 ## Symmetric Encryption
 
-* CRYPTO_TYPE=symmetric - Use KMS crypto
-* S3_BUCKET_NAME - Bucket name
-* S3_KEY - path to create file in bucket
-* REGION - KMS Region
-* KEY_DIR - Directory to store key
+```
+java -jar build/libs/s3cse-1.0.jar --crypto-type symmetric --bucket-name bucket1 --key-name test-cse-symmetric \
+                                   --region eu-west-1 --key-dir ./keys
+```
 
 ## Asymmetric Encryption
 
-* CRYPTO_TYPE=asymmetric - Use KMS crypto
-* S3_BUCKET_NAME - Bucket name
-* S3_KEY - path to create file in bucket
-* REGION - KMS Region
-* KEY_DIR - Directory to store key
+```
+java -jar build/libs/s3cse-1.0.jar --crypto-type asymmetric --bucket-name bucket1 --key-name test-cse-asymmetric \
+                                   --region eu-west-1 --key-dir ./keys
+```

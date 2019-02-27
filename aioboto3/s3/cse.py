@@ -16,6 +16,9 @@ from cryptography.hazmat.primitives.ciphers.algorithms import AES
 from cryptography.hazmat.primitives.ciphers.modes import CBC, CTR, ECB
 from cryptography.hazmat.primitives.padding import PKCS7
 from cryptography.exceptions import InvalidTag
+from cryptography.hazmat.backends.openssl.rsa import _RSAPrivateKey, _RSAPublicKey
+from cryptography.hazmat.primitives.asymmetric import padding
+from cryptography.hazmat.primitives import serialization
 
 
 RANGE_REGEX = re.compile(r'bytes=(?P<start>\d+)-(?P<end>\d+)*')
@@ -72,11 +75,64 @@ class CryptoContext(object):
         raise NotImplementedError()
 
 
+class AsymmetricCryptoContext(CryptoContext):
+    def __init__(self, public_key: Optional[_RSAPublicKey] = None,
+                 private_key: Optional[_RSAPrivateKey] = None, loop: Optional[asyncio.AbstractEventLoop] = None):
+        self.public_key = public_key
+        self.private_key = private_key
+
+        self._loop = loop
+        if not loop:
+            self._loop = asyncio.get_event_loop()
+
+    async def get_decryption_aes_key(self, key: bytes, material_description: Dict[str, Any]) -> bytes:
+        """
+        Get decryption key for a given S3 object
+
+        :param key: Base64 decoded version of x-amz-key-v2
+        :param material_description: JSON decoded x-amz-matdesc
+        :return: Raw AES key bytes
+        """
+        if self.private_key is None:
+            raise ValueError('Private key not provided during initialisation, cannot decrypt key encrypting key')
+
+        plaintext = await self._loop.run_in_executor(None, lambda: (self.private_key.decrypt(key, padding.PKCS1v15())))
+
+        return plaintext
+
+    async def get_encryption_aes_key(self) -> Tuple[bytes, Dict[str, str], str]:
+        """
+        Get encryption key to encrypt an S3 object
+
+        :return: Raw AES key bytes, Stringified JSON x-amz-matdesc, Base64 encoded x-amz-key-v2
+        """
+        if self.public_key is None:
+            raise ValueError('Public key not provided during initialisation, cannot encrypt key encrypting key')
+
+        random_bytes = os.urandom(32)
+
+        ciphertext = await self._loop.run_in_executor(None, lambda: (self.public_key.encrypt(random_bytes, padding.PKCS1v15())))
+
+        return random_bytes, {}, base64.b64encode(ciphertext).decode()
+
+    @staticmethod
+    def from_der_public_key(data: bytes) -> _RSAPublicKey:
+        return serialization.load_der_public_key(data, default_backend())
+
+    @staticmethod
+    def from_der_private_key(data: bytes, password: Optional[str] = None) -> _RSAPrivateKey:
+        return serialization.load_der_private_key(data, password, default_backend())
+
+
 class SymmetricCryptoContext(CryptoContext):
-    def __init__(self, key: bytes):
+    def __init__(self, key: bytes, loop: Optional[asyncio.AbstractEventLoop] = None):
         self.key = key
         self._backend = default_backend()
         self._cipher = Cipher(AES(self.key), ECB(), backend=self._backend)
+
+        self._loop = loop
+        if not loop:
+            self._loop = asyncio.get_event_loop()
 
     async def get_decryption_aes_key(self, key: bytes, material_description: Dict[str, Any]) -> bytes:
         """
@@ -89,10 +145,10 @@ class SymmetricCryptoContext(CryptoContext):
 
         # So it seems when java just calls Cipher.getInstance('AES') it'll default to AES/ECB/PKCS5Padding
         aesecb = self._cipher.decryptor()
-        padded_result = aesecb.update(key) + aesecb.finalize()
+        padded_result = await self._loop.run_in_executor(None, lambda: (aesecb.update(key) + aesecb.finalize()))
 
         unpadder = PKCS7(AES.block_size).unpadder()
-        result = unpadder.update(padded_result) + unpadder.finalize()
+        result = await self._loop.run_in_executor(None, lambda: (unpadder.update(padded_result) + unpadder.finalize()))
 
         return result
 
@@ -106,12 +162,12 @@ class SymmetricCryptoContext(CryptoContext):
         random_bytes = os.urandom(32)
 
         padder = PKCS7(AES.block_size).padder()
-        padded_result = padder.update(random_bytes) + padder.finalize()
+        padded_result = await self._loop.run_in_executor(None, lambda: (padder.update(random_bytes) + padder.finalize()))
 
         aesecb = self._cipher.encryptor()
-        encrypted_result = aesecb.update(padded_result) + aesecb.finalize()
+        encrypted_result = await self._loop.run_in_executor(None, lambda: (aesecb.update(padded_result) + aesecb.finalize()))
 
-        return random_bytes, {}, base64.b64encode(encrypted_result)
+        return random_bytes, {}, base64.b64encode(encrypted_result).decode()
 
 
 class KMSCryptoContext(CryptoContext):
@@ -139,7 +195,7 @@ class KMSCryptoContext(CryptoContext):
 
     async def get_encryption_aes_key(self) -> Tuple[bytes, Dict[str, str], str]:
         if self.kms_key is None:
-            raise ValueError('KMS Key not provided during initalisation, cannot encrypt')
+            raise ValueError('KMS Key not provided during initalisation, cannot decrypt key encrypting key')
 
         encryption_context = {'kms_cmk_id': self.kms_key}
         kms_response = await self._kms_client.generate_data_key(
@@ -244,7 +300,7 @@ class S3CSE(object):
 
         if 'x-amz-key' in metadata:
             # Crypto V1
-            body = await self._decrypt_v1(file_data, metadata)
+            body = await self._decrypt_v1(file_data, metadata, actual_range_start)
         else:
             # Crypto V2
             body = await self._decrypt_v2(file_data, metadata, whole_file_length, actual_range_start, desired_range_start, desired_range_end)
@@ -253,7 +309,10 @@ class S3CSE(object):
 
         return s3_response
 
-    async def _decrypt_v1(self, file_data: bytes, metadata: Dict[str, str]) -> bytes:
+    async def _decrypt_v1(self, file_data: bytes, metadata: Dict[str, str], range_start: Optional[int] = None) -> bytes:
+        if range_start:
+            raise DecryptError('Cant do range get when not using KMS encryption')
+
         decryption_key = base64.b64decode(metadata['x-amz-key'])
         material_description = json.loads(metadata['x-amz-matdesc'])
 

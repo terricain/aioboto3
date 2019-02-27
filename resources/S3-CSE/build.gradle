@@ -6,6 +6,8 @@
  * user guide available at https://docs.gradle.org/4.3/userguide/java_library_plugin.html
  */
 
+version = '1.0'
+
 // Apply the java-library plugin to add support for Java Library
 apply plugin: 'java-library'
 
@@ -23,6 +25,7 @@ dependencies {
     // This dependency is used internally, and not exposed to consumers on their own compile classpath.
     implementation 'com.google.guava:guava:23.0'
 
+    compile group: 'commons-cli', name: 'commons-cli', version: '1.4'
     compile 'com.amazonaws:aws-java-sdk-bom:1.11.503'
     compile 'com.amazonaws:aws-java-sdk-s3:1.11.503'
 }
@@ -35,4 +38,13 @@ task run(type:JavaExec) {
     main = 'demo.UploadObjectKMSKey'
     classpath = sourceSets.main.runtimeClasspath
 
+}
+
+task fatJar(type: Jar) {
+    manifest {
+        attributes 'Implementation-Title': 'S3 CSE Example', 'Implementation-Version': version, 'Main-Class': 'demo.UploadObjectKMSKey'
+    }
+    baseName = project.name
+    from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }
+    with jar
 }

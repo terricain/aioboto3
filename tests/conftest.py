@@ -6,6 +6,7 @@ import mock
 
 from aiobotocore.config import AioConfig
 from aioboto3.session import Session
+import aioboto3
 
 
 @pytest.fixture(scope="session", params=[True, False],
@@ -93,7 +94,7 @@ def s3_client(request, region, config, event_loop, s3_server, bucket_name):
     request.addfinalizer(fin)
 
 
-@pytest.fixture
+@pytest.fixture(scope='function')
 def s3_moto_patch(request, region, config, event_loop, s3_server):
     from aioboto3 import client as orig_client, resource as orig_resource
 
@@ -121,6 +122,7 @@ def s3_moto_patch(request, region, config, event_loop, s3_server):
 
     client_patcher.stop()
     resource_patcher.stop()
+    aioboto3.DEFAULT_SESSION = None
 
 
 @pytest.fixture
