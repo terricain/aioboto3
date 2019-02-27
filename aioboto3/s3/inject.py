@@ -24,8 +24,7 @@ async def download_file(self, Bucket, Key, Filename, ExtraArgs=None, Callback=No
         s3.meta.client.download_file('mybucket', 'hello.txt', '/tmp/hello.txt')
 
     Similar behavior as S3Transfer's download_file() method,
-    except that parameters are capitalized. Detailed examples can be found at
-    :ref:`S3Transfer's Usage <ref_s3transfer_usage>`.
+    except that parameters are capitalized.
     """
     with open(Filename, 'wb') as open_file:
         await download_fileobj(self, Bucket, Key, open_file, ExtraArgs=ExtraArgs, Callback=Callback, Config=Config)
@@ -215,8 +214,7 @@ async def upload_file(self, Filename, Bucket, Key, ExtraArgs=None, Callback=None
         s3.meta.client.upload_file('/tmp/hello.txt', 'mybucket', 'hello.txt')
 
     Similar behavior as S3Transfer's upload_file() method,
-    except that parameters are capitalized. Detailed examples can be found at
-    :ref:`S3Transfer's Usage <ref_s3transfer_usage>`.
+    except that parameters are capitalized.
     """
     with open(Filename, 'rb') as open_file:
         await upload_fileobj(self, open_file, Bucket, Key, ExtraArgs=ExtraArgs, Callback=Callback, Config=Config)

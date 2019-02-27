@@ -1,6 +1,7 @@
 import asyncio
 import base64
 import json
+import inspect
 import os
 import re
 import sys
@@ -29,6 +30,8 @@ JAVA_LONG_MAX_VALUE = 9223372036854775807
 
 # Just so it looks like the object aiohttp returns
 class DummyAIOFile(object):
+    """So that response['Body'].read() presents the same way as a normal S3 get"""
+
     def __init__(self, data: bytes):
         self.file = BytesIO(data)
 
@@ -51,10 +54,15 @@ class DecryptError(Exception):
 
 class CryptoContext(object):
     async def setup(self):
+        """
+        Coroutine to perform any setup
+        """
         pass
 
     async def close(self):
-        pass
+        """
+        Coroutine to perform any teardown
+        """
 
     async def get_decryption_aes_key(self, key: bytes, material_description: Dict[str, Any]) -> bytes:
         """
@@ -76,8 +84,19 @@ class CryptoContext(object):
 
 
 class AsymmetricCryptoContext(CryptoContext):
+    """
+    Crypto context which uses public-private key cryptography.
+
+    The public and private keys need to be loaded in by ``cryptography.hazmat.primitives.serialization.*``
+
+    :param public_key: Public key object
+    :param private_key: Private key object
+    :param loop: Event loop
+    """
+
     def __init__(self, public_key: Optional[_RSAPublicKey] = None,
                  private_key: Optional[_RSAPrivateKey] = None, loop: Optional[asyncio.AbstractEventLoop] = None):
+
         self.public_key = public_key
         self.private_key = private_key
 
@@ -89,7 +108,7 @@ class AsymmetricCryptoContext(CryptoContext):
         """
         Get decryption key for a given S3 object
 
-        :param key: Base64 decoded version of x-amz-key-v2
+        :param key: Base64 decoded version of x-amz-key
         :param material_description: JSON decoded x-amz-matdesc
         :return: Raw AES key bytes
         """
@@ -104,7 +123,7 @@ class AsymmetricCryptoContext(CryptoContext):
         """
         Get encryption key to encrypt an S3 object
 
-        :return: Raw AES key bytes, Stringified JSON x-amz-matdesc, Base64 encoded x-amz-key-v2
+        :return: Raw AES key bytes, Stringified JSON x-amz-matdesc, Base64 encoded x-amz-key
         """
         if self.public_key is None:
             raise ValueError('Public key not provided during initialisation, cannot encrypt key encrypting key')
@@ -117,14 +136,35 @@ class AsymmetricCryptoContext(CryptoContext):
 
     @staticmethod
     def from_der_public_key(data: bytes) -> _RSAPublicKey:
+        """
+        Convert public key in DER encoding to a Public key object
+
+        :param data: public key bytes
+        """
+
         return serialization.load_der_public_key(data, default_backend())
 
     @staticmethod
     def from_der_private_key(data: bytes, password: Optional[str] = None) -> _RSAPrivateKey:
+        """
+        Convert private key in DER encoding to a Private key object
+
+        :param data: private key bytes
+        :param password: password the private key is encrypted with
+        """
         return serialization.load_der_private_key(data, password, default_backend())
 
 
 class SymmetricCryptoContext(CryptoContext):
+    """
+    Crypto context which uses symmetric cryptography.
+
+    The key field should be a valid AES key.
+
+    :param key: Key bytes
+    :param loop: Event loop
+    """
+
     def __init__(self, key: bytes, loop: Optional[asyncio.AbstractEventLoop] = None):
         self.key = key
         self._backend = default_backend()
@@ -138,7 +178,7 @@ class SymmetricCryptoContext(CryptoContext):
         """
         Get decryption key for a given S3 object
 
-        :param key: Base64 decoded version of x-amz-key-v2
+        :param key: Base64 decoded version of x-amz-key
         :param material_description: JSON decoded x-amz-matdesc
         :return: Raw AES key bytes
         """
@@ -156,7 +196,7 @@ class SymmetricCryptoContext(CryptoContext):
         """
         Get encryption key to encrypt an S3 object
 
-        :return: Raw AES key bytes, Stringified JSON x-amz-matdesc, Base64 encoded x-amz-key-v2
+        :return: Raw AES key bytes, Stringified JSON x-amz-matdesc, Base64 encoded x-amz-key
         """
 
         random_bytes = os.urandom(32)
@@ -171,6 +211,19 @@ class SymmetricCryptoContext(CryptoContext):
 
 
 class KMSCryptoContext(CryptoContext):
+    """
+    Crypto context which uses symmetric cryptography.
+
+    The key field should be a valid AES key.
+
+    E.g. if you wanted to set the KMS region, add kms_client_args={'region_name': 'eu-west-1'}
+
+    :param key: Key bytes
+    :param kms_client_args: Will be expanded when getting a KMS client
+    :param authenticated_encryption: Uses AES-GCM instead of AES-CBC (also allows range gets of files)
+    :param loop: Event loop
+    """
+
     def __init__(self, keyid: Optional[str] = None, kms_client_args: Optional[dict] = None, authenticated_encryption: bool = True):
         self.kms_key = keyid
         self.authenticated_encryption = authenticated_encryption
@@ -230,6 +283,18 @@ class MockKMSCryptoContext(KMSCryptoContext):
 
 
 class S3CSE(object):
+    """
+    S3 Client-side encryption wrapper.
+
+    To change S3 region add s3_client_args={'region_name': 'eu-west-1'}
+
+    To use this object, either use it with ``async with S3CSE(...) as s3_cse:``
+    Or run the setup() and close() coro's respectively
+
+    :param crypto_context: Takes a cryto context object from above
+    :param s3_client_args: Optional dict of S3 client args
+    """
+
     def __init__(self, crypto_context: CryptoContext, s3_client_args: Optional[dict] = None):
         self._loop = None
         self._backend = default_backend()
@@ -260,6 +325,15 @@ class S3CSE(object):
 
     # noinspection PyPep8Naming
     async def get_object(self, Bucket: str, Key: str, **kwargs) -> dict:
+        """
+        S3 GetObject. Takes same args as Boto3 documentation
+
+        Decrypts any CSE
+
+        :param Bucket: S3 Bucket
+        :param Key: S3 Key (filepath)
+        :return: returns same response as a normal S3 get_object
+        """
         if self._s3_client is None:
             await self.setup()
 
@@ -398,11 +472,23 @@ class S3CSE(object):
         return result
 
     async def put_object(self, Body: Union[bytes, IO], Bucket: str, Key: str, Metadata: Dict = None, **kwargs):
+        """
+        PutObject. Takes same args as Boto3 documentation
+
+        Encrypts files
+
+        :param: Body: File data
+        :param Bucket: S3 Bucket
+        :param Key: S3 Key (filepath)
+        """
         if self._s3_client is None:
             await self.setup()
 
         if hasattr(Body, 'read'):
-            Body = Body.read()
+            if inspect.iscoroutinefunction(Body.read):
+                Body = await Body.read()
+            else:
+                Body = Body.read()
 
         # We do some different V2 stuff if using kms
         is_kms = isinstance(self._crypto_context, KMSCryptoContext)

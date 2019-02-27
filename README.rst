@@ -95,6 +95,7 @@ Amazon S3 Client-Size Encryption
 --------------------------------
 
 Boto3 doesn't support AWS Client-Side encryption so until they do I've added basic support for it. Docs here CSE_
+
 CSE requires the python ``cryptography`` library so if you do ``pip install aioboto3[s3cse]`` that'll also include cryptography.
 
 This library currently supports Client-side encryption using KMS-Managed master keys performing envelope encryption
