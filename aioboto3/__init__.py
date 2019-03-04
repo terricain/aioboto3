@@ -6,7 +6,7 @@ from aioboto3.session import Session
 
 __author__ = """Terry Cain"""
 __email__ = 'terry@terrys-home.co.uk'
-__version__ = '6.2.0'
+__version__ = '6.2.1'
 
 DEFAULT_SESSION = None
 
