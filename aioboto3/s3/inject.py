@@ -200,8 +200,7 @@ async def upload_fileobj(self, Fileobj: BinaryIO, Bucket: str, Key: str, ExtraAr
             UploadId=upload_id
         )
 
-        # Dont know what errors it returns so this is a placeholder
-        raise ClientError({'Error': {'Code': '404', 'Message': 'Not Found'}}, 'HeadObject')
+        raise
 
 
 async def upload_file(self, Filename, Bucket, Key, ExtraArgs=None, Callback=None, Config=None):
