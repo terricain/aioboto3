@@ -373,7 +373,7 @@ class S3CSE(object):
 
         if 'x-amz-key' not in metadata and 'x-amz-key-v2' not in metadata:
             # No crypto
-            return file_data
+            return s3_response
 
         if 'x-amz-key' in metadata:
             # Crypto V1
