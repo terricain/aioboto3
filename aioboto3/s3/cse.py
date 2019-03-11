@@ -367,7 +367,6 @@ class S3CSE(object):
             kwargs['Range'] = 'bytes={0}-{1}'.format(actual_range_start, actual_range_end)
 
         s3_response = await self._s3_client.get_object(Bucket=Bucket, Key=Key, **kwargs)
-        file_data = await s3_response['Body'].read()
         metadata = s3_response['Metadata']
         whole_file_length = int(s3_response['ResponseMetadata']['HTTPHeaders']['content-length'])
 
@@ -377,9 +376,13 @@ class S3CSE(object):
 
         if 'x-amz-key' in metadata:
             # Crypto V1
+            # Todo move the file obj into the decrypt to do streaming
+            file_data = await s3_response['Body'].read()
             body = await self._decrypt_v1(file_data, metadata, actual_range_start)
         else:
             # Crypto V2
+            # Todo move the file obj into the decrypt to do streaming
+            file_data = await s3_response['Body'].read()
             body = await self._decrypt_v2(file_data, metadata, whole_file_length,
                                           actual_range_start, desired_range_start,
                                           desired_range_end)
