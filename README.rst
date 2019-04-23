@@ -68,8 +68,13 @@ Simple example of using aioboto3 to put items into a dynamodb table
             result = await table.query(
                 KeyConditionExpression=Key('pk').eq('test1')
             )
-
-            print(result['Items'])
+            
+            # Example batch write 
+            more_items = [{'pk': 't2', 'col1': 'c1'}, \
+                          {'pk': 't3', 'col1': 'c3'}]
+            async with table.batch_writer() as batch:
+                for item_ in more_items:
+                    await batch.put_item(Item=item_)
 
     loop = asyncio.get_event_loop()
     loop.run_until_complete(main())
