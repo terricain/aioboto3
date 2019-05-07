@@ -68,8 +68,13 @@ Simple example of using aioboto3 to put items into a dynamodb table
             result = await table.query(
                 KeyConditionExpression=Key('pk').eq('test1')
             )
-
-            print(result['Items'])
+            
+            # Example batch write 
+            more_items = [{'pk': 't2', 'col1': 'c1'}, \
+                          {'pk': 't3', 'col1': 'c3'}]
+            async with table.batch_writer() as batch:
+                for item_ in more_items:
+                    await batch.put_item(Item=item_)
 
     loop = asyncio.get_event_loop()
     loop.run_until_complete(main())
@@ -89,6 +94,8 @@ Fixed:
 - ``s3_client.upload_file*``  This is performed by the s3transfer module. -- Patched with custom multipart upload
 - ``s3_client.copy``  This is performed by the s3transfer module. -- Patched to use get_object -> upload_fileobject
 - ``dynamodb_resource.Table.batch_writer``  This now returns an async context manager which performs the same function
+- Resource waiters - You can now await waiters which are part of resource objects, not just client waiters, e.g. ``await dynamodbtable.wait_until_exists()``
+- Resource object properties are normally autoloaded, now they are all co-routines and the metadata they come from will be loaded on first await and then cached thereafter.
 
 
 Amazon S3 Client-Size Encryption

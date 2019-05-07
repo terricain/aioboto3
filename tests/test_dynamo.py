@@ -1,3 +1,5 @@
+import asyncio
+
 from boto3.dynamodb.conditions import Key
 import pytest
 
@@ -90,3 +92,38 @@ async def test_dynamo_resource_batch_write_flush_amount(event_loop, dynamodb_res
     # On exit it should flush so count should be 6
     result = await table.scan()
     assert result['Count'] == 9
+
+
+@pytest.mark.asyncio
+async def test_dynamo_resource_property(event_loop, dynamodb_resource, random_table_name):
+    await dynamodb_resource.create_table(
+        TableName=random_table_name,
+        KeySchema=[{'AttributeName': 'pk', 'KeyType': 'HASH'}],
+        AttributeDefinitions=[{'AttributeName': 'pk', 'AttributeType': 'S'}],
+        ProvisionedThroughput={'ReadCapacityUnits': 123, 'WriteCapacityUnits': 123}
+    )
+
+    table = dynamodb_resource.Table(random_table_name)
+
+    table_arn = table.table_arn
+    assert asyncio.iscoroutine(table_arn)
+
+    result = await table_arn
+    assert result is not None
+
+
+@pytest.mark.asyncio
+async def test_dynamo_resource_waiter(event_loop, dynamodb_resource, random_table_name):
+    await dynamodb_resource.create_table(
+        TableName=random_table_name,
+        KeySchema=[{'AttributeName': 'pk', 'KeyType': 'HASH'}],
+        AttributeDefinitions=[{'AttributeName': 'pk', 'AttributeType': 'S'}],
+        ProvisionedThroughput={'ReadCapacityUnits': 123, 'WriteCapacityUnits': 123}
+    )
+
+    table = dynamodb_resource.Table(random_table_name)
+
+    await table.wait_until_exists()
+
+    result = await table.table_arn
+    assert result is not None
