@@ -68,6 +68,77 @@ class AIOServiceAction(ServiceAction):
         return self._response_handler(parent, params, response)
 
 
+class AIOWaiterAction(object):
+    """
+    A class representing a callable waiter action on a resource, for example
+    ``s3.Bucket('foo').wait_until_bucket_exists()``.
+    The waiter action may construct parameters from existing resource
+    identifiers.
+
+    :type waiter_model: :py:class`~boto3.resources.model.Waiter`
+    :param waiter_model: The action waiter.
+    :type waiter_resource_name: string
+    :param waiter_resource_name: The name of the waiter action for the
+                                 resource. It usually begins with a
+                                 ``wait_until_``
+    """
+    def __init__(self, waiter_model, waiter_resource_name):
+        self._waiter_model = waiter_model
+        self._waiter_resource_name = waiter_resource_name
+
+    def __call__(self, parent, *args, **kwargs):
+        """
+        Perform the wait operation after building operation
+        parameters.
+
+        :type parent: :py:class:`~boto3.resources.base.ServiceResource`
+        :param parent: The resource instance to which this action is attached.
+        """
+        client_waiter_name = xform_name(self._waiter_model.waiter_name)
+
+        # First, build predefined params and then update with the
+        # user-supplied kwargs, which allows overriding the pre-built
+        # params if needed.
+        params = create_request_parameters(parent, self._waiter_model)
+        params.update(kwargs)
+
+        logger.debug('Calling %s:%s with %r',
+                    parent.meta.service_name,
+                    self._waiter_resource_name, params)
+
+        client = parent.meta.client
+        waiter = client.get_waiter(client_waiter_name)
+        response = waiter.wait(**params)
+
+        logger.debug('Response: %r', response)
+
+    async def async_call(self, parent, *args, **kwargs):
+        """
+        Perform the wait operation after building operation
+        parameters.
+
+        :type parent: :py:class:`~boto3.resources.base.ServiceResource`
+        :param parent: The resource instance to which this action is attached.
+        """
+        client_waiter_name = xform_name(self._waiter_model.waiter_name)
+
+        # First, build predefined params and then update with the
+        # user-supplied kwargs, which allows overriding the pre-built
+        # params if needed.
+        params = create_request_parameters(parent, self._waiter_model)
+        params.update(kwargs)
+
+        logger.debug('Calling %s:%s with %r',
+                    parent.meta.service_name,
+                    self._waiter_resource_name, params)
+
+        client = parent.meta.client
+        waiter = client.get_waiter(client_waiter_name)
+        response = await waiter.wait(**params)
+
+        logger.debug('Response: %r', response)
+
+
 class AIOBoto3ServiceResource(ServiceResource):
     async def __aenter__(self):
         return self
@@ -238,3 +309,26 @@ class AIOBoto3ResourceFactory(ResourceFactory):
         do_action.__name__ = str(action_model.name)
         do_action.__doc__ = lazy_docstring
         return do_action
+
+    def _create_waiter(factory_self, resource_waiter_model, resource_name,
+                       service_context):
+        """
+        Creates a new wait method for each resource where both a waiter and
+        resource model is defined.
+        """
+        waiter = AIOWaiterAction(resource_waiter_model,
+                                 waiter_resource_name=resource_waiter_model.name)
+
+        async def do_waiter(self, *args, **kwargs):
+            await waiter.async_call(self, *args, **kwargs)
+
+        do_waiter.__name__ = str(resource_waiter_model.name)
+        do_waiter.__doc__ = docstring.ResourceWaiterDocstring(
+            resource_name=resource_name,
+            event_emitter=factory_self._emitter,
+            service_model=service_context.service_model,
+            resource_waiter_model=resource_waiter_model,
+            service_waiter_model=service_context.service_waiter_model,
+            include_signature=False
+        )
+        return do_waiter
