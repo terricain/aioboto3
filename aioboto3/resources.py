@@ -6,6 +6,7 @@ from boto3.resources.base import ServiceResource, ResourceMeta
 from boto3.resources.action import ServiceAction
 from boto3.docs import docstring
 from botocore import xform_name
+from boto3.exceptions import ResourceLoadException
 from boto3.resources.params import create_request_parameters
 
 
@@ -332,3 +333,36 @@ class AIOBoto3ResourceFactory(ResourceFactory):
             include_signature=False
         )
         return do_waiter
+
+    def _create_autoload_property(factory_self, resource_name, name,
+                                  snake_cased, member_model, service_context):
+        """
+        Creates a new property on the resource to lazy-load its value
+        via the resource's ``load`` method (if it exists).
+        """
+        # The property loader will check to see if this resource has already
+        # been loaded and return the cached value if possible. If not, then
+        # it first checks to see if it CAN be loaded (raise if not), then
+        # calls the load before returning the value.
+        async def property_loader(self):
+            if self.meta.data is None:
+                if hasattr(self, 'load'):
+                    await self.load()
+                else:
+                    raise ResourceLoadException(
+                        '{0} has no load method'.format(
+                            self.__class__.__name__))
+
+            return self.meta.data.get(name)
+
+        property_loader.__name__ = str(snake_cased)
+        property_loader.__doc__ = docstring.AttributeDocstring(
+            service_name=service_context.service_name,
+            resource_name=resource_name,
+            attr_name=snake_cased,
+            event_emitter=factory_self._emitter,
+            attr_model=member_model,
+            include_signature=False
+        )
+
+        return property(property_loader)
