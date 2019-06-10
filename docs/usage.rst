@@ -86,8 +86,7 @@ of ``on_exit_loop_sleep``. The ``on_exit_loop_sleep`` argument will add an async
 S3 Examples
 -----------
 
-Here are some examples of uploading, checking if an S3 object 
-exists and streaming a file from S3, serving via aiohttp.
+Here are some examples of uploading and streaming a file from S3, serving via aiohttp.
 
 Upload
 ------
@@ -102,65 +101,20 @@ Here we upload from a file object and stream it from a file descriptor.
         filename: str,
         staging_path: Path,
         bucket: str,
-        aws_secret_access_key: str,
-        aws_access_key_id: str,
     ) -> str:
         blob_s3_key = f"{suite}/{release}/{filename}"
-        if not staging_path.exists():
-            LOG.error(
-                f"Unable to upload {blob_s3_key} - "
-                + f"Staging file {staging_path} does not exist"
-            )
-            return ""
 
-        async with aioboto3.client(
-            "s3",
-            aws_secret_access_key=aws_secret_access_key_write,
-            aws_access_key_id=aws_access_key_id_write,
-        ) as s3:
+        async with aioboto3.client("s3") as s3:
             try:
                 with staging_path.open("rb") as spfp:
                     LOG.info(f"Uploading {blob_s3_key} to s3")
                     await s3.upload_fileobj(spfp, bucket, blob_s3_key)
                     LOG.info(f"Finished Uploading {blob_s3_key} to s3")
             except Exception as e:
-                LOG.error(
-                    f"Unable to s3 upload {staging_path} to {blob_s3_key}: "
-                    + f"{e} ({type(e)})"
-                )
+                LOG.error(f"Unable to s3 upload {staging_path} to {blob_s3_key}: {e} ({type(e)})")
                 return ""
 
         return f"s3://{blob_s3_key}"
-
-Object Exists
--------------
-
-Here we check to see if an object already exists
-
-.. code-block:: python3
-
-    async def blob_exists(
-        suite: str,
-        release: str,
-        filename: str,
-        bucket: str,
-        aws_secret_access_key: str,
-        aws_access_key_id: str,
-    ) -> bool:
-        blob_s3_key = f"{suite}/{release}/{filename}"
-        async with aioboto3.client(
-            "s3",
-            aws_secret_access_key=aws_secret_access_key,
-            aws_access_key_id=aws_access_key_id,
-        ) as s3:
-            object_list = await s3.list_objects_v2(
-                Bucket=bucket, Prefix=blob_s3_key
-            )
-            for obj in object_list.get("Contents", []):
-                if obj["Key"] == blob_s3_key:
-                    return True
-
-        return False
 
 Streaming Download
 ------------------
@@ -177,23 +131,13 @@ Here we pull the object from S3 in chunks and serve it out to a HTTP request via
         release: str,
         filename: str,
         bucket: str,
-        aws_secret_access_key: str,
-        aws_access_key_id: str,
         request: web.Request,
-        chunk_size: int = 69
+        chunk_size: int = 69 * 1024
     ) -> web.Response:
         blob_s3_key = f"{suite}/{release}/{filename}"
 
-        if not await blob_exists(suite, release, filename):
-            # Not included but generate an error response for the HTTP Restful API
-            return self._gen_download_fnf_error(blob_s3_key)
-
-        async with aioboto3.client(
-            "s3",
-            aws_secret_access_key=aws_secret_access_key,
-            aws_access_key_id=aws_access_key_id,
-        ) as s3:
-            LOG.info(f"Serving {self.bucket} {blob_s3_key}")
+        async with aioboto3.client("s3") as s3:
+            LOG.info(f"Serving {bucket} {blob_s3_key}")
             s3_ob = await s3.get_object(Bucket=bucket, Key=blob_s3_key)
 
             ob_info = s3_ob["ResponseMetadata"]["HTTPHeaders"]
