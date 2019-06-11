@@ -82,6 +82,87 @@ Use the batch writer to take care of dynamodb writing retries etc...
 The ``batch_writer()`` can take a keyword argument of ``flush_amount`` which will change the desired flush amount and a keyword argument
 of ``on_exit_loop_sleep``. The ``on_exit_loop_sleep`` argument will add an async sleep in the flush loop when you exit the context manager.
 
+
+S3 Examples
+-----------
+
+Here are some examples of uploading and streaming a file from S3, serving via aiohttp.
+
+Upload
+------
+
+Here we upload from a file object and stream it from a file descriptor.
+
+.. code-block:: python3
+
+    async def upload(
+        suite: str,
+        release: str,
+        filename: str,
+        staging_path: Path,
+        bucket: str,
+    ) -> str:
+        blob_s3_key = f"{suite}/{release}/{filename}"
+
+        async with aioboto3.client("s3") as s3:
+            try:
+                with staging_path.open("rb") as spfp:
+                    LOG.info(f"Uploading {blob_s3_key} to s3")
+                    await s3.upload_fileobj(spfp, bucket, blob_s3_key)
+                    LOG.info(f"Finished Uploading {blob_s3_key} to s3")
+            except Exception as e:
+                LOG.error(f"Unable to s3 upload {staging_path} to {blob_s3_key}: {e} ({type(e)})")
+                return ""
+
+        return f"s3://{blob_s3_key}"
+
+Streaming Download
+------------------
+
+Here we pull the object from S3 in chunks and serve it out to a HTTP request via `aiohttp <https://github.com/aio-libs/aiohttp>`_
+
+.. code-block:: python3
+
+    from aiohttp import web
+    from multidict import MultiDict
+
+    async def serve_blob(
+        suite: str,
+        release: str,
+        filename: str,
+        bucket: str,
+        request: web.Request,
+        chunk_size: int = 69 * 1024
+    ) -> web.Response:
+        blob_s3_key = f"{suite}/{release}/{filename}"
+
+        async with aioboto3.client("s3") as s3:
+            LOG.info(f"Serving {bucket} {blob_s3_key}")
+            s3_ob = await s3.get_object(Bucket=bucket, Key=blob_s3_key)
+
+            ob_info = s3_ob["ResponseMetadata"]["HTTPHeaders"]
+            resp = web.StreamResponse(
+                headers=MultiDict(
+                    {
+                        "CONTENT-DISPOSITION": (
+                            f"attachment; filename={file_metadata['filename']}"
+                        ),
+                        "Content-Type": ob_info["content-type"],
+                    }
+                )
+            )
+            resp.content_type = ob_info["content-type"]
+            resp.content_length = ob_info["content-length"]
+            await resp.prepare(request)
+
+            async with s3_ob["Body"] as stream:
+                file_data = await stream.read(chunk_size)
+                while file_data:
+                    await resp.write(file_data)
+                    file_data = await stream.read(chunk_size)
+
+        return resp
+
 Misc
 ----
 
