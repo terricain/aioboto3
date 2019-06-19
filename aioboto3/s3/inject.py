@@ -1,9 +1,13 @@
 import asyncio
+import logging
 from typing import Optional, Callable, BinaryIO, Dict, Any
 
 from botocore.exceptions import ClientError
 from boto3 import utils
 from boto3.s3.transfer import S3TransferConfig
+
+
+logger = logging.getLogger(__name__)
 
 
 def inject_s3_transfer_methods(class_attributes, **kwargs):
@@ -135,72 +139,154 @@ async def upload_fileobj(self, Fileobj: BinaryIO, Bucket: str, Key: str, ExtraAr
     :param Config: The transfer configuration to be used when performing the
         upload.
     """
-    if not ExtraArgs:
-        ExtraArgs = {}
+    kwargs = ExtraArgs or {}
 
     # I was debating setting up a queue etc...
     # If its too slow I'll then be bothered
     multipart_chunksize = 8388608 if Config is None else Config.multipart_chunksize
     io_chunksize = 262144 if Config is None else Config.io_chunksize
-    # max_concurrency = 10 if Config is None else Config.max_concurrency
-    # max_io_queue = 100 if config is None else Config.max_io_queue
+    max_concurrency = 10 if Config is None else Config.max_concurrency
+    max_io_queue = 100 if Config is None else Config.max_io_queue
 
     # Start multipart upload
-
-    resp = await self.create_multipart_upload(Bucket=Bucket, Key=Key, **ExtraArgs)
+    resp = await self.create_multipart_upload(Bucket=Bucket, Key=Key, **kwargs)
     upload_id = resp['UploadId']
-
-    part = 0
-    parts = []
-    running = True
+    finished_parts = []
+    expected_parts = 0
+    io_queue = asyncio.Queue(maxsize=max_io_queue)
+    exception_event = asyncio.Event()
+    exception = None
     sent_bytes = 0
 
-    try:
-        while running:
+    async def uploader() -> int:
+        nonlocal sent_bytes
+        nonlocal exception
+        uploaded_parts = 0
+
+        # Loop whilst no other co-routine has raised an exception
+        while not exception:
+            try:
+                part_args = await io_queue.get()
+            except asyncio.CancelledError:
+                break
+
+            # Submit part to S3
+            try:
+                resp = await self.upload_part(**part_args)
+            except Exception as err:
+                # Set the main exception variable to the current exception, trigger the exception event
+                exception = err
+                exception_event.set()
+                # Exit the coro
+                break
+
+            # Success, add the result to the finished_parts, increment the sent_bytes
+            finished_parts.append({'ETag': resp['ETag'], 'PartNumber': part_args['PartNumber']})
+            sent_bytes += len(part_args['Body'])
+            uploaded_parts += 1
+            logger.debug('Uploaded part to S3')
+
+            # Call the callback, if it blocks then not good :/
+            if Callback:
+                try:
+                    Callback(sent_bytes)
+                except:  # noqa: E722
+                    pass
+
+            # Mark task as done so .join() will work later on
+            io_queue.task_done()
+
+        # For testing return number of parts uploaded
+        return uploaded_parts
+
+    async def file_reader() -> None:
+        nonlocal expected_parts
+        part = 0
+        eof = False
+        while not eof:
             part += 1
             multipart_payload = b''
             while len(multipart_payload) < multipart_chunksize:
                 if asyncio.iscoroutinefunction(Fileobj.read):  # handles if we pass in aiofiles obj
+                    # noinspection PyUnresolvedReferences
                     data = await Fileobj.read(io_chunksize)
                 else:
                     data = Fileobj.read(io_chunksize)
+                    await asyncio.sleep(0.0)
 
                 if data == b'':  # End of file
-                    running = False
+                    eof = True
                     break
                 multipart_payload += data
 
-            # Submit part to S3
-            resp = await self.upload_part(
-                Body=multipart_payload,
+            # If file has ended but chunk has some data in it, upload it, else if file ended just after a chunk then exit
+            if not multipart_payload:
+                break
+
+            await io_queue.put({'Body': multipart_payload, 'Bucket': Bucket, 'Key': Key, 'PartNumber': part, 'UploadId': upload_id})
+            logger.debug('Added part to io_queue')
+            expected_parts += 1
+
+    file_reader_future = asyncio.ensure_future(file_reader())
+    futures = [asyncio.ensure_future(uploader()) for _ in range(0, max_concurrency)]
+
+    # Wait for file reader to finish
+    await file_reader_future
+    # So by this point all of the file is read and in a queue
+
+    # wait for either io queue is finished, or an exception has been raised
+    _, pending = await asyncio.wait({io_queue.join(), exception_event.wait()}, return_when=asyncio.FIRST_COMPLETED)
+
+    if exception_event.is_set() or len(finished_parts) != expected_parts:
+        # An exception during upload or for some reason the finished parts dont match the expected parts, cancel upload
+        await self.abort_multipart_upload(Bucket=Bucket, Key=Key, UploadId=upload_id)
+        # Raise exception later after we've disposed of the pending co-routines
+    else:
+        # All io chunks from the queue have been successfully uploaded
+        try:
+            # Sort the finished parts as they must be in order
+            finished_parts.sort(key=lambda item: item['PartNumber'])
+
+            await self.complete_multipart_upload(
                 Bucket=Bucket,
                 Key=Key,
-                PartNumber=part,
-                UploadId=upload_id
+                UploadId=upload_id,
+                MultipartUpload={'Parts': finished_parts}
             )
-            parts.append({'ETag': resp['ETag'], 'PartNumber': part})
-            sent_bytes += len(multipart_payload)
+        except Exception as err:
+            # We failed to complete the upload, try and abort, then return the orginal error
+            exception = err
             try:
-                Callback(sent_bytes)  # Attempt to call the callback, if it fails, ignore, if no callback, ignore
-            except:  # noqa: E722
+                await self.abort_multipart_upload(Bucket=Bucket, Key=Key, UploadId=upload_id)
+            except:
                 pass
 
-        # By now the uploads must have been done
-        await self.complete_multipart_upload(
-            Bucket=Bucket,
-            Key=Key,
-            UploadId=upload_id,
-            MultipartUpload={'Parts': parts}
-        )
-    except:  # noqa: E722
-        # Cancel multipart upload
-        await self.abort_multipart_upload(
-            Bucket=Bucket,
-            Key=Key,
-            UploadId=upload_id
-        )
+    # Close either the Queue.join() coro, or the event.wait() coro
+    for coro in pending:
+        if not coro.done():
+            coro.cancel()
+            try:
+                await coro
+            except:
+                pass
 
-        raise
+    # Cancel any remaining futures, though if successful they'll be done
+    cancelled = []
+    for future in futures:
+        if not future.done():
+            future.cancel()
+            cancelled.append(future)
+        else:
+            uploaded_parts = future.result()
+            logger.debug('Future uploaded {0} parts'.format(uploaded_parts))
+    if cancelled:
+        for uploaded_parts in await asyncio.gather(*cancelled, return_exceptions=True):
+            if isinstance(uploaded_parts, int):
+                logger.debug('Future uploaded {0} parts'.format(uploaded_parts))
+
+    # Raise an exception now after everythings cleaned up
+    if exception:
+        raise exception
 
 
 async def upload_file(self, Filename, Bucket, Key, ExtraArgs=None, Callback=None, Config=None):
