@@ -2,6 +2,11 @@
 History
 =======
 
+6.2.0 ()
+--------
+
+* Updated `upload_fileobj` to upload multiple parts concurrently to make best use of the available bandwidth
+
 6.1.0 (2019-02-13)
 ------------------
 
