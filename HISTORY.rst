@@ -3,7 +3,7 @@ History
 =======
 
 6.4.0 (2019-06-20)
---------
+------------------
 
 * Updated ```upload_fileobj``` to upload multiple parts concurrently to make best use of the available bandwidth
 
