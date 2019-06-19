@@ -2,10 +2,25 @@
 History
 =======
 
-6.2.0 ()
+6.4.0 (2019-06-20)
 --------
 
-* Updated `upload_fileobj` to upload multiple parts concurrently to make best use of the available bandwidth
+* Updated ```upload_fileobj``` to upload multiple parts concurrently to make best use of the available bandwidth
+
+
+6.2.0 (2019-05-07)
+------------------
+
+* @inadarei Added batch writing example
+* Added waiter support in resources
+* Made resource object properties coroutines and lazy load data when called
+
+
+6.2.0 (2019-02-27)
+------------------
+
+* Added S3 Client side encryption functionality
+
 
 6.1.0 (2019-02-13)
 ------------------
