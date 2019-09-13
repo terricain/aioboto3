@@ -98,14 +98,14 @@ Fixed:
 - Resource object properties are normally autoloaded, now they are all co-routines and the metadata they come from will be loaded on first await and then cached thereafter.
 
 
-Amazon S3 Client-Size Encryption
+Amazon S3 Client-Side Encryption
 --------------------------------
 
-Boto3 doesn't support AWS Client-Side encryption so until they do I've added basic support for it. Docs here CSE_
+Boto3 doesn't support AWS client-side encryption so until they do I've added basic support for it. Docs here CSE_
 
 CSE requires the python ``cryptography`` library so if you do ``pip install aioboto3[s3cse]`` that'll also include cryptography.
 
-This library currently supports Client-side encryption using KMS-Managed master keys performing envelope encryption
+This library currently supports client-side encryption using KMS-Managed master keys performing envelope encryption
 using either AES/CBC/PKCS5Padding or preferably AES/GCM/NoPadding. The files generated are compatible with the Java Encryption SDK
 so I will assume they are compatible with the Ruby, PHP, Go and C++ libraries as well.
 
@@ -129,7 +129,7 @@ Features
 Todo
 ====
 
-* More Examples
+* More examples
 * Set up docs
 * Look into monkey-patching the aws xray sdk to be more async if it needs to be.
 
