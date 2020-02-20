@@ -2,6 +2,15 @@
 History
 =======
 
+6.5.0 (2020-02-20)
+------------------
+
+* @bact fixed some typos :)
+* Asyncified the S3 resource Bucket().objects API and by extension, anything else in boto3 that uses the same object structure
+* Bumped aiobotocore version so that eventstreams would now work
+
+
+
 6.4.0 (2019-06-20)
 ------------------
 
