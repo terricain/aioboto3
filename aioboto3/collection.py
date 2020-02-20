@@ -1,37 +1,42 @@
 from async_generator import async_generator, yield_
 import logging
+from typing import AsyncIterator, Any, cast
 
 from botocore.utils import merge_dicts
+from boto3.docs import docstring
 from boto3.resources.collection import CollectionFactory, ResourceCollection, CollectionManager
 from boto3.resources.params import create_request_parameters
+
+from aioboto3.action import AioBatchAction
 
 logger = logging.getLogger(__name__)
 
 
 class AIOResourceCollection(ResourceCollection):
-    # def __iter__(self):
-    #     limit = self._params.get('limit', None)
-    #
-    #     count = 0
-    #     for page in self.pages():
-    #         for item in page:
-    #             yield item
-    #
-    #             # If the limit is set and has been reached, then
-    #             # we stop processing items here.
-    #             count += 1
-    #             if limit is not None and count >= limit:
-    #                 return
+    """
+    Converted the ResourceCollection.pages() function to an async generator so that we can do
+    async for on a paginator inside that function
+
+    Converted the __iter__
+    """
+    @async_generator
+    async def __anext__(self):
+        limit = self._params.get('limit', None)
+
+        count = 0
+        async for page in cast(AsyncIterator[Any], self.pages()):
+            for item in page:
+                await yield_(item)
+
+                count += 1
+                if limit is not None and count >= limit:
+                    break
 
     def __aiter__(self):
-        # todo return a function thats an async_generator instead of anext
-        return self
+        return self.__anext__()
 
-    async def __anext__(self):
-        async for page in self.pages():
-            print()
-        print()
-
+    def __iter__(self):
+        raise NotImplementedError('Use async-for instead')
 
     @async_generator
     async def pages(self):
@@ -58,15 +63,14 @@ class AIOResourceCollection(ResourceCollection):
                     'MaxItems': limit, 'PageSize': page_size}, **params)
         else:
             @async_generator
-            async def _tmp():
+            async def _aiopaginatordummy():
                 res = await getattr(client, self._py_operation_name)(**params)
                 await yield_(res)
 
             logger.debug('Calling %s:%s with %r',
                          self._parent.meta.service_name,
                          self._py_operation_name, params)
-            # pages = [getattr(client, self._py_operation_name)(**params)]
-            pages = _tmp()
+            pages = _aiopaginatordummy()
 
         # Now that we have a page iterator or single page of results
         # we start processing and yielding individual items.
@@ -156,3 +160,26 @@ class AIOCollectionFactory(CollectionFactory):
         cls_name += 'Manager'
 
         return type(str(cls_name), (AIOCollectionManager,), attrs)
+
+    def _create_batch_action(factory_self, resource_name, snake_cased,
+                             action_model, collection_model, service_model,
+                             event_emitter):
+        """
+        Creates a new method which makes a batch operation request
+        to the underlying service API.
+        """
+        action = AioBatchAction(action_model)
+
+        def batch_action(self, *args, **kwargs):
+            return action(self, *args, **kwargs)
+
+        batch_action.__name__ = str(snake_cased)
+        batch_action.__doc__ = docstring.BatchActionDocstring(
+            resource_name=resource_name,
+            event_emitter=event_emitter,
+            batch_action_model=action_model,
+            service_model=service_model,
+            collection_model=collection_model,
+            include_signature=False
+        )
+        return batch_action

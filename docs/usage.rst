@@ -89,7 +89,7 @@ S3 Examples
 Here are some examples of uploading and streaming a file from S3, serving via aiohttp.
 
 Upload
-------
+~~~~~~
 
 Here we upload from a file object and stream it from a file descriptor.
 
@@ -117,7 +117,7 @@ Here we upload from a file object and stream it from a file descriptor.
         return f"s3://{blob_s3_key}"
 
 Streaming Download
-------------------
+~~~~~~~~~~~~~~~~~~
 
 Here we pull the object from S3 in chunks and serve it out to a HTTP request via `aiohttp <https://github.com/aio-libs/aiohttp>`_
 
@@ -162,6 +162,31 @@ Here we pull the object from S3 in chunks and serve it out to a HTTP request via
                     file_data = await stream.read(chunk_size)
 
         return resp
+
+S3 Resource Objects
+~~~~~~~~~~~~~~~~~~~
+
+The S3 Bucket object also works but its methods have been asyncified. E.g.
+
+.. code-block:: python3
+
+    import aioboto3
+
+    async def main():
+
+        async with aioboto3.resource("s3") as s3:
+
+            async for s3_object in s3.Bucket('mybucket').objects.all():
+                print(s3_object)
+
+            async for s3_object in s3.Bucket('mybucket').objects.filter(Prefix='someprefix/'):
+                print(s3_object)
+
+            await s3.Bucket('mybucket').objects.all().delete()
+
+            # or
+            await s3.Bucket('mybucket').objects.filter(Prefix='test/').delete()
+
 
 Misc
 ----

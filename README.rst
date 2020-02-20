@@ -68,8 +68,8 @@ Simple example of using aioboto3 to put items into a dynamodb table
             result = await table.query(
                 KeyConditionExpression=Key('pk').eq('test1')
             )
-            
-            # Example batch write 
+
+            # Example batch write
             more_items = [{'pk': 't2', 'col1': 'c1'}, \
                           {'pk': 't3', 'col1': 'c3'}]
             async with table.batch_writer() as batch:
@@ -96,6 +96,7 @@ Fixed:
 - ``dynamodb_resource.Table.batch_writer``  This now returns an async context manager which performs the same function
 - Resource waiters - You can now await waiters which are part of resource objects, not just client waiters, e.g. ``await dynamodbtable.wait_until_exists()``
 - Resource object properties are normally autoloaded, now they are all co-routines and the metadata they come from will be loaded on first await and then cached thereafter.
+- S3 Bucket.objects object now works and has been asyncified. Examples here - https://aioboto3.readthedocs.io/en/latest/usage.html#s3-resource-objects
 
 
 Amazon S3 Client-Side Encryption

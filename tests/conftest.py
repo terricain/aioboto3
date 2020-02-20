@@ -94,6 +94,23 @@ def s3_client(request, region, config, event_loop, s3_server, bucket_name):
     request.addfinalizer(fin)
 
 
+@pytest.fixture
+def s3_resource(request, region, config, event_loop, s3_server, bucket_name):
+    session = Session(region_name=region, loop=event_loop, **moto_config())
+
+    async def f():
+        return session.resource('s3', region_name=region, endpoint_url=s3_server, config=config)
+
+    resource = event_loop.run_until_complete(f())
+
+    yield resource
+
+    def fin():
+        event_loop.run_until_complete(resource.close())
+
+    request.addfinalizer(fin)
+
+
 @pytest.fixture(scope='function')
 def s3_moto_patch(request, region, config, event_loop, s3_server):
     from aioboto3 import client as orig_client, resource as orig_resource

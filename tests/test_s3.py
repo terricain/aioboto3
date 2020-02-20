@@ -116,3 +116,66 @@ async def test_s3_copy(event_loop, s3_client, bucket_name):
     # Get copied file
     resp = await s3_client.get_object(Bucket=bucket_name, Key='test_file2')
     assert (await resp['Body'].read()) == data
+
+
+@pytest.mark.asyncio
+async def test_s3_resource_objects_all(event_loop, s3_client, s3_resource, bucket_name):
+    await s3_client.create_bucket(Bucket=bucket_name)
+    files_to_create = {'test/file1', 'test2/file1', 'test2/file2'}
+    for file in files_to_create:
+        await s3_client.put_object(Bucket=bucket_name, Key=file, Body=b'Hello World\n')
+
+    files = []
+    async for item in s3_resource.Bucket(bucket_name).objects.all():
+        files.append(item.key)
+
+    assert len(files) == len(files_to_create)
+    assert set(files) == files_to_create
+
+
+@pytest.mark.asyncio
+async def test_s3_resource_objects_filter(event_loop, s3_client, s3_resource, bucket_name):
+    await s3_client.create_bucket(Bucket=bucket_name)
+    files_to_create = {'test/file1', 'test2/file1', 'test2/file2'}
+    for file in files_to_create:
+        await s3_client.put_object(Bucket=bucket_name, Key=file, Body=b'Hello World\n')
+
+    files = []
+    async for item in s3_resource.Bucket(bucket_name).objects.filter(Prefix='test2/'):
+        files.append(item.key)
+
+    assert len(files) == 2
+    assert all([file.startswith('test2/') for file in files])
+
+
+@pytest.mark.asyncio
+async def test_s3_resource_objects_delete(event_loop, s3_client, s3_resource, bucket_name):
+    await s3_client.create_bucket(Bucket=bucket_name)
+    files_to_create = {'test/file1', 'test2/file1', 'test2/file2'}
+    for file in files_to_create:
+        await s3_client.put_object(Bucket=bucket_name, Key=file, Body=b'Hello World\n')
+
+    await s3_resource.Bucket(bucket_name).objects.all().delete()
+
+    files = []
+    async for item in s3_resource.Bucket(bucket_name).objects.all():
+        files.append(item.key)
+
+    assert not files
+
+
+@pytest.mark.asyncio
+async def test_s3_resource_objects_delete_filter(event_loop, s3_client, s3_resource, bucket_name):
+    await s3_client.create_bucket(Bucket=bucket_name)
+    files_to_create = {'test/file1', 'test2/file1', 'test2/file2'}
+    for file in files_to_create:
+        await s3_client.put_object(Bucket=bucket_name, Key=file, Body=b'Hello World\n')
+
+    await s3_resource.Bucket(bucket_name).objects.filter(Prefix='test2/').delete()
+
+    files = []
+    async for item in s3_resource.Bucket(bucket_name).objects.all():
+        files.append(item.key)
+
+    assert len(files) == 1
+    assert files[0] == 'test/file1'
