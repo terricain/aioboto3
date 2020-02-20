@@ -10,6 +10,8 @@ from boto3.exceptions import ResourceLoadException
 from boto3.resources.params import create_request_parameters
 
 
+from aioboto3.collection import AIOCollectionFactory
+
 logger = logging.getLogger(__name__)
 
 
@@ -153,6 +155,11 @@ class AIOBoto3ServiceResource(ServiceResource):
 
 
 class AIOBoto3ResourceFactory(ResourceFactory):
+    # noinspection PyMissingConstructor
+    def __init__(self, emitter):
+        self._collection_factory = AIOCollectionFactory()
+        self._emitter = emitter
+
     def load_from_definition(self, resource_name,
                              single_resource_json_definition, service_context):
         """
