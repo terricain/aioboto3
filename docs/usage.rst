@@ -133,7 +133,7 @@ Here we pull the object from S3 in chunks and serve it out to a HTTP request via
         bucket: str,
         request: web.Request,
         chunk_size: int = 69 * 1024
-    ) -> web.Response:
+    ) -> web.StreamResponse:
         blob_s3_key = f"{suite}/{release}/{filename}"
 
         async with aioboto3.client("s3") as s3:
@@ -145,7 +145,7 @@ Here we pull the object from S3 in chunks and serve it out to a HTTP request via
                 headers=MultiDict(
                     {
                         "CONTENT-DISPOSITION": (
-                            f"attachment; filename={file_metadata['filename']}"
+                            f"attachment; filename='{filename}'"
                         ),
                         "Content-Type": ob_info["content-type"],
                     }
