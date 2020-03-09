@@ -80,6 +80,23 @@ async def test_s3_upload_fileobj(event_loop, s3_client, bucket_name):
 
     resp = await s3_client.get_object(Bucket=bucket_name, Key='test_file')
     assert (await resp['Body'].read()) == data
+    
+    
+@pytest.mark.asyncio
+async def test_s3_upload_fileobj_with_transform(event_loop, s3_client, bucket_name):
+    data = b'Hello World\n'
+    await s3_client.create_bucket(Bucket=bucket_name)
+
+    fh = BytesIO()
+    fh.write(data)
+    fh.seek(0)
+
+    processing = lambda x: x.lower()
+
+    await s3_client.upload_fileobj(fh, bucket_name, 'test_file', Processing=processing)
+
+    resp = await s3_client.get_object(Bucket=bucket_name, Key='test_file')
+    assert (await resp['Body'].read()) == data.lower()
 
 
 @pytest.mark.asyncio
