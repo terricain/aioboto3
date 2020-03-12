@@ -1,10 +1,8 @@
 import logging
-from typing import cast, AsyncIterator, Any
 
-from botocore import xform_name
 from boto3.resources.action import ServiceAction
 from boto3.resources.params import create_request_parameters
-
+from botocore import xform_name
 
 logger = logging.getLogger(__name__)
 
@@ -69,7 +67,7 @@ class AioBatchAction(ServiceAction):
             params.update(kwargs)
 
             logger.debug('Calling %s:%s with %r',
-                        service_name, operation_name, params)
+                         service_name, operation_name, params)
 
             response = await (getattr(client, operation_name)(**params))
 

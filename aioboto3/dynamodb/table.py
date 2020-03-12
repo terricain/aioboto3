@@ -58,7 +58,6 @@ class BatchWriter(object):
         """
         self._table_name = table_name
         self._client = client
-        self._loop = self._client._endpoint._loop  # Yes its dirty
         self._items_buffer = []
         self._flush_amount = flush_amount
         self._overwrite_by_pkeys = overwrite_by_pkeys
@@ -117,4 +116,4 @@ class BatchWriter(object):
         while self._items_buffer:
             await self._flush()
             if self._items_buffer and self._on_exit_loop_sleep:
-                await asyncio.sleep(self._on_exit_loop_sleep, loop=self._loop)
+                await asyncio.sleep(self._on_exit_loop_sleep)

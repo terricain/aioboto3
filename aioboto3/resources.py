@@ -106,8 +106,8 @@ class AIOWaiterAction(object):
         params.update(kwargs)
 
         logger.debug('Calling %s:%s with %r',
-                    parent.meta.service_name,
-                    self._waiter_resource_name, params)
+                     parent.meta.service_name,
+                     self._waiter_resource_name, params)
 
         client = parent.meta.client
         waiter = client.get_waiter(client_waiter_name)
@@ -132,8 +132,8 @@ class AIOWaiterAction(object):
         params.update(kwargs)
 
         logger.debug('Calling %s:%s with %r',
-                    parent.meta.service_name,
-                    self._waiter_resource_name, params)
+                     parent.meta.service_name,
+                     self._waiter_resource_name, params)
 
         client = parent.meta.client
         waiter = client.get_waiter(client_waiter_name)

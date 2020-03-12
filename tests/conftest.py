@@ -63,7 +63,7 @@ def s3_key_name():
 
 @pytest.fixture
 def dynamodb_resource(request, region, config, event_loop, dynamodb2_server):
-    session = Session(region_name=region, loop=event_loop, **moto_config())
+    session = Session(region_name=region, **moto_config())
 
     async def f():
         return session.resource('dynamodb', region_name=region, endpoint_url=dynamodb2_server, config=config)
@@ -79,7 +79,7 @@ def dynamodb_resource(request, region, config, event_loop, dynamodb2_server):
 
 @pytest.fixture
 def s3_client(request, region, config, event_loop, s3_server, bucket_name):
-    session = Session(region_name=region, loop=event_loop, **moto_config())
+    session = Session(region_name=region, **moto_config())
 
     async def f():
         return session.client('s3', region_name=region, endpoint_url=s3_server, config=config)
@@ -96,7 +96,7 @@ def s3_client(request, region, config, event_loop, s3_server, bucket_name):
 
 @pytest.fixture
 def s3_resource(request, region, config, event_loop, s3_server, bucket_name):
-    session = Session(region_name=region, loop=event_loop, **moto_config())
+    session = Session(region_name=region, **moto_config())
 
     async def f():
         return session.resource('s3', region_name=region, endpoint_url=s3_server, config=config)

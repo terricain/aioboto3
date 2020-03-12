@@ -2,6 +2,12 @@
 History
 =======
 
+6.6.0 (2020-03-12)
+
+* Upgrade to aiobotocore 0.12
+* Bumepd minimum python version to 3.6
+* Eliminate use of deprecated loop arguments
+
 6.5.0 (2020-02-20)
 ------------------
 

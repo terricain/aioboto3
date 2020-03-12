@@ -34,14 +34,13 @@ class Session(boto3.session.Session):
     :param profile_name: The name of a profile to use. If not given, then
                          the default profile is used.
     """
-    def __init__(self, aws_access_key_id=None, aws_secret_access_key=None,
-                 aws_session_token=None, region_name=None,
-                 botocore_session=None, profile_name=None, loop=None):
+    def __init__(self, aws_access_key_id=None, aws_secret_access_key=None, aws_session_token=None, region_name=None,
+                 botocore_session=None, profile_name=None):
         if botocore_session is not None:
             self._session = botocore_session
         else:
             # Create a new default session
-            self._session = aiobotocore.session.get_session(loop=loop)
+            self._session = aiobotocore.session.get_session()
 
         # Setup custom user-agent string if it isn't already customized
         if self._session.user_agent_name == 'Botocore':

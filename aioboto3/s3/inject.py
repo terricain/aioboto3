@@ -139,7 +139,7 @@ async def upload_fileobj(self, Fileobj: BinaryIO, Bucket: str, Key: str, ExtraAr
     :type Config: boto3.s3.transfer.TransferConfig
     :param Config: The transfer configuration to be used when performing the
         upload.
-        
+
     :type Processing: method
     :param Processing: A method which takes a bytes buffer and convert it
         by custom logic.
@@ -224,14 +224,16 @@ async def upload_fileobj(self, Fileobj: BinaryIO, Bucket: str, Key: str, ExtraAr
                     break
                 multipart_payload += data
 
-            # If file has ended but chunk has some data in it, upload it, else if file ended just after a chunk then exit
+            # If file has ended but chunk has some data in it, upload it,
+            # else if file ended just after a chunk then exit
             if not multipart_payload:
                 break
 
             if Processing:
                 multipart_payload = Processing(multipart_payload)
 
-            await io_queue.put({'Body': multipart_payload, 'Bucket': Bucket, 'Key': Key, 'PartNumber': part, 'UploadId': upload_id})
+            await io_queue.put({'Body': multipart_payload, 'Bucket': Bucket, 'Key': Key,
+                                'PartNumber': part, 'UploadId': upload_id})
             logger.debug('Added part to io_queue')
             expected_parts += 1
 

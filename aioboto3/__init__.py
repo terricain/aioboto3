@@ -6,7 +6,7 @@ from aioboto3.session import Session
 
 __author__ = """Terry Cain"""
 __email__ = 'terry@terrys-home.co.uk'
-__version__ = '6.5.0'
+__version__ = '6.6.0'
 
 DEFAULT_SESSION = None
 
@@ -57,20 +57,20 @@ def _get_default_session(**kwargs):
     return DEFAULT_SESSION
 
 
-def client(*args, loop=None, **kwargs):
+def client(*args, **kwargs):
     """
     Create a low-level service client by name using the default session.
     See :py:meth:`aioboto3.session.Session.client`.
     """
-    return _get_default_session(loop=loop).client(*args, **kwargs)
+    return _get_default_session().client(*args, **kwargs)
 
 
-def resource(*args, loop=None, **kwargs):
+def resource(*args, **kwargs):
     """
     Create a resource service client by name using the default session.
     See :py:meth:`aioboto3.session.Session.resource`.
     """
-    return _get_default_session(loop=loop).resource(*args, **kwargs)
+    return _get_default_session().resource(*args, **kwargs)
 
 
 # Set up logging to ``/dev/null`` like a library is supposed to.

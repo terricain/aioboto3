@@ -14,7 +14,7 @@ async def test_getting_client(event_loop):
     """Simple getting of client."""
     aioboto3.DEFAULT_SESSION = None
 
-    async with aioboto3.client('ssm', loop=event_loop, region_name='eu-central-1') as client:
+    async with aioboto3.client('ssm', region_name='eu-central-1') as client:
         assert isinstance(client, AioBaseClient)
 
 
@@ -23,7 +23,7 @@ async def test_getting_resource_cm(event_loop):
     """Simple getting of resource."""
     aioboto3.DEFAULT_SESSION = None
 
-    async with aioboto3.resource('dynamodb', loop=event_loop, region_name='eu-central-1') as resource:
+    async with aioboto3.resource('dynamodb', region_name='eu-central-1') as resource:
         assert isinstance(resource.meta.client, AioBaseClient)
 
 
@@ -32,6 +32,6 @@ async def test_getting_resource(event_loop):
     """Simple getting of resource."""
     aioboto3.DEFAULT_SESSION = None
 
-    resource = aioboto3.resource('dynamodb', loop=event_loop, region_name='eu-central-1')
+    resource = aioboto3.resource('dynamodb', region_name='eu-central-1')
     assert isinstance(resource.meta.client, AioBaseClient)
     await resource.close()
