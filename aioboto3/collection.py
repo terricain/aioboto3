@@ -1,4 +1,3 @@
-from async_generator import async_generator, yield_
 import logging
 from typing import AsyncIterator, Any, cast
 
@@ -19,14 +18,13 @@ class AIOResourceCollection(ResourceCollection):
 
     Converted the __iter__
     """
-    @async_generator
     async def __anext__(self):
         limit = self._params.get('limit', None)
 
         count = 0
         async for page in cast(AsyncIterator[Any], self.pages()):
             for item in page:
-                await yield_(item)
+                yield item
 
                 count += 1
                 if limit is not None and count >= limit:
@@ -38,7 +36,6 @@ class AIOResourceCollection(ResourceCollection):
     def __iter__(self):
         raise NotImplementedError('Use async-for instead')
 
-    @async_generator
     async def pages(self):
         client = self._parent.meta.client
         cleaned_params = self._params.copy()
@@ -62,10 +59,8 @@ class AIOResourceCollection(ResourceCollection):
                 PaginationConfig={
                     'MaxItems': limit, 'PageSize': page_size}, **params)
         else:
-            @async_generator
             async def _aiopaginatordummy():
-                res = await getattr(client, self._py_operation_name)(**params)
-                await yield_(res)
+                yield await getattr(client, self._py_operation_name)(**params)
 
             logger.debug('Calling %s:%s with %r',
                          self._parent.meta.service_name,
@@ -86,7 +81,7 @@ class AIOResourceCollection(ResourceCollection):
                 if limit is not None and count >= limit:
                     break
 
-            await yield_(page_items)
+            yield page_items
 
             # Stop reading pages if we've reached out limit
             if limit is not None and count >= limit:

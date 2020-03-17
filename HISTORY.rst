@@ -2,6 +2,12 @@
 History
 =======
 
+7.0.0 (2020-03-12)
+
+* Upgrade to aiobotocore 0.12
+* Bumped minimum python version to 3.6, adding support for 3.8
+* Eliminate use of deprecated loop arguments
+
 6.5.0 (2020-02-20)
 ------------------
 
