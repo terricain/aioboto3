@@ -62,19 +62,11 @@ def s3_key_name():
 
 
 @pytest.fixture
-def dynamodb_resource(request, region, config, event_loop, dynamodb2_server):
+async def dynamodb_resource(request, region, config, event_loop, dynamodb2_server):
     session = Session(region_name=region, **moto_config())
 
-    async def f():
-        return session.resource('dynamodb', region_name=region, endpoint_url=dynamodb2_server, config=config)
-
-    resource = event_loop.run_until_complete(f())
-    yield resource
-
-    def fin():
-        event_loop.run_until_complete(resource.close())
-
-    request.addfinalizer(fin)
+    async with session.resource('dynamodb', region_name=region, endpoint_url=dynamodb2_server, config=config) as resource:
+        yield resource
 
 
 @pytest.fixture

@@ -18,6 +18,12 @@ Async AWS SDK for Python
      :alt: Updates
 
 
+**The .client and .resource functions must now be used as async context managers.**
+Now that aiobotocore has reached version 1.0.0, a side effect of the work put in to fix various issues like bucket region redirection and
+supporting web assume role type credentials, the client must now be instantiated using a context manager, which by extension applies to
+the resource creator. You used to get away with calling `res = aioboto3.resource('dynamodb')` but that no longer works. If you really want
+to do that, you can do `res = await aioboto3.resource('dynamodb').__aenter__()` but you'll need to remember to call `__aexit__`.
+
 This package is mostly just a wrapper combining the great work of boto3_ and aiobotocore_.
 
 aiobotocore allows you to use near enough all of the boto3 client commands in an async manner just by prefixing the command with `await`.

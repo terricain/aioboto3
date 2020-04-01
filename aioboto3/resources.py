@@ -160,8 +160,8 @@ class AIOBoto3ResourceFactory(ResourceFactory):
         self._collection_factory = AIOCollectionFactory()
         self._emitter = emitter
 
-    def load_from_definition(self, resource_name,
-                             single_resource_json_definition, service_context):
+    async def load_from_definition(self, resource_name,
+                                   single_resource_json_definition, service_context):
         """
         Loads a resource from a model, creating a new
         :py:class:`~boto3.resources.base.ServiceResource` subclass
@@ -253,7 +253,7 @@ class AIOBoto3ResourceFactory(ResourceFactory):
 
         base_classes = [AIOBoto3ServiceResource]
         if self._emitter is not None:
-            self._emitter.emit(
+            await self._emitter.emit(
                 'creating-resource-class.%s' % cls_name,
                 class_attributes=attrs, base_classes=base_classes,
                 service_context=service_context)
