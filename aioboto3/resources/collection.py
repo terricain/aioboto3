@@ -6,7 +6,7 @@ from boto3.docs import docstring
 from boto3.resources.collection import CollectionFactory, ResourceCollection, CollectionManager
 from boto3.resources.params import create_request_parameters
 
-from aioboto3.action import AioBatchAction
+from aioboto3.resources.action import AioBatchAction, AIOResourceHandler
 
 logger = logging.getLogger(__name__)
 
@@ -72,7 +72,9 @@ class AIOResourceCollection(ResourceCollection):
         count = 0
         async for page in pages:
             page_items = []
-            for item in self._handler(self._parent, params, page):
+
+            handler_items = await self._handler.async_call(self._parent, params, page)
+            for item in handler_items:
                 page_items.append(item)
 
                 # If the limit is set and has been reached, then
@@ -90,6 +92,19 @@ class AIOResourceCollection(ResourceCollection):
 
 class AIOCollectionManager(CollectionManager):
     _collection_cls = AIOResourceCollection
+
+    def __init__(self, collection_model, parent, factory, service_context):
+        self._model = collection_model
+        operation_name = self._model.request.operation
+        self._parent = parent
+
+        search_path = collection_model.resource.path
+        self._handler = AIOResourceHandler(
+            search_path=search_path, factory=factory,
+            resource_model=collection_model.resource,
+            service_context=service_context,
+            operation_name=operation_name
+        )
 
     def all(self):
         return self.iterator()

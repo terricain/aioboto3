@@ -15,7 +15,7 @@ import boto3.utils
 from botocore.exceptions import DataNotFoundError, UnknownServiceError
 from boto3.exceptions import ResourceNotExistsError, UnknownAPIVersionError
 
-from aioboto3.resources import AIOBoto3ResourceFactory
+from aioboto3.resources.factory import AIOBoto3ResourceFactory
 
 
 class Session(boto3.session.Session):

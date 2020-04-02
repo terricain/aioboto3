@@ -15,8 +15,9 @@ tox = "*"
 flake8 = "*"
 
 [packages]
-aiobotocore = {extras = ["boto3"],version = "==1.0.0"}
+aiobotocore = {extras = ["boto3"],version = "==1.0.1"}
 aioboto3 = {editable = true,path = "."}
+dill = "*"
 
 [requires]
 python_version = "3.8"

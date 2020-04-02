@@ -14,7 +14,7 @@ async def test_dynamo_resource_query(event_loop, dynamodb_resource, random_table
         ProvisionedThroughput={'ReadCapacityUnits': 123, 'WriteCapacityUnits': 123}
     )
 
-    table = dynamodb_resource.Table(random_table_name)
+    table = await dynamodb_resource.Table(random_table_name)
     await table.put_item(
         Item={'pk': 'test', 'test_col1': 'col'}
     )
@@ -34,7 +34,7 @@ async def test_dynamo_resource_put(event_loop, dynamodb_resource, random_table_n
         ProvisionedThroughput={'ReadCapacityUnits': 123, 'WriteCapacityUnits': 123}
     )
 
-    table = dynamodb_resource.Table(random_table_name)
+    table = await dynamodb_resource.Table(random_table_name)
     await table.put_item(
         Item={'pk': 'test', 'test_col1': 'col'}
     )
@@ -52,7 +52,7 @@ async def test_dynamo_resource_batch_write_flush_on_exit_context(event_loop, dyn
         ProvisionedThroughput={'ReadCapacityUnits': 123, 'WriteCapacityUnits': 123}
     )
 
-    table = dynamodb_resource.Table(random_table_name)
+    table = await dynamodb_resource.Table(random_table_name)
     async with table.batch_writer() as dynamo_writer:
         await dynamo_writer.put_item(Item={'pk': 'test', 'test_col1': 'col'})
 
@@ -69,7 +69,7 @@ async def test_dynamo_resource_batch_write_flush_amount(event_loop, dynamodb_res
         ProvisionedThroughput={'ReadCapacityUnits': 2, 'WriteCapacityUnits': 1}
     )
 
-    table = dynamodb_resource.Table(random_table_name)
+    table = await dynamodb_resource.Table(random_table_name)
     async with table.batch_writer(flush_amount=5, on_exit_loop_sleep=0.1) as dynamo_writer:
         await dynamo_writer.put_item(Item={'pk': 'test1', 'test_col1': 'col'})
 
@@ -103,7 +103,7 @@ async def test_dynamo_resource_property(event_loop, dynamodb_resource, random_ta
         ProvisionedThroughput={'ReadCapacityUnits': 123, 'WriteCapacityUnits': 123}
     )
 
-    table = dynamodb_resource.Table(random_table_name)
+    table = await dynamodb_resource.Table(random_table_name)
 
     table_arn = table.table_arn
     assert asyncio.iscoroutine(table_arn)
@@ -121,7 +121,7 @@ async def test_dynamo_resource_waiter(event_loop, dynamodb_resource, random_tabl
         ProvisionedThroughput={'ReadCapacityUnits': 123, 'WriteCapacityUnits': 123}
     )
 
-    table = dynamodb_resource.Table(random_table_name)
+    table = await dynamodb_resource.Table(random_table_name)
 
     await table.wait_until_exists()
 

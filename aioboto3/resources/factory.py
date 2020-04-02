@@ -2,156 +2,18 @@ import logging
 
 from boto3.resources.factory import ResourceFactory
 from boto3.resources.model import ResourceModel
-from boto3.resources.base import ServiceResource, ResourceMeta
-from boto3.resources.action import ServiceAction
+from boto3.resources.base import ResourceMeta
 from boto3.docs import docstring
-from botocore import xform_name
 from boto3.exceptions import ResourceLoadException
-from boto3.resources.params import create_request_parameters
+from boto3.resources.factory import build_identifiers
+from functools import partial
 
 
-from aioboto3.collection import AIOCollectionFactory
+from aioboto3.resources.collection import AIOCollectionFactory
+from aioboto3.resources.action import AIOServiceAction, AIOWaiterAction
+from aioboto3.resources.base import AIOBoto3ServiceResource
 
 logger = logging.getLogger(__name__)
-
-
-class AIOServiceAction(ServiceAction):
-    def __call__(self, parent, *args, **kwargs):
-        """
-        Perform the action's request operation after building operation
-        parameters and build any defined resources from the response.
-
-        :type parent: :py:class:`~boto3.resources.base.ServiceResource`
-        :param parent: The resource instance to which this action is attached.
-        :rtype: dict or ServiceResource or list(ServiceResource)
-        :return: The response, either as a raw dict or resource instance(s).
-        """
-        operation_name = xform_name(self._action_model.request.operation)
-
-        # First, build predefined params and then update with the
-        # user-supplied kwargs, which allows overriding the pre-built
-        # params if needed.
-        params = create_request_parameters(parent, self._action_model.request)
-        params.update(kwargs)
-
-        logger.debug('Calling %s:%s with %r', parent.meta.service_name,
-                     operation_name, params)
-
-        response = yield from getattr(parent.meta.client, operation_name)(**params)
-
-        logger.debug('Response: %r', response)
-
-        return self._response_handler(parent, params, response)
-
-    async def async_call(self, parent, *args, **kwargs):
-        """
-        Perform the action's request operation after building operation
-        parameters and build any defined resources from the response.
-
-        :type parent: :py:class:`~boto3.resources.base.ServiceResource`
-        :param parent: The resource instance to which this action is attached.
-        :rtype: dict or ServiceResource or list(ServiceResource)
-        :return: The response, either as a raw dict or resource instance(s).
-        """
-        operation_name = xform_name(self._action_model.request.operation)
-
-        # First, build predefined params and then update with the
-        # user-supplied kwargs, which allows overriding the pre-built
-        # params if needed.
-        params = create_request_parameters(parent, self._action_model.request)
-        params.update(kwargs)
-
-        logger.debug('Calling %s:%s with %r', parent.meta.service_name,
-                     operation_name, params)
-
-        response = await getattr(parent.meta.client, operation_name)(**params)
-
-        logger.debug('Response: %r', response)
-
-        return self._response_handler(parent, params, response)
-
-
-class AIOWaiterAction(object):
-    """
-    A class representing a callable waiter action on a resource, for example
-    ``s3.Bucket('foo').wait_until_bucket_exists()``.
-    The waiter action may construct parameters from existing resource
-    identifiers.
-
-    :type waiter_model: :py:class`~boto3.resources.model.Waiter`
-    :param waiter_model: The action waiter.
-    :type waiter_resource_name: string
-    :param waiter_resource_name: The name of the waiter action for the
-                                 resource. It usually begins with a
-                                 ``wait_until_``
-    """
-    def __init__(self, waiter_model, waiter_resource_name):
-        self._waiter_model = waiter_model
-        self._waiter_resource_name = waiter_resource_name
-
-    def __call__(self, parent, *args, **kwargs):
-        """
-        Perform the wait operation after building operation
-        parameters.
-
-        :type parent: :py:class:`~boto3.resources.base.ServiceResource`
-        :param parent: The resource instance to which this action is attached.
-        """
-        client_waiter_name = xform_name(self._waiter_model.waiter_name)
-
-        # First, build predefined params and then update with the
-        # user-supplied kwargs, which allows overriding the pre-built
-        # params if needed.
-        params = create_request_parameters(parent, self._waiter_model)
-        params.update(kwargs)
-
-        logger.debug('Calling %s:%s with %r',
-                     parent.meta.service_name,
-                     self._waiter_resource_name, params)
-
-        client = parent.meta.client
-        waiter = client.get_waiter(client_waiter_name)
-        response = waiter.wait(**params)
-
-        logger.debug('Response: %r', response)
-
-    async def async_call(self, parent, *args, **kwargs):
-        """
-        Perform the wait operation after building operation
-        parameters.
-
-        :type parent: :py:class:`~boto3.resources.base.ServiceResource`
-        :param parent: The resource instance to which this action is attached.
-        """
-        client_waiter_name = xform_name(self._waiter_model.waiter_name)
-
-        # First, build predefined params and then update with the
-        # user-supplied kwargs, which allows overriding the pre-built
-        # params if needed.
-        params = create_request_parameters(parent, self._waiter_model)
-        params.update(kwargs)
-
-        logger.debug('Calling %s:%s with %r',
-                     parent.meta.service_name,
-                     self._waiter_resource_name, params)
-
-        client = parent.meta.client
-        waiter = client.get_waiter(client_waiter_name)
-        response = await waiter.wait(**params)
-
-        logger.debug('Response: %r', response)
-
-
-class AIOBoto3ServiceResource(ServiceResource):
-    async def __aenter__(self):
-        return self
-
-    async def __aexit__(self, exc_type, exc_val, exc_tb):
-        await self.meta.client.close()
-        return False
-
-    def close(self):
-        return self.meta.client.close()
 
 
 class AIOBoto3ResourceFactory(ResourceFactory):
@@ -373,3 +235,47 @@ class AIOBoto3ResourceFactory(ResourceFactory):
         )
 
         return property(property_loader)
+
+    def _create_class_partial(factory_self, subresource_model, resource_name,
+                              service_context):
+        """
+        Creates a new method which acts as a functools.partial, passing
+        along the instance's low-level `client` to the new resource
+        class' constructor.
+        """
+        name = subresource_model.resource.type
+
+        async def create_resource(self, *args, **kwargs):
+            # We need a new method here because we want access to the
+            # instance's client.
+            positional_args = []
+
+            # We lazy-load the class to handle circular references.
+            json_def = service_context.resource_json_definitions.get(name, {})
+            resource_cls = await factory_self.load_from_definition(
+                resource_name=name,
+                single_resource_json_definition=json_def,
+                service_context=service_context
+            )
+
+            # Assumes that identifiers are in order, which lets you do
+            # e.g. ``sqs.Queue('foo').Message('bar')`` to create a new message
+            # linked with the ``foo`` queue and which has a ``bar`` receipt
+            # handle. If we did kwargs here then future positional arguments
+            # would lead to failure.
+            identifiers = subresource_model.resource.identifiers
+            if identifiers is not None:
+                for identifier, value in build_identifiers(identifiers, self):
+                    positional_args.append(value)
+
+            return partial(resource_cls, *positional_args,
+                           client=self.meta.client)(*args, **kwargs)
+
+        create_resource.__name__ = str(name)
+        create_resource.__doc__ = docstring.SubResourceDocstring(
+            resource_name=resource_name,
+            sub_resource_model=subresource_model,
+            service_model=service_context.service_model,
+            include_signature=False
+        )
+        return create_resource
