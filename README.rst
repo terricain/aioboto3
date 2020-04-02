@@ -19,14 +19,30 @@ Async AWS SDK for Python
 
 
 **The .client and .resource functions must now be used as async context managers.**
-Now that aiobotocore has reached version 1.0.0, a side effect of the work put in to fix various issues like bucket region redirection and
+
+Now that aiobotocore has reached version 1.0.1, a side effect of the work put in to fix various issues like bucket region redirection and
 supporting web assume role type credentials, the client must now be instantiated using a context manager, which by extension applies to
-the resource creator. You used to get away with calling `res = aioboto3.resource('dynamodb')` but that no longer works. If you really want
-to do that, you can do `res = await aioboto3.resource('dynamodb').__aenter__()` but you'll need to remember to call `__aexit__`.
+the resource creator. You used to get away with calling ``res = aioboto3.resource('dynamodb')`` but that no longer works. If you really want
+to do that, you can do ``res = await aioboto3.resource('dynamodb').__aenter__()`` but you'll need to remember to call ``__aexit__``.
+
+Creating service resources must also be async now, e.g.
+
+.. code-block:: python
+
+    async def main():
+        async with aioboto3.resource("s3") as s3:
+            bucket = await s3.Bucket('mybucket')  # <----------------
+            async for s3_object in bucket.objects.all():
+                print(s3_object)
+
+
+Updating to aiobotocore 1.0.1 also brings with it support for running inside EKS as well as asyncifying ``get_presigned_url``
+
+----
 
 This package is mostly just a wrapper combining the great work of boto3_ and aiobotocore_.
 
-aiobotocore allows you to use near enough all of the boto3 client commands in an async manner just by prefixing the command with `await`.
+aiobotocore allows you to use near enough all of the boto3 client commands in an async manner just by prefixing the command with ``await``.
 
 With aioboto3 you can now use the higher level APIs provided by boto3 in an asynchronous manner. Mainly I developed this as I wanted to use the boto3 dynamodb Table object in some async
 microservices.
@@ -65,7 +81,7 @@ Simple example of using aioboto3 to put items into a dynamodb table
 
     async def main():
         async with aioboto3.resource('dynamodb', region_name='eu-central-1') as dynamo_resource:
-            table = dynamo_resource.Table('test_table')
+            table = await dynamo_resource.Table('test_table')
 
             await table.put_item(
                 Item={'pk': 'test1', 'col1': 'some_data'}

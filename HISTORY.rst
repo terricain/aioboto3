@@ -2,7 +2,19 @@
 History
 =======
 
+8.0.0 (2020-04-XX)
+------------------
+
+* Major refactor to mirror boto3 file structure
+* Updated to support aiobotocore 1.0.0, a few breaking changes.
+
+7.1.0 (2020-03-31)
+------------------
+
+* Pinned aiobotocore version. Aiobotocore 1.0.0 requires changes.
+
 7.0.0 (2020-03-12)
+------------------
 
 * Upgrade to aiobotocore 0.12
 * Bumped minimum python version to 3.6, adding support for 3.8

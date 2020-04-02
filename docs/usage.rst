@@ -10,14 +10,16 @@ This library "should" work with Python3.3/3.4 but I havent tested it, so try yie
 Slight differences
 ------------------
 
-`aioboto3.resource` will return a boto3 like resource object, but it will also have an awaitable `.close()` and also has `__aenter__` and `__aexit__` which
-allows you to use the `async with` syntax.
+``aioboto3.resource`` will return a boto3 like resource object, but it will also have an awaitable ``.close()`` and also
+has ``__aenter__`` and ``__aexit__`` which allows you to use the ``async with`` syntax.
+
+Service resources like ``s3.Bucket`` need to be created using await now, e.g. ``bucket = await s3_resource.Bucket('somebucket')``
 
 
 DynamoDB Examples
 -----------------
 
-Put an item into a DynamoDB table, then query it using the nice `Key().eq()` abstraction.
+Put an item into a DynamoDB table, then query it using the nice ``Key().eq()`` abstraction.
 
 .. code-block:: python3
 
@@ -28,7 +30,7 @@ Put an item into a DynamoDB table, then query it using the nice `Key().eq()` abs
 
     async def main():
         async with aioboto3.resource('dynamodb', region_name='eu-central-1') as dynamo_resource:
-            table = dynamo_resource.Table('test_table')
+            table = await dynamo_resource.Table('test_table')
 
             await table.put_item(
                 Item={'pk': 'test1', 'col1': 'some_data'}
@@ -58,7 +60,7 @@ Use the batch writer to take care of dynamodb writing retries etc...
 
     async def main():
         async with aioboto3.resource('dynamodb', region_name='eu-central-1') as dynamo_resource:
-            table = dynamo_resource.Table('test_table')
+            table = await dynamo_resource.Table('test_table')
 
             # As the default batch size is 25, all of these will be written in one batch
             async with table.batch_writer() as dynamo_writer:
@@ -176,16 +178,17 @@ The S3 Bucket object also works but its methods have been asyncified. E.g.
 
         async with aioboto3.resource("s3") as s3:
 
-            async for s3_object in s3.Bucket('mybucket').objects.all():
+            bucket = await s3.Bucket('mybucket')
+            async for s3_object in bucket.objects.all():
                 print(s3_object)
 
-            async for s3_object in s3.Bucket('mybucket').objects.filter(Prefix='someprefix/'):
+            async for s3_object in bucket.objects.filter(Prefix='someprefix/'):
                 print(s3_object)
 
-            await s3.Bucket('mybucket').objects.all().delete()
+            await bucket.objects.all().delete()
 
             # or
-            await s3.Bucket('mybucket').objects.filter(Prefix='test/').delete()
+            await bucket.objects.filter(Prefix='test/').delete()
 
 
 Misc
