@@ -3,7 +3,7 @@ import jmespath
 
 
 class AIOResourceHandler(ResourceHandler):
-    async def async_call(self, parent, params, response):
+    async def __call__(self, parent, params, response):
         """
         :type parent: ServiceResource
         :param parent: The resource instance to which this action is attached.
@@ -81,5 +81,5 @@ class AIOResourceHandler(ResourceHandler):
 
 
 class AIORawHandler(RawHandler):
-    async def async_call(self, parent, params, response):
-        return self.__call__(parent, params, response)
+    async def __call__(self, parent, params, response):
+        return super(AIORawHandler, self).__call__(parent, params, response)

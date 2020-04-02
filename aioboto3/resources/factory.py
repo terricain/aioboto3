@@ -141,9 +141,7 @@ class AIOBoto3ResourceFactory(ResourceFactory):
             # We need a new method here because we want access to the
             # instance via ``self``.
             async def do_action(self, *args, **kwargs):
-                # response = action(self, *args, **kwargs)
-                response = await action.async_call(self, *args, **kwargs)
-                self.meta.data = response
+                self.meta.data = await action(self, *args, **kwargs)
 
             # Create the docstring for the load/reload mehtods.
             lazy_docstring = docstring.LoadReloadDocstring(
@@ -158,7 +156,7 @@ class AIOBoto3ResourceFactory(ResourceFactory):
             # We need a new method here because we want access to the
             # instance via ``self``.
             async def do_action(self, *args, **kwargs):
-                response = await action.async_call(self, *args, **kwargs)
+                response = await action(self, *args, **kwargs)
 
                 if hasattr(self, 'load'):
                     # Clear cached data. It will be reloaded the next
@@ -190,7 +188,7 @@ class AIOBoto3ResourceFactory(ResourceFactory):
                                  waiter_resource_name=resource_waiter_model.name)
 
         async def do_waiter(self, *args, **kwargs):
-            await waiter.async_call(self, *args, **kwargs)
+            await waiter(self, *args, **kwargs)
 
         do_waiter.__name__ = str(resource_waiter_model.name)
         do_waiter.__doc__ = docstring.ResourceWaiterDocstring(

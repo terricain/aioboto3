@@ -73,8 +73,7 @@ class AIOResourceCollection(ResourceCollection):
         async for page in pages:
             page_items = []
 
-            handler_items = await self._handler.async_call(self._parent, params, page)
-            for item in handler_items:
+            for item in await self._handler(self._parent, params, page):
                 page_items.append(item)
 
                 # If the limit is set and has been reached, then

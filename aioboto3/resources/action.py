@@ -10,35 +10,7 @@ logger = logging.getLogger(__name__)
 
 
 class AioBatchAction(ServiceAction):
-    """
-    An action which operates on a batch of items in a collection, typically
-    a single page of results from the collection's underlying service
-    operation call. For example, this allows you to delete up to 999
-    S3 objects in a single operation rather than calling ``.delete()`` on
-    each one individually.
-
-    :type action_model: :py:class`~boto3.resources.model.Action`
-    :param action_model: The action model.
-
-    :type factory: ResourceFactory
-    :param factory: The factory that created the resource class to which
-                    this action is attached.
-
-    :type service_context: :py:class:`~boto3.utils.ServiceContext`
-    :param service_context: Context about the AWS service
-    """
     async def __call__(self, parent, *args, **kwargs):
-        """
-        Perform the batch action's operation on every page of results
-        from the collection.
-
-        :type parent:
-            :py:class:`~boto3.resources.collection.ResourceCollection`
-        :param parent: The collection iterator to which this action
-                       is attached.
-        :rtype: list(dict)
-        :return: A list of low-level response dicts from each call.
-        """
         service_name = None
         client = None
         responses = []
@@ -94,47 +66,11 @@ class AIOServiceAction(ServiceAction):
                 factory=factory, resource_model=resource_response_model,
                 service_context=service_context,
                 operation_name=action_model.request.operation
-            ).async_call
+            )
         else:
-            self._response_handler = AIORawHandler(action_model.path).async_call
+            self._response_handler = AIORawHandler(action_model.path)
 
-    def __call__(self, parent, *args, **kwargs):
-        """
-        Perform the action's request operation after building operation
-        parameters and build any defined resources from the response.
-
-        :type parent: :py:class:`~boto3.resources.base.ServiceResource`
-        :param parent: The resource instance to which this action is attached.
-        :rtype: dict or ServiceResource or list(ServiceResource)
-        :return: The response, either as a raw dict or resource instance(s).
-        """
-        operation_name = xform_name(self._action_model.request.operation)
-
-        # First, build predefined params and then update with the
-        # user-supplied kwargs, which allows overriding the pre-built
-        # params if needed.
-        params = create_request_parameters(parent, self._action_model.request)
-        params.update(kwargs)
-
-        logger.debug('Calling %s:%s with %r', parent.meta.service_name,
-                     operation_name, params)
-
-        response = yield from getattr(parent.meta.client, operation_name)(**params)
-
-        logger.debug('Response: %r', response)
-
-        return self._response_handler(parent, params, response)
-
-    async def async_call(self, parent, *args, **kwargs):
-        """
-        Perform the action's request operation after building operation
-        parameters and build any defined resources from the response.
-
-        :type parent: :py:class:`~boto3.resources.base.ServiceResource`
-        :param parent: The resource instance to which this action is attached.
-        :rtype: dict or ServiceResource or list(ServiceResource)
-        :return: The response, either as a raw dict or resource instance(s).
-        """
+    async def __call__(self, parent, *args, **kwargs):
         operation_name = xform_name(self._action_model.request.operation)
 
         # First, build predefined params and then update with the
@@ -173,33 +109,7 @@ class AIOWaiterAction(object):
         self._waiter_model = waiter_model
         self._waiter_resource_name = waiter_resource_name
 
-    def __call__(self, parent, *args, **kwargs):
-        """
-        Perform the wait operation after building operation
-        parameters.
-
-        :type parent: :py:class:`~boto3.resources.base.ServiceResource`
-        :param parent: The resource instance to which this action is attached.
-        """
-        client_waiter_name = xform_name(self._waiter_model.waiter_name)
-
-        # First, build predefined params and then update with the
-        # user-supplied kwargs, which allows overriding the pre-built
-        # params if needed.
-        params = create_request_parameters(parent, self._waiter_model)
-        params.update(kwargs)
-
-        logger.debug('Calling %s:%s with %r',
-                     parent.meta.service_name,
-                     self._waiter_resource_name, params)
-
-        client = parent.meta.client
-        waiter = client.get_waiter(client_waiter_name)
-        response = waiter.wait(**params)
-
-        logger.debug('Response: %r', response)
-
-    async def async_call(self, parent, *args, **kwargs):
+    async def __call__(self, parent, *args, **kwargs):
         """
         Perform the wait operation after building operation
         parameters.
