@@ -18,6 +18,7 @@ flake8 = "*"
 aiobotocore = {extras = ["boto3"],version = "==1.0.1"}
 aioboto3 = {editable = true,path = "."}
 dill = "*"
+tox-travis = "*"
 
 [requires]
 python_version = "3.8"
