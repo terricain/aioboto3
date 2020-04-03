@@ -25,6 +25,8 @@ supporting web assume role type credentials, the client must now be instantiated
 the resource creator. You used to get away with calling ``res = aioboto3.resource('dynamodb')`` but that no longer works. If you really want
 to do that, you can do ``res = await aioboto3.resource('dynamodb').__aenter__()`` but you'll need to remember to call ``__aexit__``.
 
+There will most likely be some parts that dont work now which I've missed, just make an issue and we'll get them resoved quickly.
+
 Creating service resources must also be async now, e.g.
 
 .. code-block:: python

@@ -2,11 +2,12 @@
 History
 =======
 
-8.0.0 (2020-04-XX)
+8.0.0 (2020-04-03)
 ------------------
 
 * Major refactor to mirror boto3 file structure
-* Updated to support aiobotocore 1.0.0, a few breaking changes.
+* Updated to support aiobotocore 1.0.1, a few breaking changes.
+* Switched to pipenv
 
 7.1.0 (2020-03-31)
 ------------------
