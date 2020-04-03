@@ -24,27 +24,6 @@ class AIOBoto3ResourceFactory(ResourceFactory):
 
     async def load_from_definition(self, resource_name,
                                    single_resource_json_definition, service_context):
-        """
-        Loads a resource from a model, creating a new
-        :py:class:`~boto3.resources.base.ServiceResource` subclass
-        with the correct properties and methods, named based on the service
-        and resource name, e.g. EC2.Instance.
-
-        :type resource_name: string
-        :param resource_name: Name of the resource to look up. For services,
-                              this should match the ``service_name``.
-
-        :type single_resource_json_definition: dict
-        :param single_resource_json_definition:
-            The loaded json of a single service resource or resource
-            definition.
-
-        :type service_context: :py:class:`~boto3.utils.ServiceContext`
-        :param service_context: Context about the AWS service
-
-        :rtype: Subclass of :py:class:`~boto3.resources.base.ServiceResource`
-        :return: The service or resource class.
-        """
         logger.debug('Loading %s:%s', service_context.service_name,
                      resource_name)
 
@@ -121,86 +100,6 @@ class AIOBoto3ResourceFactory(ResourceFactory):
                 service_context=service_context)
         return type(str(cls_name), tuple(base_classes), attrs)
 
-    def _create_action(factory_self, action_model, resource_name,
-                       service_context, is_load=False):
-        """
-        Creates a new method which makes a request to the underlying
-        AWS service.
-        """
-        # Create the action in in this closure but before the ``do_action``
-        # method below is invoked, which allows instances of the resource
-        # to share the ServiceAction instance.
-        action = AIOServiceAction(
-            action_model, factory=factory_self,
-            service_context=service_context
-        )
-
-        # A resource's ``load`` method is special because it sets
-        # values on the resource instead of returning the response.
-        if is_load:
-            # We need a new method here because we want access to the
-            # instance via ``self``.
-            async def do_action(self, *args, **kwargs):
-                self.meta.data = await action(self, *args, **kwargs)
-
-            # Create the docstring for the load/reload mehtods.
-            lazy_docstring = docstring.LoadReloadDocstring(
-                action_name=action_model.name,
-                resource_name=resource_name,
-                event_emitter=factory_self._emitter,
-                load_model=action_model,
-                service_model=service_context.service_model,
-                include_signature=False
-            )
-        else:
-            # We need a new method here because we want access to the
-            # instance via ``self``.
-            async def do_action(self, *args, **kwargs):
-                response = await action(self, *args, **kwargs)
-
-                if hasattr(self, 'load'):
-                    # Clear cached data. It will be reloaded the next
-                    # time that an attribute is accessed.
-                    # TODO: Make this configurable in the future?
-                    self.meta.data = None
-
-                return response
-
-            lazy_docstring = docstring.ActionDocstring(
-                resource_name=resource_name,
-                event_emitter=factory_self._emitter,
-                action_model=action_model,
-                service_model=service_context.service_model,
-                include_signature=False
-            )
-
-        do_action.__name__ = str(action_model.name)
-        do_action.__doc__ = lazy_docstring
-        return do_action
-
-    def _create_waiter(factory_self, resource_waiter_model, resource_name,
-                       service_context):
-        """
-        Creates a new wait method for each resource where both a waiter and
-        resource model is defined.
-        """
-        waiter = AIOWaiterAction(resource_waiter_model,
-                                 waiter_resource_name=resource_waiter_model.name)
-
-        async def do_waiter(self, *args, **kwargs):
-            await waiter(self, *args, **kwargs)
-
-        do_waiter.__name__ = str(resource_waiter_model.name)
-        do_waiter.__doc__ = docstring.ResourceWaiterDocstring(
-            resource_name=resource_name,
-            event_emitter=factory_self._emitter,
-            service_model=service_context.service_model,
-            resource_waiter_model=resource_waiter_model,
-            service_waiter_model=service_context.service_waiter_model,
-            include_signature=False
-        )
-        return do_waiter
-
     def _create_autoload_property(factory_self, resource_name, name,
                                   snake_cased, member_model, service_context):
         """
@@ -233,6 +132,29 @@ class AIOBoto3ResourceFactory(ResourceFactory):
         )
 
         return property(property_loader)
+
+    def _create_waiter(factory_self, resource_waiter_model, resource_name,
+                       service_context):
+        """
+        Creates a new wait method for each resource where both a waiter and
+        resource model is defined.
+        """
+        waiter = AIOWaiterAction(resource_waiter_model,
+                                 waiter_resource_name=resource_waiter_model.name)
+
+        async def do_waiter(self, *args, **kwargs):
+            await waiter(self, *args, **kwargs)
+
+        do_waiter.__name__ = str(resource_waiter_model.name)
+        do_waiter.__doc__ = docstring.ResourceWaiterDocstring(
+            resource_name=resource_name,
+            event_emitter=factory_self._emitter,
+            service_model=service_context.service_model,
+            resource_waiter_model=resource_waiter_model,
+            service_waiter_model=service_context.service_waiter_model,
+            include_signature=False
+        )
+        return do_waiter
 
     def _create_class_partial(factory_self, subresource_model, resource_name,
                               service_context):
@@ -277,3 +199,61 @@ class AIOBoto3ResourceFactory(ResourceFactory):
             include_signature=False
         )
         return create_resource
+
+    def _create_action(factory_self, action_model, resource_name,
+                       service_context, is_load=False):
+        """
+        Creates a new method which makes a request to the underlying
+        AWS service.
+        """
+        # Create the action in in this closure but before the ``do_action``
+        # method below is invoked, which allows instances of the resource
+        # to share the ServiceAction instance.
+        action = AIOServiceAction(
+            action_model, factory=factory_self,
+            service_context=service_context
+        )
+
+        # A resource's ``load`` method is special because it sets
+        # values on the resource instead of returning the response.
+        if is_load:
+            # We need a new method here because we want access to the
+            # instance via ``self``.
+            async def do_action(self, *args, **kwargs):
+                response = await action(self, *args, **kwargs)
+                self.meta.data = response
+
+            # Create the docstring for the load/reload mehtods.
+            lazy_docstring = docstring.LoadReloadDocstring(
+                action_name=action_model.name,
+                resource_name=resource_name,
+                event_emitter=factory_self._emitter,
+                load_model=action_model,
+                service_model=service_context.service_model,
+                include_signature=False
+            )
+        else:
+            # We need a new method here because we want access to the
+            # instance via ``self``.
+            async def do_action(self, *args, **kwargs):
+                response = await action(self, *args, **kwargs)
+
+                if hasattr(self, 'load'):
+                    # Clear cached data. It will be reloaded the next
+                    # time that an attribute is accessed.
+                    # TODO: Make this configurable in the future?
+                    self.meta.data = None
+
+                return response
+            lazy_docstring = docstring.ActionDocstring(
+                resource_name=resource_name,
+                event_emitter=factory_self._emitter,
+                action_model=action_model,
+                service_model=service_context.service_model,
+                include_signature=False
+            )
+
+        do_action.__name__ = str(action_model.name)
+        do_action.__doc__ = lazy_docstring
+        return do_action
+

@@ -28,7 +28,7 @@ class AIOResourceCollection(ResourceCollection):
 
                 count += 1
                 if limit is not None and count >= limit:
-                    break
+                    return
 
     def __aiter__(self):
         return self.__anext__()
@@ -72,7 +72,6 @@ class AIOResourceCollection(ResourceCollection):
         count = 0
         async for page in pages:
             page_items = []
-
             for item in await self._handler(self._parent, params, page):
                 page_items.append(item)
 
@@ -105,34 +104,10 @@ class AIOCollectionManager(CollectionManager):
             operation_name=operation_name
         )
 
-    def all(self):
-        return self.iterator()
-
 
 class AIOCollectionFactory(CollectionFactory):
     def load_from_definition(self, resource_name, collection_model,
                              service_context, event_emitter):
-        """
-        Loads a collection from a model, creating a new
-        :py:class:`CollectionManager` subclass
-        with the correct properties and methods, named based on the service
-        and resource name, e.g. ec2.InstanceCollectionManager. It also
-        creates a new :py:class:`ResourceCollection` subclass which is used
-        by the new manager class.
-
-        :type resource_name: string
-        :param resource_name: Name of the resource to look up. For services,
-                              this should match the ``service_name``.
-
-        :type service_context: :py:class:`~boto3.utils.ServiceContext`
-        :param service_context: Context about the AWS service
-
-        :type event_emitter: :py:class:`~botocore.hooks.HierarchialEmitter`
-        :param event_emitter: An event emitter
-
-        :rtype: Subclass of :py:class:`CollectionManager`
-        :return: The collection class.
-        """
         attrs = {}
         collection_name = collection_model.name
 

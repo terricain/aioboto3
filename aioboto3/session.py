@@ -38,7 +38,8 @@ class Session(boto3.session.Session):
     :param profile_name: The name of a profile to use. If not given, then
                          the default profile is used.
     """
-    def __init__(self, aws_access_key_id=None, aws_secret_access_key=None, aws_session_token=None, region_name=None,
+    def __init__(self, aws_access_key_id=None, aws_secret_access_key=None,
+                 aws_session_token=None, region_name=None,
                  botocore_session=None, profile_name=None):
         if botocore_session is not None:
             self._session = botocore_session
@@ -72,55 +73,10 @@ class Session(boto3.session.Session):
         self._setup_loader()
         self._register_default_handlers()
 
-    def _register_default_handlers(self):
-
-        # S3 customizations
-        self._session.register(
-            'creating-client-class.s3',
-            boto3.utils.lazy_call(
-                'aioboto3.s3.inject.inject_s3_transfer_methods'))
-        self._session.register(
-            'creating-resource-class.s3.Bucket',
-            boto3.utils.lazy_call(
-                'boto3.s3.inject.inject_bucket_methods'))
-        self._session.register(
-            'creating-resource-class.s3.Object',
-            boto3.utils.lazy_call(
-                'boto3.s3.inject.inject_object_methods'))
-        self._session.register(
-            'creating-resource-class.s3.ObjectSummary',
-            boto3.utils.lazy_call(
-                'boto3.s3.inject.inject_object_summary_methods'))
-
-        # DynamoDb customizations
-        self._session.register(
-            'creating-resource-class.dynamodb',
-            boto3.utils.lazy_call(
-                'boto3.dynamodb.transform.register_high_level_interface'),
-            unique_id='high-level-dynamodb')
-        self._session.register(
-            'creating-resource-class.dynamodb.Table',
-            boto3.utils.lazy_call(
-                'aioboto3.dynamodb.table.register_table_methods'),
-            unique_id='high-level-dynamodb-table')
-
-        # EC2 Customizations
-        self._session.register(
-            'creating-resource-class.ec2.ServiceResource',
-            boto3.utils.lazy_call(
-                'boto3.ec2.createtags.inject_create_tags'))
-
-        self._session.register(
-            'creating-resource-class.ec2.Instance',
-            boto3.utils.lazy_call(
-                'boto3.ec2.deletetags.inject_delete_tags',
-                event_emitter=self.events))
-
     def resource(self, service_name, region_name=None, api_version=None,
                        use_ssl=True, verify=None, endpoint_url=None,
                        aws_access_key_id=None, aws_secret_access_key=None,
                        aws_session_token=None, config=None):
-
         try:
             resource_model = self._loader.load_service_model(
                 service_name, 'resources-1', api_version)
@@ -167,10 +123,56 @@ class Session(boto3.session.Session):
         else:
             config = AioConfig(user_agent_extra='Resource')
 
+        # client = blah part has been moved into a dodgy context class
         return ResourceCreaterContext(self, service_name, region_name, api_version,
                                       use_ssl, verify, endpoint_url, aws_access_key_id,
                                       aws_secret_access_key, aws_session_token, config,
                                       resource_model)
+
+
+    def _register_default_handlers(self):
+
+        # S3 customizations
+        self._session.register(
+            'creating-client-class.s3',
+            boto3.utils.lazy_call(
+                'aioboto3.s3.inject.inject_s3_transfer_methods'))
+        self._session.register(
+            'creating-resource-class.s3.Bucket',
+            boto3.utils.lazy_call(
+                'boto3.s3.inject.inject_bucket_methods'))
+        self._session.register(
+            'creating-resource-class.s3.Object',
+            boto3.utils.lazy_call(
+                'boto3.s3.inject.inject_object_methods'))
+        self._session.register(
+            'creating-resource-class.s3.ObjectSummary',
+            boto3.utils.lazy_call(
+                'boto3.s3.inject.inject_object_summary_methods'))
+
+        # DynamoDb customizations
+        self._session.register(
+            'creating-resource-class.dynamodb',
+            boto3.utils.lazy_call(
+                'boto3.dynamodb.transform.register_high_level_interface'),
+            unique_id='high-level-dynamodb')
+        self._session.register(
+            'creating-resource-class.dynamodb.Table',
+            boto3.utils.lazy_call(
+                'aioboto3.dynamodb.table.register_table_methods'),
+            unique_id='high-level-dynamodb-table')
+
+        # EC2 Customizations
+        self._session.register(
+            'creating-resource-class.ec2.ServiceResource',
+            boto3.utils.lazy_call(
+                'boto3.ec2.createtags.inject_create_tags'))
+
+        self._session.register(
+            'creating-resource-class.ec2.Instance',
+            boto3.utils.lazy_call(
+                'boto3.ec2.deletetags.inject_delete_tags',
+                event_emitter=self.events))
 
 
 class ResourceCreaterContext(object):

@@ -84,9 +84,11 @@ class BatchWriter(object):
 
     def _extract_pkey_values(self, request):
         if request.get('PutRequest'):
-            return [request['PutRequest']['Item'][key] for key in self._overwrite_by_pkeys]
+            return [request['PutRequest']['Item'][key]
+                    for key in self._overwrite_by_pkeys]
         elif request.get('DeleteRequest'):
-            return [request['DeleteRequest']['Key'][key] for key in self._overwrite_by_pkeys]
+            return [request['DeleteRequest']['Key'][key]
+                    for key in self._overwrite_by_pkeys]
         return None
 
     async def _flush_if_needed(self):
@@ -96,7 +98,8 @@ class BatchWriter(object):
     async def _flush(self):
         items_to_send = self._items_buffer[:self._flush_amount]
         self._items_buffer = self._items_buffer[self._flush_amount:]
-        response = await self._client.batch_write_item(RequestItems={self._table_name: items_to_send})
+        response = await self._client.batch_write_item(
+            RequestItems={self._table_name: items_to_send})
         unprocessed_items = response['UnprocessedItems']
 
         if unprocessed_items and unprocessed_items[self._table_name]:
@@ -105,7 +108,8 @@ class BatchWriter(object):
             self._items_buffer.extend(unprocessed_items[self._table_name])
         else:
             self._items_buffer = []
-        logger.debug("Batch write sent %s, unprocessed: %s", len(items_to_send), len(self._items_buffer))
+        logger.debug("Batch write sent %s, unprocessed: %s",
+                     len(items_to_send), len(self._items_buffer))
 
     async def __aenter__(self):
         return self

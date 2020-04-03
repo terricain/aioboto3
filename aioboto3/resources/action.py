@@ -1,12 +1,48 @@
 import logging
 
-from boto3.resources.action import ServiceAction
+from boto3.resources.action import ServiceAction, WaiterAction
 from boto3.resources.params import create_request_parameters
 from botocore import xform_name
 
 from aioboto3.resources.response import AIOResourceHandler, AIORawHandler
 
 logger = logging.getLogger(__name__)
+
+
+class AIOServiceAction(ServiceAction):
+    def __init__(self, action_model, factory=None, service_context=None):
+        self._action_model = action_model
+
+        # In the simplest case we just return the response, but if a
+        # resource is defined, then we must create these before returning.
+        resource_response_model = action_model.resource
+        if resource_response_model:
+            self._response_handler = AIOResourceHandler(
+                search_path=resource_response_model.path,
+                factory=factory, resource_model=resource_response_model,
+                service_context=service_context,
+                operation_name=action_model.request.operation
+            )
+        else:
+            self._response_handler = AIORawHandler(action_model.path)
+
+    async def __call__(self, parent, *args, **kwargs):
+        operation_name = xform_name(self._action_model.request.operation)
+
+        # First, build predefined params and then update with the
+        # user-supplied kwargs, which allows overriding the pre-built
+        # params if needed.
+        params = create_request_parameters(parent, self._action_model.request)
+        params.update(kwargs)
+
+        logger.debug('Calling %s:%s with %r', parent.meta.service_name,
+                     operation_name, params)
+
+        response = await getattr(parent.meta.client, operation_name)(**params)
+
+        logger.debug('Response: %r', response)
+
+        return await self._response_handler(parent, params, response)
 
 
 class AioBatchAction(ServiceAction):
@@ -53,62 +89,7 @@ class AioBatchAction(ServiceAction):
         return responses
 
 
-class AIOServiceAction(ServiceAction):
-    def __init__(self, action_model, factory=None, service_context=None):
-        self._action_model = action_model
-
-        # In the simplest case we just return the response, but if a
-        # resource is defined, then we must create these before returning.
-        resource_response_model = action_model.resource
-        if resource_response_model:
-            self._response_handler = AIOResourceHandler(
-                search_path=resource_response_model.path,
-                factory=factory, resource_model=resource_response_model,
-                service_context=service_context,
-                operation_name=action_model.request.operation
-            )
-        else:
-            self._response_handler = AIORawHandler(action_model.path)
-
-    async def __call__(self, parent, *args, **kwargs):
-        operation_name = xform_name(self._action_model.request.operation)
-
-        # First, build predefined params and then update with the
-        # user-supplied kwargs, which allows overriding the pre-built
-        # params if needed.
-        params = create_request_parameters(parent, self._action_model.request)
-        params.update(kwargs)
-
-        logger.debug('Calling %s:%s with %r', parent.meta.service_name,
-                     operation_name, params)
-
-        response = await getattr(parent.meta.client, operation_name)(**params)
-
-        logger.debug('Response: %r', response)
-
-        return await self._response_handler(parent, params, response)
-
-
-# TODO FIX
-class AIOWaiterAction(object):
-    """
-    A class representing a callable waiter action on a resource, for example
-    ``s3.Bucket('foo').wait_until_bucket_exists()``.
-    The waiter action may construct parameters from existing resource
-    identifiers.
-
-    :type waiter_model: :py:class`~boto3.resources.model.Waiter`
-    :param waiter_model: The action waiter.
-    :type waiter_resource_name: string
-    :param waiter_resource_name: The name of the waiter action for the
-                                 resource. It usually begins with a
-                                 ``wait_until_``
-    """
-
-    def __init__(self, waiter_model, waiter_resource_name):
-        self._waiter_model = waiter_model
-        self._waiter_resource_name = waiter_resource_name
-
+class AIOWaiterAction(WaiterAction):
     async def __call__(self, parent, *args, **kwargs):
         """
         Perform the wait operation after building operation
