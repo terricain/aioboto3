@@ -237,7 +237,7 @@ class KMSCryptoContext(CryptoContext):
         self._kms_client_args = kms_client_args if kms_client_args else {}
 
     async def setup(self):
-        self._kms_client = aioboto3.client('kms', **self._kms_client_args)
+        self._kms_client = await aioboto3.client('kms', **self._kms_client_args).__aenter__()
 
     async def close(self):
         await self._kms_client.close()
@@ -312,7 +312,7 @@ class S3CSE(object):
         else:
             self._loop = asyncio.get_running_loop()
 
-        self._s3_client = aioboto3.client('s3', **self._s3_client_args)
+        self._s3_client = await aioboto3.client('s3', **self._s3_client_args).__aenter__()
         await self._crypto_context.setup()
 
     async def close(self):

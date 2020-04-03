@@ -80,8 +80,8 @@ async def test_s3_upload_fileobj(event_loop, s3_client, bucket_name):
 
     resp = await s3_client.get_object(Bucket=bucket_name, Key='test_file')
     assert (await resp['Body'].read()) == data
-    
-    
+
+
 @pytest.mark.asyncio
 async def test_s3_upload_fileobj_with_transform(event_loop, s3_client, bucket_name):
     data = b'Hello World\n'
@@ -143,7 +143,8 @@ async def test_s3_resource_objects_all(event_loop, s3_client, s3_resource, bucke
         await s3_client.put_object(Bucket=bucket_name, Key=file, Body=b'Hello World\n')
 
     files = []
-    async for item in s3_resource.Bucket(bucket_name).objects.all():
+    bucket = await s3_resource.Bucket(bucket_name)
+    async for item in bucket.objects.all():
         files.append(item.key)
 
     assert len(files) == len(files_to_create)
@@ -158,7 +159,8 @@ async def test_s3_resource_objects_filter(event_loop, s3_client, s3_resource, bu
         await s3_client.put_object(Bucket=bucket_name, Key=file, Body=b'Hello World\n')
 
     files = []
-    async for item in s3_resource.Bucket(bucket_name).objects.filter(Prefix='test2/'):
+    bucket = await s3_resource.Bucket(bucket_name)
+    async for item in bucket.objects.filter(Prefix='test2/'):
         files.append(item.key)
 
     assert len(files) == 2
@@ -172,10 +174,11 @@ async def test_s3_resource_objects_delete(event_loop, s3_client, s3_resource, bu
     for file in files_to_create:
         await s3_client.put_object(Bucket=bucket_name, Key=file, Body=b'Hello World\n')
 
-    await s3_resource.Bucket(bucket_name).objects.all().delete()
+    bucket = await s3_resource.Bucket(bucket_name)
+    await bucket.objects.all().delete()
 
     files = []
-    async for item in s3_resource.Bucket(bucket_name).objects.all():
+    async for item in bucket.objects.all():
         files.append(item.key)
 
     assert not files
@@ -188,10 +191,11 @@ async def test_s3_resource_objects_delete_filter(event_loop, s3_client, s3_resou
     for file in files_to_create:
         await s3_client.put_object(Bucket=bucket_name, Key=file, Body=b'Hello World\n')
 
-    await s3_resource.Bucket(bucket_name).objects.filter(Prefix='test2/').delete()
+    bucket = await s3_resource.Bucket(bucket_name)
+    await bucket.objects.filter(Prefix='test2/').delete()
 
     files = []
-    async for item in s3_resource.Bucket(bucket_name).objects.all():
+    async for item in bucket.objects.all():
         files.append(item.key)
 
     assert len(files) == 1

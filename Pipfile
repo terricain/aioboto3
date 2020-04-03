@@ -1,0 +1,22 @@
+[[source]]
+name = "pypi"
+url = "https://pypi.org/simple"
+verify_ssl = true
+
+[dev-packages]
+bumpversion = "*"
+pytest = "*"
+pytest-asyncio = "*"
+pytest-cov = "*"
+moto = {extras = ["server"],version = "*"}
+sphinx = "*"
+sphinx-autodoc-typehints = "*"
+tox = "*"
+flake8 = "*"
+dill = "*"
+tox-travis = "*"
+
+[packages]
+aiobotocore = {extras = ["boto3"],version = "==1.0.1"}
+aioboto3 = {editable = true,path = "."}
+

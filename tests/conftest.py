@@ -62,53 +62,27 @@ def s3_key_name():
 
 
 @pytest.fixture
-def dynamodb_resource(request, region, config, event_loop, dynamodb2_server):
+async def dynamodb_resource(request, region, config, event_loop, dynamodb2_server):
     session = Session(region_name=region, **moto_config())
 
-    async def f():
-        return session.resource('dynamodb', region_name=region, endpoint_url=dynamodb2_server, config=config)
-
-    resource = event_loop.run_until_complete(f())
-    yield resource
-
-    def fin():
-        event_loop.run_until_complete(resource.close())
-
-    request.addfinalizer(fin)
+    async with session.resource('dynamodb', region_name=region, endpoint_url=dynamodb2_server, config=config) as resource:
+        yield resource
 
 
 @pytest.fixture
-def s3_client(request, region, config, event_loop, s3_server, bucket_name):
+async def s3_client(request, region, config, event_loop, s3_server, bucket_name):
     session = Session(region_name=region, **moto_config())
 
-    async def f():
-        return session.client('s3', region_name=region, endpoint_url=s3_server, config=config)
-
-    client = event_loop.run_until_complete(f())
-
-    yield client
-
-    def fin():
-        event_loop.run_until_complete(client.close())
-
-    request.addfinalizer(fin)
+    async with session.client('s3', region_name=region, endpoint_url=s3_server, config=config) as client:
+        yield client
 
 
 @pytest.fixture
-def s3_resource(request, region, config, event_loop, s3_server, bucket_name):
+async def s3_resource(request, region, config, event_loop, s3_server, bucket_name):
     session = Session(region_name=region, **moto_config())
 
-    async def f():
-        return session.resource('s3', region_name=region, endpoint_url=s3_server, config=config)
-
-    resource = event_loop.run_until_complete(f())
-
-    yield resource
-
-    def fin():
-        event_loop.run_until_complete(resource.close())
-
-    request.addfinalizer(fin)
+    async with session.resource('s3', region_name=region, endpoint_url=s3_server, config=config) as resource:
+        yield resource
 
 
 @pytest.fixture(scope='function')

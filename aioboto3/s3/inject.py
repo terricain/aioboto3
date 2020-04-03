@@ -15,10 +15,12 @@ def inject_s3_transfer_methods(class_attributes, **kwargs):
     utils.inject_attribute(class_attributes, 'download_file', download_file)
     utils.inject_attribute(class_attributes, 'copy', copy)
     utils.inject_attribute(class_attributes, 'upload_fileobj', upload_fileobj)
-    utils.inject_attribute(class_attributes, 'download_fileobj', download_fileobj)
+    utils.inject_attribute(
+        class_attributes, 'download_fileobj', download_fileobj)
 
 
-async def download_file(self, Bucket, Key, Filename, ExtraArgs=None, Callback=None, Config=None):
+async def download_file(self, Bucket, Key, Filename, ExtraArgs=None,
+                        Callback=None, Config=None):
     """Download an S3 object to a file.
 
     Usage::
@@ -34,7 +36,8 @@ async def download_file(self, Bucket, Key, Filename, ExtraArgs=None, Callback=No
         await download_fileobj(self, Bucket, Key, open_file, ExtraArgs=ExtraArgs, Callback=Callback, Config=Config)
 
 
-async def download_fileobj(self, Bucket, Key, Fileobj, ExtraArgs=None, Callback=None, Config=None):
+async def download_fileobj(self, Bucket, Key, Fileobj, ExtraArgs=None,
+                           Callback=None, Config=None):
     """Download an object from S3 to a file-like object.
 
     The file-like object must be in binary mode.
@@ -299,7 +302,8 @@ async def upload_fileobj(self, Fileobj: BinaryIO, Bucket: str, Key: str, ExtraAr
         raise exception
 
 
-async def upload_file(self, Filename, Bucket, Key, ExtraArgs=None, Callback=None, Config=None):
+async def upload_file(self, Filename, Bucket, Key, ExtraArgs=None,
+                      Callback=None, Config=None):
     """Upload a file to an S3 object.
 
     Usage::
@@ -315,12 +319,16 @@ async def upload_file(self, Filename, Bucket, Key, ExtraArgs=None, Callback=None
         await upload_fileobj(self, open_file, Bucket, Key, ExtraArgs=ExtraArgs, Callback=Callback, Config=Config)
 
 
-async def copy(self, CopySource, Bucket, Key, ExtraArgs=None, Callback=None, Config=None):
+async def copy(self, CopySource, Bucket, Key, ExtraArgs=None, Callback=None,
+               SourceClient=None, Config=None):
     assert 'Bucket' in CopySource
     assert 'Key' in CopySource
 
+    if SourceClient is None:
+        SourceClient = self
+
     try:
-        resp = await self.get_object(Bucket=CopySource['Bucket'], Key=CopySource['Key'])
+        resp = await SourceClient.get_object(Bucket=CopySource['Bucket'], Key=CopySource['Key'])
     except ClientError as err:
         if err.response['Error']['Code'] == 'NoSuchKey':
             # Convert to 404 so it looks the same when boto3.download_file fails

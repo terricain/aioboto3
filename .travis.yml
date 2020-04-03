@@ -1,14 +1,20 @@
 language: python
 dist: xenial
 python:
-- 3.8
-- 3.7
-- 3.6
-install: pip install -U tox-travis -r requirements_dev.txt
+  - 3.8
+  - 3.7
+  - 3.6
+
+# pipenv check erros on travis as it preinstalls numpy which we dont use
+install: pip install -U setuptools pip pipenv &&
+    pipenv lock &&
+    pipenv sync --dev &&
+    pipenv check --ignore 36810 &&
+    pipenv graph
 script:
-- tox
-- python setup.py check
-- python setup.py build_sphinx
+  - pipenv run tox
+  - pipenv run python3 setup.py check
+  - pipenv run python3 setup.py build_sphinx
 deploy:
   provider: pypi
   distributions: sdist bdist_wheel
@@ -19,3 +25,5 @@ deploy:
     python: 3.7
     repo: terrycain/aioboto3
     tags: true
+
+cache: pip

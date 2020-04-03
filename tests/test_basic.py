@@ -25,13 +25,3 @@ async def test_getting_resource_cm(event_loop):
 
     async with aioboto3.resource('dynamodb', region_name='eu-central-1') as resource:
         assert isinstance(resource.meta.client, AioBaseClient)
-
-
-@pytest.mark.asyncio
-async def test_getting_resource(event_loop):
-    """Simple getting of resource."""
-    aioboto3.DEFAULT_SESSION = None
-
-    resource = aioboto3.resource('dynamodb', region_name='eu-central-1')
-    assert isinstance(resource.meta.client, AioBaseClient)
-    await resource.close()
