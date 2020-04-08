@@ -2,6 +2,12 @@
 History
 =======
 
+8.0.1 (2020-04-08)
+------------------
+
+* Bumped botocore version
+* Added aiohttp example
+
 8.0.0 (2020-04-03)
 ------------------
 
