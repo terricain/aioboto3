@@ -17,6 +17,6 @@ dill = "*"
 tox-travis = "*"
 
 [packages]
-aiobotocore = {extras = ["boto3"],version = "==1.0.1"}
+aiobotocore = {extras = ["boto3"],version = "==1.0.2"}
 aioboto3 = {editable = true,path = "."}
 
