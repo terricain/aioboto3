@@ -2,10 +2,15 @@
 History
 =======
 
+8.0.2 (2020-04-10)
+------------------
+
+* Bumped aiobotocore version
+
 8.0.1 (2020-04-08)
 ------------------
 
-* Bumped botocore version
+* Bumped aiobotocore version
 * Added aiohttp example
 
 8.0.0 (2020-04-03)
