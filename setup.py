@@ -32,7 +32,7 @@ extras_require = {
 
 setup(
     name='aioboto3',
-    version='8.0.1',
+    version='8.0.2',
     description="Async boto3 wrapper",
     long_description=readme + '\n\n' + history,
     author="Terry Cain",
