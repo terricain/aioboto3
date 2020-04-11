@@ -7,6 +7,7 @@ resources/S3-CSE/out
 __pycache__/
 *.py[cod]
 *$py.class
+Pipfile.lock
 
 # C extensions
 *.so

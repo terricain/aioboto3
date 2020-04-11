@@ -65,14 +65,14 @@ for pr in pulls:
 if found_pr:
     sys.exit(QUIT_EARLY_EXIT_CODE)
 
-print('::set-output name=pr_title::"{0}"'.format(new_title))
+print('::set-output name=pr_title::{0}'.format(new_title))
 body = """Aiobotocore depenency update. Version {0}"""
 if fixes:
     body += '\n\n'
     for number in fixes:
         body += 'Resolves #{0}\n'.format(number)
-body = body.replace('%', '%25').replace('\n', '%0A').replace('\r', '%0D')
-print('::set-output name=pr_body::"{0}"'.format(body))
+body = body.format(current_aiobotocore_version).replace('%', '%25').replace('\n', '%0A').replace('\r', '%0D')
+print('::set-output name=pr_body::{0}'.format(body))
 
 # update setup.py
 print('Updating setup.py')
