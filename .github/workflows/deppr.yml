@@ -35,4 +35,4 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         PULL_REQUEST_TITLE: ${{ steps.prscript.outputs.pr_title }}
         PULL_REQUEST_BODY: ${{ steps.prscript.outputs.pr_body }}
-
+      if: steps.prscript.outputs.do_pr == 'true'
