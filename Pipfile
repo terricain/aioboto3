@@ -16,6 +16,7 @@ flake8 = "*"
 dill = "*"
 tox-travis = "*"
 pygithub = "*"
+requests = "*"
 
 [packages]
 aiobotocore = {extras = ["boto3"],version = "==1.0.3"}
