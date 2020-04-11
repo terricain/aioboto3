@@ -1,5 +1,6 @@
 language: python
 dist: xenial
+if: type != push OR branch = master OR branch =~ /^v\d+\.\d+(\.\d+)?(-\S*)?$/
 python:
   - 3.8
   - 3.7

@@ -37,7 +37,7 @@ print('Found: {0}'.format(aiobotocore_dep))
 print('Getting aiobotocore current version')
 resp = requests.get('https://pypi.org/pypi/aiobotocore/json').json()
 current_aiobotocore_version = resp['info']['version']
-current_aiobotocore_version = '2.0.0'
+#current_aiobotocore_version = '2.0.0'
 print('Current aiobotocore version: {0}'.format(current_aiobotocore_version))
 
 if current_aiobotocore_version in aiobotocore_dep:
