@@ -2,7 +2,7 @@ name: Aiobotocore Dep PR
 
 on:
   schedule:
-    - cron: '*/15 * * * *'
+    - cron: '*/5 * * * *'
 
 jobs:
   build:
