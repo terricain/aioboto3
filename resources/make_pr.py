@@ -42,7 +42,8 @@ print('Current aiobotocore version: {0}'.format(current_aiobotocore_version))
 
 if current_aiobotocore_version in aiobotocore_dep:
     print('We\'re good, skip')
-    sys.exit(QUIT_EARLY_EXIT_CODE)  # Currently github have removed the option to exit early but not mark as failed
+    print('::set-output name=do_pr::false')
+    sys.exit(0)
 
 # By this point we're going to open a pr
 # Check that PR isnt already open for this
@@ -63,7 +64,8 @@ for pr in pulls:
         fixes.append(pr.number)
 
 if found_pr:
-    sys.exit(QUIT_EARLY_EXIT_CODE)
+    print('::set-output name=do_pr::false')
+    sys.exit(0)
 
 print('::set-output name=pr_title::{0}'.format(new_title))
 body = """Aiobotocore depenency update. Version {0}"""
@@ -95,3 +97,5 @@ with open('Pipfile', 'r') as fp:
         new_pipfile += line
 with open('Pipfile', 'w') as fp:
     fp.write(new_pipfile)
+
+print('::set-output name=do_pr::true')
