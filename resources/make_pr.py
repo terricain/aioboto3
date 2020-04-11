@@ -7,6 +7,8 @@ import sys
 import os
 from github import Github
 
+QUIT_EARLY_EXIT_CODE = 38
+
 
 def extract_values_from_setuptools():
     # Wont work if setup.py doesnt use setuptools
@@ -40,20 +42,37 @@ print('Current aiobotocore version: {0}'.format(current_aiobotocore_version))
 
 if current_aiobotocore_version in aiobotocore_dep:
     print('We\'re good, skip')
-    sys.exit(38)  # Currently github have removed the option to exit early but not mark as failed
+    sys.exit(QUIT_EARLY_EXIT_CODE)  # Currently github have removed the option to exit early but not mark as failed
 
 # By this point we're going to open a pr
 # Check that PR isnt already open for this
+prefix = '[prbot][depupdate] Aiobotocore'
+new_title = prefix + current_aiobotocore_version
 
+# go through prs, also make a list of existing prs that are resolved by this
 g = Github(os.environ['GITHUB_TOKEN'])
 repo = g.get_repo('terrycain/aioboto3')
 pulls = repo.get_pulls(state='open')
+found_pr = False
+fixes = []
 for pr in pulls:
-    print()
+    if pr.title == new_title:
+        print('Found existing PR, quitting')
+        found_pr = True
+    elif pr.title.startswith(prefix):
+        fixes.append(pr.number)
 
+if found_pr:
+    sys.exit(QUIT_EARLY_EXIT_CODE)
 
-
-sys.exit(1)
+print('::set-output name=pr_title::"{0}"'.format(new_title))
+body = """Aiobotocore depenency update. Version {0}"""
+if fixes:
+    body += '\n\n'
+    for number in fixes:
+        body += 'Resolves #{0}\n'.format(number)
+body = body.replace('%', '%25').replace('\n', '%0A').replace('\r', '%0D')
+print('::set-output name=pr_body::"{0}"'.format(body))
 
 # update setup.py
 print('Updating setup.py')

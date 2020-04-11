@@ -1,0 +1,37 @@
+name: Aiobotocore Dep PR
+
+on:
+  schedule:
+    - cron: '*/15 * * * *'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+      
+    - name: Set up Python 3.8
+      uses: actions/setup-python@v1
+      with:
+        python-version: 3.8
+
+    - name: Install dependencies
+      run: |
+        pip install pipenv
+        pipenv sync --dev
+    
+    - name: Run PyPI script
+      id: prscript
+      run: |
+        python resources/make_pr.py
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        
+    - name: Create pull request
+      uses: peter-evans/create-pull-request@v1.5.2
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        PULL_REQUEST_TITLE: ${{ steps.prscript.outputs.pr_title }}
+        PULL_REQUEST_BODY: ${{ steps.prscript.outputs.pr_body }}
+
