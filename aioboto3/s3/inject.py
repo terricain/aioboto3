@@ -190,14 +190,15 @@ async def upload_fileobj(self, Fileobj: BinaryIO, Bucket: str, Key: str, ExtraAr
 
             # Success, add the result to the finished_parts, increment the sent_bytes
             finished_parts.append({'ETag': resp['ETag'], 'PartNumber': part_args['PartNumber']})
-            sent_bytes += len(part_args['Body'])
+            current_bytes = len(part_args['Body'])
+            sent_bytes += current_bytes
             uploaded_parts += 1
             logger.debug('Uploaded part to S3')
 
             # Call the callback, if it blocks then not good :/
             if Callback:
                 try:
-                    Callback(sent_bytes)
+                    Callback(current_bytes)
                 except:  # noqa: E722
                     pass
 
