@@ -2,6 +2,12 @@
 History
 =======
 
+8.0.3 (2020-04-25)
+------------------
+
+* Bumped aiobotocore version
+* @compscidr Fixed a bug where upload_file callback returned the wrong amount of bytes
+
 8.0.2 (2020-04-10)
 ------------------
 
