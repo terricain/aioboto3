@@ -19,5 +19,5 @@ pygithub = "*"
 requests = "*"
 
 [packages]
-aiobotocore = {extras = ["boto3"],version = "==1.0.4"}
+aiobotocore = {extras = ["boto3"],version = "==1.0.7"}
 aioboto3 = {editable = true,path = "."}
