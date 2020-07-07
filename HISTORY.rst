@@ -2,6 +2,11 @@
 History
 =======
 
+8.0.4 (2020-07-07)
+------------------
+
+* @u-ashish Fixed a bug where ExtraArgs was ignored when doing s3.download_file/fileobj
+
 8.0.3 (2020-04-25)
 ------------------
 
