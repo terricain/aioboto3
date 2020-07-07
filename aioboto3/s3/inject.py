@@ -77,6 +77,8 @@ async def download_fileobj(self, Bucket, Key, Fileobj, ExtraArgs=None,
     """
 
     try:
+        if ExtraArgs is None:
+            ExtraArgs = {}
         resp = await self.get_object(Bucket=Bucket, Key=Key, **ExtraArgs)
     except ClientError as err:
         if err.response['Error']['Code'] == 'NoSuchKey':
