@@ -77,7 +77,9 @@ async def download_fileobj(self, Bucket, Key, Fileobj, ExtraArgs=None,
     """
 
     try:
-        resp = await self.get_object(Bucket=Bucket, Key=Key)
+        if ExtraArgs is None:
+            ExtraArgs = {}
+        resp = await self.get_object(Bucket=Bucket, Key=Key, **ExtraArgs)
     except ClientError as err:
         if err.response['Error']['Code'] == 'NoSuchKey':
             # Convert to 404 so it looks the same when boto3.download_file fails
