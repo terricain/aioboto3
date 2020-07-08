@@ -2,6 +2,12 @@
 History
 =======
 
+8.0.5 (2020-07-08)
+------------------
+
+* @u-ashish Fixed a bug where ExtraArgs was ignored when doing s3.copy
+
+
 8.0.4 (2020-07-07)
 ------------------
 
