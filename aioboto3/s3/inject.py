@@ -330,8 +330,11 @@ async def copy(self, CopySource, Bucket, Key, ExtraArgs=None, Callback=None,
     if SourceClient is None:
         SourceClient = self
 
+    if ExtraArgs is None:
+        ExtraArgs = {}
+
     try:
-        resp = await SourceClient.get_object(Bucket=CopySource['Bucket'], Key=CopySource['Key'])
+        resp = await SourceClient.get_object(Bucket=CopySource['Bucket'], Key=CopySource['Key'], **ExtraArgs)
     except ClientError as err:
         if err.response['Error']['Code'] == 'NoSuchKey':
             # Convert to 404 so it looks the same when boto3.download_file fails
