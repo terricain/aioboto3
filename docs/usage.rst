@@ -2,7 +2,7 @@
 Usage
 =====
 
-Ok as the useage nearly mimics that of boto3, I thought it best just to throw lots of examples at you instead.
+Ok as the usage nearly mimics that of boto3, I thought it best just to throw lots of examples at you instead.
 The moral of the story is just prefix boto3 stuff with await.
 
 This library "should" work with Python3.3/3.4 but I havent tested it, so try yield from if you want.
