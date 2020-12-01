@@ -38,7 +38,7 @@ class AIOServiceAction(ServiceAction):
         logger.debug('Calling %s:%s with %r', parent.meta.service_name,
                      operation_name, params)
 
-        response = await getattr(parent.meta.client, operation_name)(**params)
+        response = await getattr(parent.meta.client, operation_name)(*args, **params)
 
         logger.debug('Response: %r', response)
 
@@ -79,7 +79,7 @@ class AioBatchAction(ServiceAction):
             logger.debug('Calling %s:%s with %r',
                          service_name, operation_name, params)
 
-            response = await (getattr(client, operation_name)(**params))
+            response = await (getattr(client, operation_name)(*args, **params))
 
             logger.debug('Response: %r', response)
 

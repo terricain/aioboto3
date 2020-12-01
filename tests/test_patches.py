@@ -25,8 +25,8 @@ _API_DIGESTS = {
 
     # resources/action.py
     ServiceAction.__init__: {'b8b759abbe8fbfa9bad332b8ce8d30f55daf97f3'},
-    ServiceAction.__call__: {'79fa2006689fd33853f5c446e0a754a5a29e8ba9'},
-    BatchAction.__call__: {'fe7e5f191bf14db7c964e1165ce4c396b908a8db'},
+    ServiceAction.__call__: {'3e84efcb2badef725b998e1af27a4a6f6f1aa2ed'},
+    BatchAction.__call__: {'8839f17467d16f98e4587fa750d74c9007dea134'},
     WaiterAction.__call__: {'57d4f3f74e7e774e3aeb13630292fa9183a790f8'},
 
     # resources/collection.py
@@ -51,7 +51,7 @@ _API_DIGESTS = {
     # session.py
     Session.__init__: {'7c25cbd2154cc87e732fe4a343900d7002195973'},
     Session._register_default_handlers: {'04f247de526b7a0af15737e04019ade52cc65446'},
-    Session.resource: {'873b7f61eaec2658925c58acaee80eec20eb5983'},
+    Session.resource: {'5e3568b28281a75eaf9725fab67c33dc16a18144'},
 
     # dynamodb/table.py
     register_table_methods: {'1d9191de712871b92e1e87f94c6583166a315113'},
