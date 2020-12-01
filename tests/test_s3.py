@@ -200,3 +200,14 @@ async def test_s3_resource_objects_delete_filter(event_loop, s3_client, s3_resou
 
     assert len(files) == 1
     assert files[0] == 'test/file1'
+
+
+@pytest.mark.asyncio
+async def test_s3_object_summary_load(event_loop, s3_client, s3_resource, bucket_name):
+    data = b'Hello World\n'
+    await s3_client.create_bucket(Bucket=bucket_name)
+    await s3_client.put_object(Bucket=bucket_name, Key='test_file', Body=data)
+
+    obj = await s3_resource.ObjectSummary(bucket_name, 'test_file')
+    obj_size = await obj.size
+    assert obj_size == len(data)

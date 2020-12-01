@@ -148,7 +148,7 @@ class Session(boto3.session.Session):
         self._session.register(
             'creating-resource-class.s3.ObjectSummary',
             boto3.utils.lazy_call(
-                'boto3.s3.inject.inject_object_summary_methods'))
+                'aioboto3.s3.inject.inject_object_summary_methods'))
 
         # DynamoDb customizations
         self._session.register(

@@ -19,6 +19,18 @@ def inject_s3_transfer_methods(class_attributes, **kwargs):
         class_attributes, 'download_fileobj', download_fileobj)
 
 
+def inject_object_summary_methods(class_attributes, **kwargs):
+    utils.inject_attribute(class_attributes, 'load', object_summary_load)
+
+
+async def object_summary_load(self, *args, **kwargs):
+    response = await self.meta.client.head_object(
+        Bucket=self.bucket_name, Key=self.key)
+    if 'ContentLength' in response:
+        response['Size'] = response.pop('ContentLength')
+    self.meta.data = response
+
+
 async def download_file(self, Bucket, Key, Filename, ExtraArgs=None,
                         Callback=None, Config=None):
     """Download an S3 object to a file.
