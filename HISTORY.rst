@@ -2,6 +2,16 @@
 History
 =======
 
+8.2.0 (2020-12-02)
+------------------
+
+* Added file.read error handling in S3 upload_file/upload_fileobj
+
+8.1.1 (2020-12-01)
+------------------
+
+* Fixed s3.ObjectSummary metadata properties loading
+
 8.1.0 (2020-12-01)
 ------------------
 
