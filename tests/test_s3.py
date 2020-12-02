@@ -103,7 +103,6 @@ async def test_s3_upload_broken_fileobj(event_loop, s3_client, bucket_name):
     assert len(uploads_resps.get('Uploads', [])) == 0
 
 
-
 @pytest.mark.asyncio
 async def test_s3_upload_fileobj_with_transform(event_loop, s3_client, bucket_name):
     data = b'Hello World\n'
