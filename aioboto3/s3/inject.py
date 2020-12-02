@@ -224,18 +224,29 @@ async def upload_fileobj(self, Fileobj: BinaryIO, Bucket: str, Key: str, ExtraAr
 
     async def file_reader() -> None:
         nonlocal expected_parts
+        nonlocal exception
         part = 0
         eof = False
         while not eof:
             part += 1
             multipart_payload = b''
             while len(multipart_payload) < multipart_chunksize:
-                if asyncio.iscoroutinefunction(Fileobj.read):  # handles if we pass in aiofiles obj
-                    # noinspection PyUnresolvedReferences
-                    data = await Fileobj.read(io_chunksize)
-                else:
-                    data = Fileobj.read(io_chunksize)
-                    await asyncio.sleep(0.0)
+                try:
+                    if asyncio.iscoroutinefunction(Fileobj.read):  # handles if we pass in aiofiles obj
+                        # noinspection PyUnresolvedReferences
+                        data = await Fileobj.read(io_chunksize)
+                    else:
+                        data = Fileobj.read(io_chunksize)
+                        await asyncio.sleep(0.0)
+                except Exception as err:
+                    # Caught some random exception whilst reading from a file
+                    exception = err
+                    exception_event.set()
+
+                    # shortcircuit upload logic
+                    eof = True
+                    multipart_payload = b''
+                    break
 
                 if data == b'':  # End of file
                     eof = True

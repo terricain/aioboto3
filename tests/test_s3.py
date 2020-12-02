@@ -83,6 +83,28 @@ async def test_s3_upload_fileobj(event_loop, s3_client, bucket_name):
 
 
 @pytest.mark.asyncio
+async def test_s3_upload_broken_fileobj(event_loop, s3_client, bucket_name):
+    class BrokenFile(object):
+        def __init__(self, data: bytes):
+            self._data = data
+
+        def read(self, count):
+            raise IOError("some bad file")
+
+    await s3_client.create_bucket(Bucket=bucket_name)
+
+    fh = BrokenFile(b'Hello World\n')
+    try:
+        await s3_client.upload_fileobj(fh, bucket_name, 'test_file')
+    except Exception as err:
+        print()
+
+    uploads_resps = await s3_client.list_multipart_uploads(Bucket=bucket_name)
+    assert len(uploads_resps.get('Uploads', [])) == 0
+
+
+
+@pytest.mark.asyncio
 async def test_s3_upload_fileobj_with_transform(event_loop, s3_client, bucket_name):
     data = b'Hello World\n'
     await s3_client.create_bucket(Bucket=bucket_name)
