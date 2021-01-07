@@ -124,7 +124,7 @@ class Session(boto3.session.Session):
             config = AioConfig(user_agent_extra='Resource')
 
         # client = blah part has been moved into a dodgy context class
-        return ResourceCreaterContext(self, service_name, region_name, api_version,
+        return ResourceCreatorContext(self, service_name, region_name, api_version,
                                       use_ssl, verify, endpoint_url, aws_access_key_id,
                                       aws_secret_access_key, aws_session_token, config,
                                       resource_model)
@@ -175,7 +175,7 @@ class Session(boto3.session.Session):
                 event_emitter=self.events))
 
 
-class ResourceCreaterContext(object):
+class ResourceCreatorContext(object):
     def __init__(self, session, service_name, region_name, api_version, use_ssl, verify,
                  endpoint_url, aws_access_key_id, aws_secret_access_key, aws_session_token,
                  config, resource_model):
