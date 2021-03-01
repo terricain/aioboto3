@@ -1,7 +1,9 @@
 import os
+import tempfile
 from io import BytesIO
 
 from botocore.exceptions import ClientError
+import aiofiles
 import pytest
 
 
@@ -77,6 +79,24 @@ async def test_s3_upload_fileobj(event_loop, s3_client, bucket_name):
     # We should of got 1 callback saying its written 12 bytes
     assert len(callbacks) == 1
     assert callbacks[0] == 12
+
+    resp = await s3_client.get_object(Bucket=bucket_name, Key='test_file')
+    assert (await resp['Body'].read()) == data
+
+
+@pytest.mark.asyncio
+async def test_s3_upload_fileobj_async(event_loop, s3_client, bucket_name):
+    await s3_client.create_bucket(Bucket=bucket_name)
+
+    data = b'Hello World\n'
+
+    tmpfile = tempfile.NamedTemporaryFile(delete=False)
+    tmpfile.close()
+    async with aiofiles.open(tmpfile.name, mode='wb') as fpw:
+        await fpw.write(data)
+
+    async with aiofiles.open(tmpfile.name, mode='rb') as fpr:
+        await s3_client.upload_fileobj(fpr, bucket_name, 'test_file')
 
     resp = await s3_client.get_object(Bucket=bucket_name, Key='test_file')
     assert (await resp['Body'].read()) == data

@@ -2,6 +2,11 @@
 History
 =======
 
+8.2.1 (2021-03-02)
+------------------
+
+* Better aiofiles support - thanks @frosthamster
+
 8.2.0 (2020-12-02)
 ------------------
 

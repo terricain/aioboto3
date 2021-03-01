@@ -12,7 +12,7 @@ with open('HISTORY.rst') as history_file:
     history = history_file.read()
 
 requirements = [
-    'aiobotocore[boto3]==1.1.2'
+    'aiobotocore[boto3]==1.2.1'
 ]
 
 setup_requirements = [
@@ -24,6 +24,7 @@ test_requirements = [
     'pytest-cov',
     'pytest-asyncio',
     'flake8'
+    'aiofiles'
 ]
 
 extras_require = {

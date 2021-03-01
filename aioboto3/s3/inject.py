@@ -1,4 +1,5 @@
 import asyncio
+import inspect
 import logging
 from typing import Optional, Callable, BinaryIO, Dict, Any
 
@@ -232,12 +233,14 @@ async def upload_fileobj(self, Fileobj: BinaryIO, Bucket: str, Key: str, ExtraAr
             multipart_payload = b''
             while len(multipart_payload) < multipart_chunksize:
                 try:
-                    if asyncio.iscoroutinefunction(Fileobj.read):  # handles if we pass in aiofiles obj
+                    # Handles if .read() returns anything that can be awaited
+                    data_chunk = Fileobj.read(io_chunksize)
+                    if inspect.isawaitable(data_chunk):
                         # noinspection PyUnresolvedReferences
-                        data = await Fileobj.read(io_chunksize)
+                        data = await data_chunk
                     else:
-                        data = Fileobj.read(io_chunksize)
-                        await asyncio.sleep(0.0)
+                        data = data_chunk
+                        await asyncio.sleep(0.0)  # Yield to the eventloop incase .read() took ages
                 except Exception as err:
                     # Caught some random exception whilst reading from a file
                     exception = err
