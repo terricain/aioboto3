@@ -18,7 +18,7 @@ _API_DIGESTS = {
     # __init__.py
     boto3.setup_default_session: {'3600170f2c4dbd1896f636a21524b3b027405de1'},
     boto3.set_stream_logger: {'42a3ca2d28b00e219acfd03ae110a970eb2b9045'},
-    boto3._get_default_session: {'9e233305d8a50ec04bec20e9766401532c86b989'},
+    boto3._get_default_session: {'5249535ea408e9497b1363f73b9fd46dcb068b06'},
     boto3.client: {'20c73aeb9feb10d1e5d7f6b3f7dedcab00c7fbcf'},
     boto3.resource: {'316deeb96e6af699be73670c7478357c6882eab3'},
     boto3.NullHandler: {'7f33bbce5d634afba1f0fff359644f288dcf671e'},
@@ -61,7 +61,7 @@ _API_DIGESTS = {
     # s3/inject.py
     inject_s3_transfer_methods: {'8540c89847b80cc1fb34627989eba14972c158d5'},
     download_file: {'5a05472514f9e34c5f64ca8bbcc80a1d27f1f5d1'},
-    download_fileobj: {'237370745eb02e93a353fa806a64f3701c47995c'},
+    download_fileobj: {'237370745eb02e93a353fa806a64f3701c47995c', '9299d1abbd9d5c311e8a824a438e150ff24ebcd7'},
     upload_fileobj: {'d1db027e51d37cf1476377cfda436810b813044b'},
     upload_file: {'ad899c968fdfc294b46c54efbcb9912c5675ba09'},
     copy: {'c4423d0a6d3352553befdf0387987c09812fcaff'},

@@ -3,6 +3,7 @@
 """Top-level package for Async AWS SDK for Python."""
 import logging
 from aioboto3.session import Session
+from boto3.compat import _warn_deprecated_python
 
 __author__ = """Terry Cain"""
 __email__ = 'terry@terrys-home.co.uk'
@@ -53,6 +54,7 @@ def _get_default_session(**kwargs):
     """
     if DEFAULT_SESSION is None:
         setup_default_session(**kwargs)
+    _warn_deprecated_python()
 
     return DEFAULT_SESSION
 
