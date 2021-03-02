@@ -7,7 +7,7 @@ from boto3.compat import _warn_deprecated_python
 
 __author__ = """Terry Cain"""
 __email__ = 'terry@terrys-home.co.uk'
-__version__ = '8.2.0'
+__version__ = '8.2.1'
 
 DEFAULT_SESSION = None
 
