@@ -30,7 +30,7 @@ def start_service(service_name, host, port):
 
         try:
             # we need to bypass the proxies due to monkeypatches
-            requests.get(url, timeout=0.5, proxies=_proxy_bypass)
+            requests.get(url, timeout=5, proxies=_proxy_bypass)
             break
         except requests.exceptions.ConnectionError:
             time.sleep(0.5)
@@ -54,7 +54,7 @@ def stop_process(process):
         raise RuntimeError(msg)
 
 
-@pytest.yield_fixture(scope="session")
+@pytest.fixture(scope="session")
 def dynamodb2_server():
     host = "localhost"
     port = 5001
@@ -64,7 +64,7 @@ def dynamodb2_server():
     stop_process(process)
 
 
-@pytest.yield_fixture(scope="session")
+@pytest.fixture(scope="session")
 def s3_server():
     host = "localhost"
     port = 5002
@@ -74,7 +74,7 @@ def s3_server():
     stop_process(process)
 
 
-@pytest.yield_fixture(scope="session")
+@pytest.fixture(scope="session")
 def kms_server():
     host = "localhost"
     port = 5003
