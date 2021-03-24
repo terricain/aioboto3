@@ -1,4 +1,5 @@
 import os
+import datetime
 import tempfile
 from io import BytesIO
 
@@ -252,3 +253,12 @@ async def test_s3_object_summary_load(event_loop, s3_client, s3_resource, bucket
     obj = await s3_resource.ObjectSummary(bucket_name, 'test_file')
     obj_size = await obj.size
     assert obj_size == len(data)
+
+
+@pytest.mark.asyncio
+async def test_s3_bucket_creation_date(event_loop, s3_client, s3_resource, bucket_name):
+    await s3_client.create_bucket(Bucket=bucket_name)
+
+    bucket = await s3_resource.Bucket(bucket_name)
+    creation_date = await bucket.creation_date
+    assert isinstance(creation_date, datetime.datetime)

@@ -8,7 +8,8 @@ from boto3.resources.collection import ResourceCollection, CollectionManager, Co
 from boto3.resources.factory import ResourceFactory
 from boto3.dynamodb.table import register_table_methods, TableResource, BatchWriter
 from boto3.s3.inject import inject_s3_transfer_methods, download_file, download_fileobj, upload_file, \
-    upload_fileobj, copy
+    upload_fileobj, copy, inject_object_summary_methods, inject_bucket_methods, object_summary_load, \
+    bucket_load
 from dill.source import getsource
 
 import aiobotocore
@@ -60,6 +61,10 @@ _API_DIGESTS = {
 
     # s3/inject.py
     inject_s3_transfer_methods: {'8540c89847b80cc1fb34627989eba14972c158d5'},
+    inject_object_summary_methods: {'a9e2005d1663a5eb17b6b9667835fa251864ccef'},
+    inject_bucket_methods: {'63316226fdd4d7c043eaf35e07b6b2ac331b4872'},
+    object_summary_load: {'3e4db1310105ced8ac2af17598603812ca18cbbe'},
+    bucket_load: {'2d40d03ca9ec91eb5de8a8f40e0f35634ab1d987'},
     download_file: {'5a05472514f9e34c5f64ca8bbcc80a1d27f1f5d1'},
     download_fileobj: {'237370745eb02e93a353fa806a64f3701c47995c', '9299d1abbd9d5c311e8a824a438e150ff24ebcd7'},
     upload_fileobj: {'d1db027e51d37cf1476377cfda436810b813044b'},

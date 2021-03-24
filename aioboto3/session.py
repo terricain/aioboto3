@@ -129,9 +129,7 @@ class Session(boto3.session.Session):
                                       aws_secret_access_key, aws_session_token, config,
                                       resource_model)
 
-
     def _register_default_handlers(self):
-
         # S3 customizations
         self._session.register(
             'creating-client-class.s3',
@@ -140,7 +138,7 @@ class Session(boto3.session.Session):
         self._session.register(
             'creating-resource-class.s3.Bucket',
             boto3.utils.lazy_call(
-                'boto3.s3.inject.inject_bucket_methods'))
+                'aioboto3.s3.inject.inject_bucket_methods'))
         self._session.register(
             'creating-resource-class.s3.Object',
             boto3.utils.lazy_call(
