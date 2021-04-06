@@ -92,7 +92,7 @@ Example
         async with S3CSE(crypto_context=ctx, s3_client_args={'region_name': 'eu-central-1'}) as s3_cse:
             # Upload some binary data
             await s3_cse.put_object(
-                Body=some_data
+                Body=some_data,
                 Bucket='some-bucket',
                 Key='encrypted_file',
             )
