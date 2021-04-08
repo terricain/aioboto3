@@ -4,12 +4,13 @@
 import logging
 from aioboto3.session import Session
 from boto3.compat import _warn_deprecated_python
+import threading
 
 __author__ = """Terry Cain"""
-__email__ = 'terry@terrys-home.co.uk'
-__version__ = '8.3.0'
+__email__ = "terry@terrys-home.co.uk"
+__version__ = "8.3.0"
 
-DEFAULT_SESSION = None
+DEFAULT_SESSIONS = {}
 
 
 def setup_default_session(**kwargs):
@@ -18,11 +19,11 @@ def setup_default_session(**kwargs):
     constructor. There is no need to call this unless you wish to pass custom
     parameters, because a default session will be created for you.
     """
-    global DEFAULT_SESSION
-    DEFAULT_SESSION = Session(**kwargs)
+    global DEFAULT_SESSIONS
+    DEFAULT_SESSIONS[threading.get_ident()] = Session(**kwargs)
 
 
-def set_stream_logger(name='boto3', level=logging.DEBUG, format_string=None):
+def set_stream_logger(name="boto3", level=logging.DEBUG, format_string=None):
     """
     Add a stream handler for the given name and level to the logging module.
     By default, this logs all boto3 messages to ``stdout``.
@@ -52,11 +53,12 @@ def _get_default_session(**kwargs):
     :rtype: :py:class:`~aioboto3.session.Session`
     :return: The default session
     """
-    if DEFAULT_SESSION is None:
+    thread_id = threading.get_ident()
+    if DEFAULT_SESSIONS.get(thread_id, None) is None:
         setup_default_session(**kwargs)
     _warn_deprecated_python()
 
-    return DEFAULT_SESSION
+    return DEFAULT_SESSIONS[thread_id]
 
 
 def client(*args, **kwargs):
@@ -82,4 +84,4 @@ class NullHandler(logging.Handler):
         pass
 
 
-logging.getLogger('boto3').addHandler(NullHandler())
+logging.getLogger("boto3").addHandler(NullHandler())
