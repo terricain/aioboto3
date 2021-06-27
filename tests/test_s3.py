@@ -86,6 +86,28 @@ async def test_s3_upload_fileobj(event_loop, s3_client, bucket_name):
 
 
 @pytest.mark.asyncio
+async def test_s3_upload_empty_fileobj(event_loop, s3_client, bucket_name):
+    await s3_client.create_bucket(Bucket=bucket_name)
+
+    fh = BytesIO(b'')
+    fh.seek(0)
+
+    callbacks = []
+
+    def callback(bytes_sent):
+        callbacks.append(bytes_sent)
+
+    await s3_client.upload_fileobj(fh, bucket_name, 'test_file', Callback=callback)
+
+    # We should of got 1 callback saying its written 12 bytes
+    assert len(callbacks) == 1
+    assert callbacks[0] == 0
+
+    resp = await s3_client.get_object(Bucket=bucket_name, Key='test_file')
+    assert len(await resp['Body'].read()) == 0
+
+
+@pytest.mark.asyncio
 async def test_s3_upload_fileobj_async(event_loop, s3_client, bucket_name):
     await s3_client.create_bucket(Bucket=bucket_name)
 
