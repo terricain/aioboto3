@@ -2,12 +2,11 @@ import pytest
 import random
 import string
 import uuid
-import mock
+from unittest import mock
 from typing import Dict, Type
 
 from aiobotocore.config import AioConfig
 from aioboto3.session import Session
-import aioboto3
 
 
 @pytest.fixture(scope="session", params=[True, False],
