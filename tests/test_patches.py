@@ -74,15 +74,13 @@ _API_DIGESTS = {
 
 
 def test_patches():
-    print("Boto3 version: {} aiobotocore version: {}".format(
-        boto3.__version__, aiobotocore.__version__))
+    print("Boto3 version: {} aiobotocore version: {}".format(boto3.__version__, aiobotocore.__version__))
 
     success = True
     for obj, digests in _API_DIGESTS.items():
         digest = hashlib.sha1(getsource(obj).encode('utf-8')).hexdigest()
         if digest not in digests:
-            print("Digest of {}:{} not found in: {}".format(
-                obj.__qualname__, digest, digests))
+            print("Digest of {}:{} not found in: {}".format(obj.__qualname__, digest, digests))
             success = False
 
     assert success

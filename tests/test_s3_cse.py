@@ -3,6 +3,7 @@ import json
 
 import pytest
 
+import aioboto3
 import aioboto3.s3.cse as cse
 
 # Need big chunk of data for range test
@@ -30,7 +31,7 @@ DATA = b'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed efficitur,
 
 # @pytest.mark.skip(reason="no way of currently testing this")
 # @pytest.mark.asyncio
-# async def test_cse1(event_loop, s3_moto_patch, kms_moto_patch, region, bucket_name, kms_key_alias):
+# async def test_cse1(event_loop, moto_patch, region, bucket_name, kms_key_alias):
 #     kms_client = kms_moto_patch('kms', region_name=region)
 #     s3_client, s3_resource = s3_moto_patch
 #     s3_client = s3_client('s3', region_name=region)
@@ -65,33 +66,35 @@ DATA = b'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed efficitur,
 
 @pytest.mark.xfail(reason="Waiting for moto to accept PR and release")
 @pytest.mark.asyncio
-async def test_kms_crypto_context_success(event_loop, s3_moto_patch, kms_moto_patch, region, bucket_name, kms_key_alias):
-    kms_client = kms_moto_patch('kms', region_name=region)
-    resp = await kms_client.create_key(KeyUsage='ENCRYPT_DECRYPT', Origin='AWS_KMS')
-    key_id = resp['KeyMetadata']['KeyId']
+async def test_kms_crypto_context_success(event_loop, moto_patch, region, bucket_name, kms_key_alias):
+    session = aioboto3.Session()
 
-    await kms_client.create_alias(AliasName=kms_key_alias, TargetKeyId=key_id)
+    async with session.client('kms', region_name=region) as kms_client:
+        resp = await kms_client.create_key(KeyUsage='ENCRYPT_DECRYPT', Origin='AWS_KMS')
+        key_id = resp['KeyMetadata']['KeyId']
 
-    # Create context
-    kms_context = cse.KMSCryptoContext(kms_key_alias, kms_client_args={'region_name': region})
-    assert kms_context.kms_key == kms_key_alias
+        await kms_client.create_alias(AliasName=kms_key_alias, TargetKeyId=key_id)
 
-    await kms_context.setup()
-    assert kms_context._kms_client is not None
+        # Create context
+        kms_context = cse.KMSCryptoContext(kms_key_alias, kms_client_args={'region_name': region})
+        assert kms_context.kms_key == kms_key_alias
 
-    aes_key, material_description, encrypted_aes_key = await kms_context.get_encryption_aes_key()
+        await kms_context.setup()
+        assert kms_context._kms_client is not None
 
-    # Material description should denote what key is used
-    assert material_description['kms_cmk_id'] == kms_key_alias
+        aes_key, material_description, encrypted_aes_key = await kms_context.get_encryption_aes_key()
 
-    resp = await kms_client.decrypt(CiphertextBlob=encrypted_aes_key, EncryptionContext=material_description)
-    assert aes_key == resp['Plaintext']
+        # Material description should denote what key is used
+        assert material_description['kms_cmk_id'] == kms_key_alias
 
-    await kms_context.close()
+        resp = await kms_client.decrypt(CiphertextBlob=encrypted_aes_key, EncryptionContext=material_description)
+        assert aes_key == resp['Plaintext']
+
+        await kms_context.close()
 
 
 @pytest.mark.asyncio
-async def test_kms_crypto_context_decrypt_no_key(event_loop, s3_moto_patch, kms_moto_patch, region, bucket_name, kms_key_alias):
+async def test_kms_crypto_context_decrypt_no_key(event_loop, moto_patch, region, bucket_name, kms_key_alias):
     # Create context
     kms_context = cse.KMSCryptoContext(kms_client_args={'region_name': region})
     await kms_context.setup()
@@ -104,9 +107,10 @@ async def test_kms_crypto_context_decrypt_no_key(event_loop, s3_moto_patch, kms_
 
 
 @pytest.mark.asyncio
-async def test_kms_cse_encrypt_decrypt_aes_gcm(event_loop, s3_moto_patch, region, bucket_name, s3_key_name):
-    s3_client, s3_resource = s3_moto_patch
-    async with s3_client('s3', region_name=region) as s3_client:
+async def test_kms_cse_encrypt_decrypt_aes_gcm(event_loop, moto_patch, region, bucket_name, s3_key_name):
+    session = aioboto3.Session()
+
+    async with session.client('s3', region_name=region) as s3_client:
         await s3_client.create_bucket(Bucket=bucket_name, CreateBucketConfiguration={'LocationConstraint': region})
 
         aes_key = b'O\x8b\xdc\x92\x87k\x9aJ{m\x82\xb3\x96\xf7\x93]\xa1\xb2Cl\x86<5\xbe\x13\xaf\xa8\x94\xa2O3\xef'
@@ -151,9 +155,10 @@ async def test_kms_cse_encrypt_decrypt_aes_gcm(event_loop, s3_moto_patch, region
 
 
 @pytest.mark.asyncio
-async def test_symmetric_cse_encrypt_decrypt_aes_cbc(event_loop, s3_moto_patch, region, bucket_name, s3_key_name):
-    s3_client, s3_resource = s3_moto_patch
-    async with s3_client('s3', region_name=region) as s3_client:
+async def test_symmetric_cse_encrypt_decrypt_aes_cbc(event_loop, moto_patch, region, bucket_name, s3_key_name):
+    session = aioboto3.Session()
+
+    async with session.client('s3', region_name=region) as s3_client:
         await s3_client.create_bucket(Bucket=bucket_name, CreateBucketConfiguration={'LocationConstraint': region})
 
         aes_key = b'O\x8b\xdc\x92\x87k\x9aJ{m\x82\xb3\x96\xf7\x93]\xa1\xb2Cl\x86<5\xbe\x13\xaf\xa8\x94\xa2O3\xef'
@@ -195,9 +200,10 @@ async def test_symmetric_cse_encrypt_decrypt_aes_cbc(event_loop, s3_moto_patch, 
 
 
 @pytest.mark.asyncio
-async def test_asymmetric_cse_encrypt_decrypt_aes_cbc(event_loop, s3_moto_patch, region, bucket_name, s3_key_name):
-    s3_client, s3_resource = s3_moto_patch
-    async with s3_client('s3', region_name=region) as s3_client:
+async def test_asymmetric_cse_encrypt_decrypt_aes_cbc(event_loop, moto_patch, region, bucket_name, s3_key_name):
+    session = aioboto3.Session()
+
+    async with session.client('s3', region_name=region) as s3_client:
         await s3_client.create_bucket(Bucket=bucket_name, CreateBucketConfiguration={'LocationConstraint': region})
 
         private_key = b'0\x82\x02w\x02\x01\x000\r\x06\t*\x86H\x86\xf7\r\x01\x01\x01\x05\x00\x04\x82\x02a0\x82\x02]\x02\x01\x00\x02\x81\x81\x00\xbb x \x88x\xa6\x1b\x94\r\x93\x82\x9bU4j\x90//4\x97\xfd\x0c\xdf\xd3\x10\xab}\x99\x19\xe4\xfe\xf1=\x8aM\xca\x06\xa6\xf3\xa5\xce8\x19Q\xcc\x12\x1a\xc2\xc4\xd9w\xeex\xf6\xbc\x1f\xb2u\xb3Z\x0e!fsLJ>\x7fi\xdcc\xb9:\xee2\xf8h5h\x1f\x96\xab\xa4\xfc\x02\x12=D\xde\xde}i~\xe8\xe1y\x16\xc0\xe1\xeb\xca\x16\xbde@+\x00\x9e\xbf\x12\xe7\x0c\xa7#\x88\x80\xa04\xe2M\xc2\x1f\xc2\x8a\xfc\x08M\x02\x03\x01\x00\x01\x02\x81\x81\x00\x92\x1d\x0fO\xaf\xe0-+\xd9\x96$9VZ\xd8\x9b\xe0\xcb\xc7\x1bU\x16UH,\x01\x976r&\xa3\x05b\x8f?\xff\xef\xa0\xf4\x19\xc9\xbc\xd5W\x07\xe4\xc5\xba9\x9d\x05\x85\xbd"\x9c\xdeV\r\xbe\x13\xf6\\\x94<\x99\xa0/\xa8\x8f\xd8\x14\xa3\x88\x88\x1b\xdf\xee\xbb\xaf\xcd\xc7k{\xb2\x9e\x90B\x05)\x7f\xedo\x95\xb9[\xf4\x8fQ\xc0\xee\xd0\xc9\xb9\x1e\xbfP\xe7\x8c\x87\xab\x87\n\xfd\xcb\x04\xe5\x9bEv\x0f)8\x94R;\xf8B\xc1\x02A\x00\xe8D\x96\xdd\x1f\xd4\xd1\xbc\xd2p\xd0\x11\x99pkp\xa9\xb5\xdd:\xa7\xdfn\xd6%\x82\xaeK\xb20\xd2\x03\xf2\r\x06\x1as\xc3_\x95\xf3\xab`>\xaa\x1c\xc1\x19]\xa3\xf2]Q+\xf9\xebi\x9feQ\xd6\xf4\xe3\x11\x02A\x00\xce? \xe6=\xad\x14\xf5\x96PY\xf8\xc1\xaa\xb8y\x9f{\xd8\xf4\x94\x8b}\x9c\\\xec\x10\x7f\xfbD"\xbbd\xa3g\x85\xbd\x97\x18\xd7\xde\x99\xb7\x1dw\xbfwb\xbb\xaa\x01\xaf~\x8aW K\xed;{\xf6t\x99}\x02A\x00\x9b\x13\xf8\x9a\x89?B\x0eM\x7fo\x1c\xe1\x12\xd3Yt\xa6m\xa0U\'tL\\\xdd$\xdc{\x8b\xe7\x1d%F\x96\xd5\xa0\x87H\xd1\xc8\xd0\x9a\xc1\x1c9x\xa0$\nk\xae\xec\x9cm\x10F\x04[\xd4\xc9\xad\xd5\xd1\x02@I\xf9V\x81~I\xa0$\xdd\xbf\x00&:\xc0R\xde<\x97\x9d\x1fLP#\xc3{\x88\xa7\xfa_R\xf6\xea#\x94\x80B\xf5\xd7E\xef\xd7Ef\xeaH\xd3\x01\xad\x06\x06Z\x08i\xe8\x90\x8bb\xf09\xcf\xa2{\xfb\xb9\x02@D\xbaAV\x03\x94,\xc7\xf3/\xbd\xf3I\xc2\x0fAI\xcd\x9e\xa1\xce\xdf\xa7\x19S\x86\xf3\xc2\x854]\xac\xab\xc8\x8f@\x03_-?{>\x1f\xcc\x1a@\xdb\n\xf0v5\xe4tL\xf3\x16kD\xb5\x83L(3\xd2'

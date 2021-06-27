@@ -235,9 +235,11 @@ class KMSCryptoContext(CryptoContext):
         # Store the client instead of creating one every time, performance wins when doing many files
         self._kms_client = None
         self._kms_client_args = kms_client_args if kms_client_args else {}
+        self._session = None
 
     async def setup(self):
-        self._kms_client = await aioboto3.client('kms', **self._kms_client_args).__aenter__()
+        self._session = aioboto3.Session()
+        self._kms_client = await self._session.client('kms', **self._kms_client_args).__aenter__()
 
     async def close(self):
         await self._kms_client.close()
@@ -303,6 +305,7 @@ class S3CSE(object):
         self._backend = default_backend()
 
         self._crypto_context = crypto_context
+        self._session = None
         self._s3_client = None
         self._s3_client_args = s3_client_args if s3_client_args else {}
 
@@ -312,7 +315,8 @@ class S3CSE(object):
         else:
             self._loop = asyncio.get_running_loop()
 
-        self._s3_client = await aioboto3.client('s3', **self._s3_client_args).__aenter__()
+        self._session = aioboto3.Session()
+        self._s3_client = await self._session.client('s3', **self._s3_client_args).__aenter__()
         await self._crypto_context.setup()
 
     async def close(self):
