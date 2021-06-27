@@ -6,7 +6,7 @@ from aioboto3.session import Session
 
 __author__ = """Terry Cain"""
 __email__ = 'terry@terrys-home.co.uk'
-__version__ = '8.3.0'
+__version__ = '9.0.0'
 
 
 # Set up logging to ``/dev/null`` like a library is supposed to.
