@@ -29,7 +29,8 @@ Put an item into a DynamoDB table, then query it using the nice ``Key().eq()`` a
 
 
     async def main():
-        async with aioboto3.resource('dynamodb', region_name='eu-central-1') as dynamo_resource:
+        session = aioboto3.Session()
+        async with session.resource('dynamodb', region_name='eu-central-1') as dynamo_resource:
             table = await dynamo_resource.Table('test_table')
 
             await table.put_item(
@@ -59,7 +60,8 @@ Use the batch writer to take care of dynamodb writing retries etc...
 
 
     async def main():
-        async with aioboto3.resource('dynamodb', region_name='eu-central-1') as dynamo_resource:
+        session = aioboto3.Session()
+        async with session.resource('dynamodb', region_name='eu-central-1') as dynamo_resource:
             table = await dynamo_resource.Table('test_table')
 
             # As the default batch size is 25, all of these will be written in one batch
@@ -106,7 +108,8 @@ Here we upload from a file object and stream it from a file descriptor.
     ) -> str:
         blob_s3_key = f"{suite}/{release}/{filename}"
 
-        async with aioboto3.client("s3") as s3:
+        session = aioboto3.Session()
+        async with session.client("s3") as s3:
             try:
                 with staging_path.open("rb") as spfp:
                     LOG.info(f"Uploading {blob_s3_key} to s3")
@@ -128,6 +131,7 @@ Here we pull the object from S3 in chunks and serve it out to a HTTP request via
     from aiohttp import web
     from multidict import MultiDict
 
+
     async def serve_blob(
         suite: str,
         release: str,
@@ -138,7 +142,8 @@ Here we pull the object from S3 in chunks and serve it out to a HTTP request via
     ) -> web.StreamResponse:
         blob_s3_key = f"{suite}/{release}/{filename}"
 
-        async with aioboto3.client("s3") as s3:
+        session = aioboto3.Session()
+        async with session.client("s3") as s3:
             LOG.info(f"Serving {bucket} {blob_s3_key}")
             s3_ob = await s3.get_object(Bucket=bucket, Key=blob_s3_key)
 
@@ -174,9 +179,10 @@ The S3 Bucket object also works but its methods have been asyncified. E.g.
 
     import aioboto3
 
-    async def main():
 
-        async with aioboto3.resource("s3") as s3:
+    async def main():
+        session = aioboto3.Session()
+        async with session.resource("s3") as s3:
 
             bucket = await s3.Bucket('mybucket')
             async for s3_object in bucket.objects.all():
@@ -203,7 +209,8 @@ As you can see, it also works for standard client connections too.
 
 
     async def main():
-        async with aioboto3.client('ssm', region_name='eu-central-1') as ssm_client:
+        session = aioboto3.Session()
+        async with session.client('ssm', region_name='eu-central-1') as ssm_client:
             result = await ssm_client.describe_parameters()
 
             print(result['Parameters'])
@@ -239,6 +246,7 @@ receive a warning stating that an AioHTTP session was not closed.
     from aiohttp import web
 
     routes = web.RouteTableDef()
+    session = aioboto3.Session()
 
 
     @routes.get('/')
@@ -257,7 +265,7 @@ receive a warning stating that an AioHTTP session was not closed.
         app['context_stack'] = context_stack
 
         app['dynamo_resource'] = await context_stack.enter_async_context(
-            aioboto3.resource('dynamodb', region_name='eu-west-1')
+            session.resource('dynamodb', region_name='eu-west-1')
         )
         # By now, app['dynamo_resource'] will have methods like .Table() and list_tables() etc...
 

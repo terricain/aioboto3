@@ -34,7 +34,8 @@ Creating service resources must also be async now, e.g.
 .. code-block:: python
 
     async def main():
-        async with aioboto3.resource("s3") as s3:
+        session = aioboto3.Session()
+        async with session.resource("s3") as s3:
             bucket = await s3.Bucket('mybucket')  # <----------------
             async for s3_object in bucket.objects.all():
                 print(s3_object)
@@ -84,7 +85,8 @@ Simple example of using aioboto3 to put items into a dynamodb table
 
 
     async def main():
-        async with aioboto3.resource('dynamodb', region_name='eu-central-1') as dynamo_resource:
+        session = aioboto3.Session()
+        async with session.resource('dynamodb', region_name='eu-central-1') as dynamo_resource:
             table = await dynamo_resource.Table('test_table')
 
             await table.put_item(
