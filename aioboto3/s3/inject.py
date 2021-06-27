@@ -243,6 +243,7 @@ async def upload_fileobj(self, Fileobj: BinaryIO, Bucket: str, Key: str, ExtraAr
         while not eof:
             part += 1
             multipart_payload = b''
+            loop_counter = 0
             while len(multipart_payload) < multipart_chunksize:
                 try:
                     # Handles if .read() returns anything that can be awaited
@@ -263,14 +264,17 @@ async def upload_fileobj(self, Fileobj: BinaryIO, Bucket: str, Key: str, ExtraAr
                     multipart_payload = b''
                     break
 
-                if data == b'':  # End of file
+                if data == b'' and loop_counter > 0:  # End of file, handles uploading empty files
                     eof = True
                     break
                 multipart_payload += data
+                loop_counter += 1
 
             # If file has ended but chunk has some data in it, upload it,
             # else if file ended just after a chunk then exit
-            if not multipart_payload:
+            # if the first part is b'' then upload it as we're uploading an empty
+            # file
+            if not multipart_payload and part != 1:
                 break
 
             if Processing:
