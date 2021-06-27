@@ -2,6 +2,19 @@
 History
 =======
 
+9.0.0 (2021-06-27)
+------------------
+
+* Removed default session
+* Bumped aiobotocore to 1.3.1 - thanks @slipovenko
+
+
+8.3.0 (2021-03-24)
+------------------
+
+* Fixed S3.Bucket injected load method
+* Updated CI
+
 8.2.1 (2021-03-02)
 ------------------
 
@@ -26,7 +39,6 @@ History
 ------------------
 
 * @u-ashish Fixed a bug where ExtraArgs was ignored when doing s3.copy
-
 
 8.0.4 (2020-07-07)
 ------------------
@@ -76,13 +88,10 @@ History
 * Asyncified the S3 resource Bucket().objects API and by extension, anything else in boto3 that uses the same object structure
 * Bumped aiobotocore version so that eventstreams would now work
 
-
-
 6.4.0 (2019-06-20)
 ------------------
 
 * Updated ```upload_fileobj``` to upload multiple parts concurrently to make best use of the available bandwidth
-
 
 6.2.0 (2019-05-07)
 ------------------
@@ -91,19 +100,16 @@ History
 * Added waiter support in resources
 * Made resource object properties coroutines and lazy load data when called
 
-
 6.2.0 (2019-02-27)
 ------------------
 
 * Added S3 Client side encryption functionality
-
 
 6.1.0 (2019-02-13)
 ------------------
 
 * nvllsvm cleaned up the packaging, requirements, travis, sphinx...
 * Unvendored aiobotocore
-
 
 6.0.1 (2018-11-22)
 ------------------
