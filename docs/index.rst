@@ -11,7 +11,6 @@ Contents:
    usage
    cse
    contributing
-   authors
    history
 
 Indices and tables
