@@ -2,6 +2,12 @@
 History
 =======
 
+9.1.0 (2021-07-16)
+------------------
+
+* Switched to using Poetry for dependency management and setup.py replacement
+* Bumped aiobotocore to 1.3.3 to fix some JSON parsing bugs on streams
+
 9.0.0 (2021-06-27)
 ------------------
 
