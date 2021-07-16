@@ -1,0 +1,55 @@
+[tool.poetry]
+name = "aioboto3"
+version = "9.0.0"
+description = "Async boto3 wrapper"
+authors = ["Terry Cain <terry@terrys-home.co.uk>"]
+license = "Apache-2.0"
+readme = "README.rst"
+homepage = "https://github.com/terrycain/aioboto3"
+repository = "https://github.com/terrycain/aioboto3"
+documentation = "https://readthedocs.org/projects/aioboto3/"
+keywords = ["aioboto3", "boto3", "aws"]
+classifiers = [
+    'Development Status :: 5 - Production/Stable',
+    'Intended Audience :: Developers',
+    'License :: OSI Approved :: Apache Software License',
+    'Natural Language :: English',
+    'Programming Language :: Python :: 3',
+    'Programming Language :: Python :: 3.8',
+    'Programming Language :: Python :: 3.9',
+]
+
+
+[tool.poetry.dependencies]
+python = "^3.8"
+aiobotocore = {version = "1.3.3", extras = ["boto3"]}
+
+[tool.poetry.extras]
+s3cse = ["cryptography>=2.3.1"]
+
+[tool.poetry.dev-dependencies]
+pytest = "*"
+pytest-asyncio = "*"
+pytest-cov = "*"
+sphinx = "*"
+sphinx-autodoc-typehints = "*"
+tox = "*"
+flake8 = "*"
+dill = "*"
+pygithub = "*"
+requests = "*"
+aiofiles = "*"
+moto = {extras = ["server"], version = "*"}
+
+[build-system]
+requires = ["poetry>=0.12", "poetry-dynamic-versioning"]
+build-backend = "poetry.masonry.api"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+
+[tool.poetry-dynamic-versioning]
+enable = true
+
+[tool.poetry-dynamic-versioning.substitution]
+files = ["aioboto3/__init__.py"]
