@@ -56,7 +56,7 @@ _API_DIGESTS = {
 
     # dynamodb/table.py
     register_table_methods: {'1d9191de712871b92e1e87f94c6583166a315113'},
-    TableResource: {'a65f5e64ecca7d3cee3f6f337db36313d84dbad1'},
+    TableResource: {'a65f5e64ecca7d3cee3f6f337db36313d84dbad1', '2b803c9437bbee6b369369a279fcb0e34c821ab2'},
     BatchWriter: {'cc693bab78c81c5d11a308275734cc1815b0199a'},  # Class was pretty much rewritten so wasn't subclassed.
 
     # s3/inject.py
