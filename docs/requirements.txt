@@ -1,1 +1,2 @@
 sphinx-autodoc-typehints
+aiobotocore[boto3]
