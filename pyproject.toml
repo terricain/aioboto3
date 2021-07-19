@@ -26,6 +26,7 @@ aiobotocore = {version = "1.3.3", extras = ["boto3"]}
 
 [tool.poetry.extras]
 s3cse = ["cryptography>=2.3.1"]
+chalice = ["chalice>=1.24.0"]
 
 [tool.poetry.dev-dependencies]
 pytest = "*"
@@ -40,6 +41,7 @@ pygithub = "*"
 requests = "*"
 aiofiles = "*"
 moto = {extras = ["server"], version = "*"}
+chalice = "^1.24.0"
 
 [build-system]
 requires = ["poetry>=0.12", "poetry-dynamic-versioning"]

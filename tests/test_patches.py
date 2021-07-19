@@ -11,6 +11,7 @@ from boto3.s3.inject import inject_s3_transfer_methods, download_file, download_
     upload_fileobj, copy, inject_object_summary_methods, inject_bucket_methods, object_summary_load, \
     bucket_load
 from dill.source import getsource
+from chalice.app import Chalice, RestAPIEventHandler, __version__ as chalice_version
 
 import aiobotocore
 
@@ -72,12 +73,30 @@ _API_DIGESTS = {
     copy: {'c4423d0a6d3352553befdf0387987c09812fcaff'},
 }
 
+_CHALICE_API_DIGESTS = {
+    # experimental/async_chalice.py
+    Chalice.__call__: {'90fec8cb1fac970092429f7956a3a0d0bc021b76'},
+    RestAPIEventHandler._get_view_function_response: {'642f0f45420ad8406702700f09b3126fe582d4d3'}
+}
 
 def test_patches():
     print("Boto3 version: {} aiobotocore version: {}".format(boto3.__version__, aiobotocore.__version__))
 
     success = True
     for obj, digests in _API_DIGESTS.items():
+        digest = hashlib.sha1(getsource(obj).encode('utf-8')).hexdigest()
+        if digest not in digests:
+            print("Digest of {}:{} not found in: {}".format(obj.__qualname__, digest, digests))
+            success = False
+
+    assert success
+
+
+def test_chalice_patches():
+    print("Chalice version: {}".format(chalice_version))
+
+    success = True
+    for obj, digests in _CHALICE_API_DIGESTS.items():
         digest = hashlib.sha1(getsource(obj).encode('utf-8')).hexdigest()
         if digest not in digests:
             print("Digest of {}:{} not found in: {}".format(obj.__qualname__, digest, digests))

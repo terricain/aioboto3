@@ -1,9 +1,10 @@
+import boto3
 import pytest
 import random
 import string
 import uuid
 from unittest import mock
-from typing import Dict, Type
+from typing import Dict, Type, TypeVar
 
 from aiobotocore.config import AioConfig
 from aioboto3.session import Session
@@ -85,8 +86,11 @@ async def s3_resource(request, region: str, config: AioConfig, event_loop, s3_se
         yield resource
 
 
-def create_fake_session(url_overrides: Dict[str, str]) -> Type[Session]:
-    class FakeSession(Session):
+T = TypeVar('T')
+
+
+def create_fake_session(base_class: Type[T], url_overrides: Dict[str, str]) -> Type[T]:
+    class FakeSession(base_class):
         def __init__(self, *args, **kwargs):
             super(FakeSession, self).__init__(*args, **kwargs)
 
@@ -118,21 +122,27 @@ def create_fake_session(url_overrides: Dict[str, str]) -> Type[Session]:
 
 @pytest.fixture(scope='function')
 def moto_patch(request, region, config, event_loop, s3_server, kms_server):
-    FakeSession = create_fake_session({
+    FakeAioboto3Session = create_fake_session(Session, {
         's3': s3_server,
         'kms': kms_server
     })
+    FakeBoto3Session = create_fake_session(boto3.Session, {
+        's3': s3_server,
+    })
 
-    session_patcher1 = mock.patch('aioboto3.Session', FakeSession)
-    session_patcher2 = mock.patch('aioboto3.session.Session', FakeSession)
-
-    session_patcher1.start()
-    session_patcher2.start()
+    sessions = [
+        mock.patch('aioboto3.Session', FakeAioboto3Session),
+        mock.patch('aioboto3.session.Session', FakeAioboto3Session),
+        mock.patch('boto3.Session', FakeBoto3Session),
+        mock.patch('boto3.session.Session', FakeBoto3Session)
+    ]
+    for session in sessions:
+        session.start()
 
     yield
 
-    session_patcher1.stop()
-    session_patcher2.stop()
+    for session in sessions:
+        session.stop()
 
 
 pytest_plugins = ['mock_server']
