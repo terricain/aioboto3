@@ -6,8 +6,8 @@ Async AWS SDK for Python
 .. image:: https://img.shields.io/pypi/v/aioboto3.svg
         :target: https://pypi.python.org/pypi/aioboto3
 
-.. image:: https://travis-ci.com/terrycain/aioboto3.svg?branch=master
-        :target: https://travis-ci.com/terrycain/aioboto3
+.. image:: https://github.com/terrycain/aioboto3/actions/workflows/CI.yml/badge.svg
+        :target: https://github.com/terrycain/aioboto3/actions
 
 .. image:: https://readthedocs.org/projects/aioboto3/badge/?version=latest
         :target: https://aioboto3.readthedocs.io
