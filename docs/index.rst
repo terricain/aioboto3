@@ -10,6 +10,7 @@ Contents:
    installation
    usage
    cse
+   chalice
    contributing
    history
 
