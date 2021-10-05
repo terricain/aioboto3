@@ -2,7 +2,17 @@
 History
 =======
 
-9.1.0b0 (2021-07-19) Beta 0
+9.2.1 (2021-10-05)
+------------------
+
+* Bumped aiobotocore to 1.4.2
+
+9.2.0 (2021-07-22)
+------------------
+
+* Beta release promoted
+
+9.2.0b0 (2021-07-19) Beta 0
 ---------------------------
 
 * Experimental AWS Chalice added.
