@@ -2,6 +2,11 @@
 History
 =======
 
+9.2.2 (2021-10-06)
+------------------
+
+* Fixed pyproject misconfiguration bringing in extra dependencies by default - thanks @and-semakin
+
 9.2.1 (2021-10-05)
 ------------------
 
