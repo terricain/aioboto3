@@ -27,9 +27,9 @@ _API_DIGESTS = {
 
     # resources/action.py
     ServiceAction.__init__: {'b8b759abbe8fbfa9bad332b8ce8d30f55daf97f3'},
-    ServiceAction.__call__: {'3e84efcb2badef725b998e1af27a4a6f6f1aa2ed'},
-    BatchAction.__call__: {'8839f17467d16f98e4587fa750d74c9007dea134'},
-    WaiterAction.__call__: {'57d4f3f74e7e774e3aeb13630292fa9183a790f8'},
+    ServiceAction.__call__: {'f3cb58a5e36bf3355723c69ec244990180a2d5bc'},
+    BatchAction.__call__: {'ea58ac6ba436740cc3766b8c115ee0222b665c9a'},
+    WaiterAction.__call__: {'d3c379619530e8f2b3b7cb8a3421dcb0acfd0f73'},
 
     # resources/collection.py
     ResourceCollection.__iter__: {'6631cf4c177643738acff01aa7f3fa324a246ba9'},  # Logic inside anext
