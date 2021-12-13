@@ -56,7 +56,7 @@ CryptoContext Class
 -------------------
 
 This class performs 2 main functions. It converts the objects encrypted key metadata into a decryption key and it will generate an
-encryption key with corrosponding encrpyted encryption key that's base64 encoded.
+encryption key with corresponding encrypted encryption key that's base64 encoded.
 
 For example when decrypting a file using KMS managed client side encryption. It would pass the encrypted key to ``KMS.decrypt`` along
 with the "material description" (``x-amz-matdesc`` metadata header) and KMS will return the original AES key.
