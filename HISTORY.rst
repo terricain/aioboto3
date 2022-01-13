@@ -5,7 +5,7 @@ History
 9.3.1 (2022-01-10)
 ------------------
 
-* Bumped aiobotocore to 2.1.0
+* Bumped aiobotocore to 2.1.0 - thanks @abivolmv
 
 9.3.0 (2021-12-13)
 ------------------
