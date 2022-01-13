@@ -24,12 +24,22 @@ jobs:
         uses: actions/setup-python@v2
         with:
           python-version: 3.8
+
+      - name: Load cached venv
+        id: cached-poetry-dependencies
+        uses: actions/cache@v2
+        with:
+          path: .venv
+          key: venv-${{ runner.os }}-${{ hashFiles('**/poetry.lock') }}
+
       - name: Run setup poetry
         run: |
           pip install -U poetry
+          poetry config virtualenvs.in-project true
           poetry check
           poetry install
           poetry show
+
       - name: Run tests
         run: |
           poetry run pytest -v
