@@ -212,4 +212,4 @@ class ResourceCreatorContext(object):
         return self.cls
 
     async def __aexit__(self, exc_type, exc, tb):
-        await self.cls.close()
+        await self.cls.__aexit__(exc_type, exc, tb)
