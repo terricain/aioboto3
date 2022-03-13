@@ -12,7 +12,7 @@ Contents:
    cse
    chalice
    contributing
-   history
+   changelog
 
 Indices and tables
 ==================
