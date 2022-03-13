@@ -2,6 +2,15 @@
 History
 =======
 
+9.4.0 (2022-03-13)
+------------------
+
+* Bumped aiobotocore to 2.1.2
+* Updated asyncio.wait usage to be compatible with py3.11 - thanks @noblepayne
+* Fixed resource __aexit__ not being used properly - thanks @chrisBLIT
+* Added S3 CopyFrom test coverage
+* Bumped Moto to 3.1.0
+
 9.3.1 (2022-01-10)
 ------------------
 
