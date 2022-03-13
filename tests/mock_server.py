@@ -59,7 +59,7 @@ def dynamodb2_server():
     host = "localhost"
     port = 5001
     url = "http://{host}:{port}".format(host=host, port=port)
-    process = start_service('dynamodb2', host, port)
+    process = start_service('dynamodb', host, port)
     yield url
     stop_process(process)
 
