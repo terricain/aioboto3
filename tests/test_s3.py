@@ -181,8 +181,6 @@ async def test_s3_upload_file(event_loop, s3_client, bucket_name):
 async def test_s3_copy(event_loop, s3_client, bucket_name):
     data = b'Hello World\n'
 
-    # TODO ============================================= generate largeish file
-
     filename = '/tmp/aioboto3_temp_s3_upload.txt'
     await s3_client.create_bucket(Bucket=bucket_name)
 
@@ -196,6 +194,26 @@ async def test_s3_copy(event_loop, s3_client, bucket_name):
 
     # Get copied file
     resp = await s3_client.get_object(Bucket=bucket_name, Key='test_file2')
+    assert (await resp['Body'].read()) == data
+
+
+@pytest.mark.asyncio
+async def test_s3_copy_from(event_loop, s3_client, s3_resource, bucket_name):
+    data = b'Hello World\n'
+    await s3_client.create_bucket(Bucket=bucket_name)
+
+    fh = BytesIO()
+    fh.write(data)
+    fh.seek(0)
+
+    await s3_client.upload_fileobj(fh, bucket_name, 'test_file')
+
+    resource = await s3_resource.Object(bucket_name, "new_test_file")
+    copy_source = bucket_name + "/test_file"
+    copy_result = await resource.copy_from(CopySource=copy_source)
+    assert 'CopyObjectResult' in copy_result
+
+    resp = await s3_client.get_object(Bucket=bucket_name, Key='new_test_file')
     assert (await resp['Body'].read()) == data
 
 

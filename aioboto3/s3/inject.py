@@ -293,7 +293,10 @@ async def upload_fileobj(self, Fileobj: BinaryIO, Bucket: str, Key: str, ExtraAr
     # So by this point all of the file is read and in a queue
 
     # wait for either io queue is finished, or an exception has been raised
-    _, pending = await asyncio.wait({io_queue.join(), exception_event.wait()}, return_when=asyncio.FIRST_COMPLETED)
+    _, pending = await asyncio.wait(
+        {asyncio.create_task(io_queue.join()), asyncio.create_task(exception_event.wait())},
+        return_when=asyncio.FIRST_COMPLETED
+    )
 
     if exception_event.is_set() or len(finished_parts) != expected_parts:
         # An exception during upload or for some reason the finished parts dont match the expected parts, cancel upload
