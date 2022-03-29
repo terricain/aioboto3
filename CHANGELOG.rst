@@ -2,6 +2,12 @@
 History
 =======
 
+9.5.0 (2022-03-29)
+------------------
+
+* Bumped aiobotocore to 2.2.0 - thanks @dacevedo12
+* Updated formatting in various places to match the boto3 equivalent
+
 9.4.0 (2022-03-13)
 ------------------
 
