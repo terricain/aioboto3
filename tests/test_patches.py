@@ -26,51 +26,51 @@ _API_DIGESTS = {
     boto3.NullHandler: {'7f33bbce5d634afba1f0fff359644f288dcf671e'},
 
     # resources/action.py
-    ServiceAction.__init__: {'b8b759abbe8fbfa9bad332b8ce8d30f55daf97f3'},
-    ServiceAction.__call__: {'f3cb58a5e36bf3355723c69ec244990180a2d5bc'},
-    BatchAction.__call__: {'ea58ac6ba436740cc3766b8c115ee0222b665c9a'},
-    WaiterAction.__call__: {'d3c379619530e8f2b3b7cb8a3421dcb0acfd0f73'},
+    ServiceAction.__init__: {'b8b759abbe8fbfa9bad332b8ce8d30f55daf97f3', '21c079bf5e234c3fcb632c7f689eccf0c4d2935b'},
+    ServiceAction.__call__: {'f3cb58a5e36bf3355723c69ec244990180a2d5bc', '56c98dd3a54b2859a8834a1e4d676fe38fae013e'},
+    BatchAction.__call__: {'ea58ac6ba436740cc3766b8c115ee0222b665c9a', '63387ccf7f57ffc39be7fde1de187776622bb1c4'},
+    WaiterAction.__call__: {'d3c379619530e8f2b3b7cb8a3421dcb0acfd0f73', '616339d5d6af86431108d84118f490d879dd9fa2'},
 
     # resources/collection.py
     ResourceCollection.__iter__: {'6631cf4c177643738acff01aa7f3fa324a246ba9'},  # Logic inside anext
-    ResourceCollection.pages: {'a26745155edd73004004af12e8fa8f617d2989b0'},
-    CollectionManager.__init__: {'f40c0a368b747518a7b6998eab98920cb4d7d233'},
-    CollectionFactory.load_from_definition: {'eadb8897327b2faf812b2a2d6fbf643c8f4f029a'},
-    CollectionFactory._create_batch_action: {'435ff19f24325a515563fd9716b89158ac676a02'},
+    ResourceCollection.pages: {'a26745155edd73004004af12e8fa8f617d2989b0', '28ae6e6fe35b930bbf65a162225bb4e23fc9eec0'},
+    CollectionManager.__init__: {'f40c0a368b747518a7b6998eab98920cb4d7d233', '7007f88626a41fec98a5efd79c24395d89ded879'},
+    CollectionFactory.load_from_definition: {'eadb8897327b2faf812b2a2d6fbf643c8f4f029a', '06c878d737216948ef9cfda476594466d34b5d97'},
+    CollectionFactory._create_batch_action: {'435ff19f24325a515563fd9716b89158ac676a02', 'a911563aaf703994b63c5e2b51c0205b82f05673'},
 
     # resources/factory.py
     ResourceFactory.__init__: {'dc2b647537ce3cecfe76e172cc4042eca4ed5b86'},
-    ResourceFactory.load_from_definition: {'1f6c0b9298d63d3d50c64abdb3c7025c03cbbdf9'},
-    ResourceFactory._create_autoload_property: {'62793a404067069d499246389f1b97601cb9b7a8'},
-    ResourceFactory._create_waiter: {'69d8bd493fde2f6e3b32c5a6cf89059885832cff'},
-    ResourceFactory._create_class_partial: {'5e421387dd4a4a40e871dc1597af21149eccf85a'},
-    ResourceFactory._create_action: {'f0d07daf3e4dcf45ed07886fa5aa66e123b0d680'},
+    ResourceFactory.load_from_definition: {'1f6c0b9298d63d3d50c64abdb3c7025c03cbbdf9', 'c995f96439b1837d6caaf461e37f01580cd840d5'},
+    ResourceFactory._create_autoload_property: {'62793a404067069d499246389f1b97601cb9b7a8', '812f8f8cd1445582c83b09ff2fce1e799daba419'},
+    ResourceFactory._create_waiter: {'69d8bd493fde2f6e3b32c5a6cf89059885832cff', 'abb12827964c8bab17f4d99466d1a60ab97ec0a9'},
+    ResourceFactory._create_class_partial: {'5e421387dd4a4a40e871dc1597af21149eccf85a', 'cba44eb792b11f2ff47146f0f610e0bfb17de1b5'},
+    ResourceFactory._create_action: {'f0d07daf3e4dcf45ed07886fa5aa66e123b0d680', 'f261e6a8be8ab4037d2abe83611f3a6caa3ada71'},
 
     # resources/response.py
-    ResourceHandler.__call__: {'4927077955466d5ef3558b2148ba8ff8d19094bf'},
+    ResourceHandler.__call__: {'4927077955466d5ef3558b2148ba8ff8d19094bf', 'e3bdc52aa8d22642d1118921d984808b9019ce63'},
     RawHandler.__call__: {'5ea91e39ab1dc3587a4038805ee90235990b866d'},
 
     # session.py
-    Session.__init__: {'7c25cbd2154cc87e732fe4a343900d7002195973'},
-    Session._register_default_handlers: {'04f247de526b7a0af15737e04019ade52cc65446'},
-    Session.resource: {'5e3568b28281a75eaf9725fab67c33dc16a18144'},
+    Session.__init__: {'7c25cbd2154cc87e732fe4a343900d7002195973', '8540ad5941a8ad7c88a6f2d7dc446da128be9eaf'},
+    Session._register_default_handlers: {'04f247de526b7a0af15737e04019ade52cc65446', '74fa15629c9ea69f79f3a5285357dbf53f734f2d'},
+    Session.resource: {'5e3568b28281a75eaf9725fab67c33dc16a18144', 'b110781f5a5d148dd1d614e7611650a16cbea372'},
 
     # dynamodb/table.py
     register_table_methods: {'1d9191de712871b92e1e87f94c6583166a315113'},
-    TableResource: {'a65f5e64ecca7d3cee3f6f337db36313d84dbad1', '2b803c9437bbee6b369369a279fcb0e34c821ab2'},
-    BatchWriter: {'cc693bab78c81c5d11a308275734cc1815b0199a'},  # Class was pretty much rewritten so wasn't subclassed.
+    TableResource: {'a65f5e64ecca7d3cee3f6f337db36313d84dbad1', '2b803c9437bbee6b369369a279fcb0e34c821ab2', 'b9d2f960fbffafdd8b88f7036c4dbe1a76e93f66'},
+    BatchWriter: {'cc693bab78c81c5d11a308275734cc1815b0199a', '0a8a790d252700038a6aad85a6ff63282fca97e4'},  # Class was pretty much rewritten so wasn't subclassed.
 
     # s3/inject.py
-    inject_s3_transfer_methods: {'8540c89847b80cc1fb34627989eba14972c158d5'},
+    inject_s3_transfer_methods: {'8540c89847b80cc1fb34627989eba14972c158d5', '19e91a5002e1d5b30a08024f25a9ba875010bacc'},
     inject_object_summary_methods: {'a9e2005d1663a5eb17b6b9667835fa251864ccef'},
-    inject_bucket_methods: {'63316226fdd4d7c043eaf35e07b6b2ac331b4872'},
-    object_summary_load: {'3e4db1310105ced8ac2af17598603812ca18cbbe'},
+    inject_bucket_methods: {'63316226fdd4d7c043eaf35e07b6b2ac331b4872', 'dfe1c2219ced56b0aaa74c4a84210fd20463392e'},
+    object_summary_load: {'3e4db1310105ced8ac2af17598603812ca18cbbe', '98a5a726f105388322a845ba97e08f1e53ee9d69'},
     bucket_load: {'2d40d03ca9ec91eb5de8a8f40e0f35634ab1d987'},
-    download_file: {'5a05472514f9e34c5f64ca8bbcc80a1d27f1f5d1'},
-    download_fileobj: {'237370745eb02e93a353fa806a64f3701c47995c', '9299d1abbd9d5c311e8a824a438e150ff24ebcd7'},
-    upload_fileobj: {'d1db027e51d37cf1476377cfda436810b813044b'},
-    upload_file: {'ad899c968fdfc294b46c54efbcb9912c5675ba09'},
-    copy: {'c4423d0a6d3352553befdf0387987c09812fcaff'},
+    download_file: {'5a05472514f9e34c5f64ca8bbcc80a1d27f1f5d1', 'a31ffcb7ba368f951d16babedcc48252cc5cb2af'},
+    download_fileobj: {'237370745eb02e93a353fa806a64f3701c47995c', '9299d1abbd9d5c311e8a824a438e150ff24ebcd7', '91c0900c26c0078b623b9550c4fb9ef6afc4a528'},
+    upload_fileobj: {'d1db027e51d37cf1476377cfda436810b813044b', '3b953e17cfc4a3c6ad75c3890af60aebeea4bee8'},
+    upload_file: {'ad899c968fdfc294b46c54efbcb9912c5675ba09', 'df7552000d9111f71a05bd9880e9b6ef0f2f21bc'},
+    copy: {'c4423d0a6d3352553befdf0387987c09812fcaff', 'e8154a4de3b97dd2ab29d250c005b03e8fc7ed71'},
 }
 
 _CHALICE_API_DIGESTS = {

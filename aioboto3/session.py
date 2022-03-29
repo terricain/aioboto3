@@ -38,9 +38,15 @@ class Session(boto3.session.Session):
     :param profile_name: The name of a profile to use. If not given, then
                          the default profile is used.
     """
-    def __init__(self, aws_access_key_id=None, aws_secret_access_key=None,
-                 aws_session_token=None, region_name=None,
-                 botocore_session=None, profile_name=None):
+    def __init__(
+        self,
+        aws_access_key_id=None,
+        aws_secret_access_key=None,
+        aws_session_token=None,
+        region_name=None,
+        botocore_session=None,
+        profile_name=None
+    ):
         if botocore_session is not None:
             self._session = botocore_session
         else:
@@ -69,29 +75,44 @@ class Session(boto3.session.Session):
             self._session.set_config_variable('region', region_name)
 
         self.resource_factory = AIOBoto3ResourceFactory(
-            self._session.get_component('event_emitter'))
+            self._session.get_component('event_emitter')
+        )
         self._setup_loader()
         self._register_default_handlers()
 
-    def resource(self, service_name, region_name=None, api_version=None,
-                       use_ssl=True, verify=None, endpoint_url=None,
-                       aws_access_key_id=None, aws_secret_access_key=None,
-                       aws_session_token=None, config=None):
+    def resource(
+        self,
+        service_name,
+        region_name=None,
+        api_version=None,
+        use_ssl=True,
+        verify=None,
+        endpoint_url=None,
+        aws_access_key_id=None,
+        aws_secret_access_key=None,
+        aws_session_token=None,
+        config=None
+    ):
         try:
             resource_model = self._loader.load_service_model(
-                service_name, 'resources-1', api_version)
+                service_name, 'resources-1', api_version
+            )
         except UnknownServiceError:
             available = self.get_available_resources()
             has_low_level_client = (
-                service_name in self.get_available_services())
-            raise ResourceNotExistsError(service_name, available,
-                                         has_low_level_client)
+                service_name in self.get_available_services()
+            )
+            raise ResourceNotExistsError(
+                service_name, available, has_low_level_client
+            )
         except DataNotFoundError:
             # This is because we've provided an invalid API version.
             available_api_versions = self._loader.list_api_versions(
-                service_name, 'resources-1')
+                service_name, 'resources-1'
+            )
             raise UnknownAPIVersionError(
-                service_name, api_version, ', '.join(available_api_versions))
+                service_name, api_version, ', '.join(available_api_versions)
+            )
 
         if api_version is None:
             # Even though botocore's load_service_model() can handle
@@ -110,7 +131,8 @@ class Session(boto3.session.Session):
             # and loader.determine_latest_version(..., 'resources-1')
             # both load the same api version of the file.
             api_version = self._loader.determine_latest_version(
-                service_name, 'resources-1')
+                service_name, 'resources-1'
+            )
 
         # Creating a new resource instance requires the low-level client
         # and service model, the resource version and resource JSON data.
@@ -134,43 +156,53 @@ class Session(boto3.session.Session):
         self._session.register(
             'creating-client-class.s3',
             boto3.utils.lazy_call(
-                'aioboto3.s3.inject.inject_s3_transfer_methods'))
+                'aioboto3.s3.inject.inject_s3_transfer_methods'
+            ),
+        )
         self._session.register(
             'creating-resource-class.s3.Bucket',
-            boto3.utils.lazy_call(
-                'aioboto3.s3.inject.inject_bucket_methods'))
+            boto3.utils.lazy_call('aioboto3.s3.inject.inject_bucket_methods'),
+        )
         self._session.register(
             'creating-resource-class.s3.Object',
-            boto3.utils.lazy_call(
-                'boto3.s3.inject.inject_object_methods'))
+            boto3.utils.lazy_call('boto3.s3.inject.inject_object_methods'),
+        )
         self._session.register(
             'creating-resource-class.s3.ObjectSummary',
             boto3.utils.lazy_call(
-                'aioboto3.s3.inject.inject_object_summary_methods'))
+                'aioboto3.s3.inject.inject_object_summary_methods'
+            ),
+        )
 
         # DynamoDb customizations
         self._session.register(
             'creating-resource-class.dynamodb',
             boto3.utils.lazy_call(
-                'boto3.dynamodb.transform.register_high_level_interface'),
-            unique_id='high-level-dynamodb')
+                'boto3.dynamodb.transform.register_high_level_interface'
+            ),
+            unique_id='high-level-dynamodb',
+        )
         self._session.register(
             'creating-resource-class.dynamodb.Table',
             boto3.utils.lazy_call(
-                'aioboto3.dynamodb.table.register_table_methods'),
-            unique_id='high-level-dynamodb-table')
+                'aioboto3.dynamodb.table.register_table_methods'
+            ),
+            unique_id='high-level-dynamodb-table',
+        )
 
         # EC2 Customizations
         self._session.register(
             'creating-resource-class.ec2.ServiceResource',
-            boto3.utils.lazy_call(
-                'boto3.ec2.createtags.inject_create_tags'))
+            boto3.utils.lazy_call('boto3.ec2.createtags.inject_create_tags')
+        )
 
         self._session.register(
             'creating-resource-class.ec2.Instance',
             boto3.utils.lazy_call(
                 'boto3.ec2.deletetags.inject_delete_tags',
-                event_emitter=self.events))
+                event_emitter=self.events
+            ),
+        )
 
 
 class ResourceCreatorContext(object):
@@ -196,10 +228,12 @@ class ResourceCreatorContext(object):
         # Create a ServiceContext object to serve as a reference to
         # important read-only information about the general service.
         service_context = boto3.utils.ServiceContext(
-            service_name=self.service_name, service_model=service_model,
+            service_name=self.service_name,
+            service_model=service_model,
             resource_json_definitions=self.resource_model['resources'],
             service_waiter_model=boto3.utils.LazyLoadedWaiterModel(
-                self.session._session, self.service_name, self.api_version)
+                self.session._session, self.service_name, self.api_version
+            ),
         )
 
         # Create the service resource class.

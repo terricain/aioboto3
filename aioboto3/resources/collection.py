@@ -98,7 +98,8 @@ class AIOCollectionManager(CollectionManager):
 
         search_path = collection_model.resource.path
         self._handler = AIOResourceHandler(
-            search_path=search_path, factory=factory,
+            search_path=search_path,
+            factory=factory,
             resource_model=collection_model.resource,
             service_context=service_context,
             operation_name=operation_name
@@ -113,11 +114,15 @@ class AIOCollectionFactory(CollectionFactory):
 
         # Create the batch actions for a collection
         self._load_batch_actions(
-            attrs, resource_name, collection_model,
-            service_context.service_model, event_emitter)
+            attrs,
+            resource_name,
+            collection_model,
+            service_context.service_model,
+            event_emitter)
         # Add the documentation to the collection class's methods
         self._load_documented_collection_methods(
-            attrs=attrs, resource_name=resource_name,
+            attrs=attrs,
+            resource_name=resource_name,
             collection_model=collection_model,
             service_model=service_context.service_model,
             event_emitter=event_emitter,
@@ -135,7 +140,8 @@ class AIOCollectionFactory(CollectionFactory):
 
         # Add the documentation to the collection manager's methods
         self._load_documented_collection_methods(
-            attrs=attrs, resource_name=resource_name,
+            attrs=attrs,
+            resource_name=resource_name,
             collection_model=collection_model,
             service_model=service_context.service_model,
             event_emitter=event_emitter,
@@ -145,9 +151,15 @@ class AIOCollectionFactory(CollectionFactory):
 
         return type(str(cls_name), (AIOCollectionManager,), attrs)
 
-    def _create_batch_action(factory_self, resource_name, snake_cased,
-                             action_model, collection_model, service_model,
-                             event_emitter):
+    def _create_batch_action(
+        factory_self,
+        resource_name,
+        snake_cased,
+        action_model,
+        collection_model,
+        service_model,
+        event_emitter
+    ):
         """
         Creates a new method which makes a batch operation request
         to the underlying service API.
