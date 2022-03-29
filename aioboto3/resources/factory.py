@@ -29,7 +29,8 @@ class AIOBoto3ResourceFactory(ResourceFactory):
 
         # Using the loaded JSON create a ResourceModel object.
         resource_model = ResourceModel(
-            resource_name, single_resource_json_definition,
+            resource_name,
+            single_resource_json_definition,
             service_context.resource_json_definitions
         )
 
@@ -38,7 +39,8 @@ class AIOBoto3ResourceFactory(ResourceFactory):
         shape = None
         if resource_model.shape:
             shape = service_context.service_model.shape_for(
-                resource_model.shape)
+                resource_model.shape
+            )
         resource_model.load_rename_map(shape)
 
         # Set some basic info
@@ -53,37 +55,48 @@ class AIOBoto3ResourceFactory(ResourceFactory):
 
         # Identifiers
         self._load_identifiers(
-            attrs=attrs, meta=meta, resource_name=resource_name,
+            attrs=attrs,
+            meta=meta,
+            resource_name=resource_name,
             resource_model=resource_model
         )
 
         # Load/Reload actions
         self._load_actions(
-            attrs=attrs, resource_name=resource_name,
-            resource_model=resource_model, service_context=service_context
+            attrs=attrs,
+            resource_name=resource_name,
+            resource_model=resource_model,
+            service_context=service_context
         )
 
         # Attributes that get auto-loaded
         self._load_attributes(
-            attrs=attrs, meta=meta, resource_name=resource_name,
+            attrs=attrs,
+            meta=meta,
+            resource_name=resource_name,
             resource_model=resource_model,
             service_context=service_context)
 
         # Collections and their corresponding methods
         self._load_collections(
-            attrs=attrs, resource_model=resource_model,
+            attrs=attrs,
+            resource_model=resource_model,
             service_context=service_context)
 
         # References and Subresources
         self._load_has_relations(
-            attrs=attrs, resource_name=resource_name,
-            resource_model=resource_model, service_context=service_context
+            attrs=attrs,
+            resource_name=resource_name,
+            resource_model=resource_model,
+            service_context=service_context
         )
 
         # Waiter resource actions
         self._load_waiters(
-            attrs=attrs, resource_name=resource_name,
-            resource_model=resource_model, service_context=service_context
+            attrs=attrs,
+            resource_name=resource_name,
+            resource_model=resource_model,
+            service_context=service_context
         )
 
         # Create the name based on the requested service and resource
@@ -96,12 +109,20 @@ class AIOBoto3ResourceFactory(ResourceFactory):
         if self._emitter is not None:
             await self._emitter.emit(
                 'creating-resource-class.%s' % cls_name,
-                class_attributes=attrs, base_classes=base_classes,
-                service_context=service_context)
+                class_attributes=attrs,
+                base_classes=base_classes,
+                service_context=service_context
+            )
         return type(str(cls_name), tuple(base_classes), attrs)
 
-    def _create_autoload_property(factory_self, resource_name, name,
-                                  snake_cased, member_model, service_context):
+    def _create_autoload_property(
+        factory_self,
+        resource_name,
+        name,
+        snake_cased,
+        member_model,
+        service_context
+    ):
         """
         Creates a new property on the resource to lazy-load its value
         via the resource's ``load`` method (if it exists).
@@ -133,14 +154,17 @@ class AIOBoto3ResourceFactory(ResourceFactory):
 
         return property(property_loader)
 
-    def _create_waiter(factory_self, resource_waiter_model, resource_name,
-                       service_context):
+    def _create_waiter(
+        factory_self, resource_waiter_model, resource_name, service_context
+    ):
         """
         Creates a new wait method for each resource where both a waiter and
         resource model is defined.
         """
-        waiter = AIOWaiterAction(resource_waiter_model,
-                                 waiter_resource_name=resource_waiter_model.name)
+        waiter = AIOWaiterAction(
+            resource_waiter_model,
+            waiter_resource_name=resource_waiter_model.name
+        )
 
         async def do_waiter(self, *args, **kwargs):
             await waiter(self, *args, **kwargs)
@@ -156,8 +180,9 @@ class AIOBoto3ResourceFactory(ResourceFactory):
         )
         return do_waiter
 
-    def _create_class_partial(factory_self, subresource_model, resource_name,
-                              service_context):
+    def _create_class_partial(
+        factory_self, subresource_model, resource_name, service_context
+    ):
         """
         Creates a new method which acts as a functools.partial, passing
         along the instance's low-level `client` to the new resource
@@ -188,8 +213,9 @@ class AIOBoto3ResourceFactory(ResourceFactory):
                 for identifier, value in build_identifiers(identifiers, self):
                     positional_args.append(value)
 
-            return partial(resource_cls, *positional_args,
-                           client=self.meta.client)(*args, **kwargs)
+            return partial(
+                resource_cls, *positional_args, client=self.meta.client
+            )(*args, **kwargs)
 
         create_resource.__name__ = str(name)
         create_resource.__doc__ = docstring.SubResourceDocstring(
@@ -200,8 +226,13 @@ class AIOBoto3ResourceFactory(ResourceFactory):
         )
         return create_resource
 
-    def _create_action(factory_self, action_model, resource_name,
-                       service_context, is_load=False):
+    def _create_action(
+        factory_self,
+        action_model,
+        resource_name,
+        service_context,
+        is_load=False
+    ):
         """
         Creates a new method which makes a request to the underlying
         AWS service.
@@ -210,8 +241,7 @@ class AIOBoto3ResourceFactory(ResourceFactory):
         # method below is invoked, which allows instances of the resource
         # to share the ServiceAction instance.
         action = AIOServiceAction(
-            action_model, factory=factory_self,
-            service_context=service_context
+            action_model, factory=factory_self, service_context=service_context
         )
 
         # A resource's ``load`` method is special because it sets

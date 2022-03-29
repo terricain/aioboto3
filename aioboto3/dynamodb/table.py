@@ -12,8 +12,12 @@ def register_table_methods(base_classes, **kwargs):
 
 class CustomTableResource(TableResource):
     def batch_writer(self, overwrite_by_pkeys=None, flush_amount=25, on_exit_loop_sleep=0):
-        return BatchWriter(self.name, self.meta.client, flush_amount=flush_amount,
-                           overwrite_by_pkeys=overwrite_by_pkeys, on_exit_loop_sleep=on_exit_loop_sleep)
+        return BatchWriter(
+            self.name, self.meta.client,
+            flush_amount=flush_amount,
+            overwrite_by_pkeys=overwrite_by_pkeys,
+            on_exit_loop_sleep=on_exit_loop_sleep
+        )
 
 
 class BatchWriter(object):
@@ -22,8 +26,9 @@ class BatchWriter(object):
     Automatically handle batch writes to DynamoDB for a single table.
     """
 
-    def __init__(self, table_name, client, flush_amount=25,
-                 overwrite_by_pkeys=None, on_exit_loop_sleep=0):
+    def __init__(
+        self, table_name, client, flush_amount=25, overwrite_by_pkeys=None, on_exit_loop_sleep=0
+    ):
         """
 
         :type table_name: str
@@ -84,11 +89,15 @@ class BatchWriter(object):
 
     def _extract_pkey_values(self, request):
         if request.get('PutRequest'):
-            return [request['PutRequest']['Item'][key]
-                    for key in self._overwrite_by_pkeys]
+            return [
+                request['PutRequest']['Item'][key]
+                for key in self._overwrite_by_pkeys
+            ]
         elif request.get('DeleteRequest'):
-            return [request['DeleteRequest']['Key'][key]
-                    for key in self._overwrite_by_pkeys]
+            return [
+                request['DeleteRequest']['Key'][key]
+                for key in self._overwrite_by_pkeys
+            ]
         return None
 
     async def _flush_if_needed(self):
@@ -108,8 +117,9 @@ class BatchWriter(object):
             self._items_buffer.extend(unprocessed_items[self._table_name])
         else:
             self._items_buffer = []
-        logger.debug("Batch write sent %s, unprocessed: %s",
-                     len(items_to_send), len(self._items_buffer))
+        logger.debug(
+            "Batch write sent %s, unprocessed: %s", len(items_to_send), len(self._items_buffer)
+        )
 
     async def __aenter__(self):
         return self

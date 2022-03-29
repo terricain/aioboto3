@@ -17,7 +17,8 @@ def inject_s3_transfer_methods(class_attributes, **kwargs):
     utils.inject_attribute(class_attributes, 'copy', copy)
     utils.inject_attribute(class_attributes, 'upload_fileobj', upload_fileobj)
     utils.inject_attribute(
-        class_attributes, 'download_fileobj', download_fileobj)
+        class_attributes, 'download_fileobj', download_fileobj
+    )
 
 
 def inject_object_summary_methods(class_attributes, **kwargs):
@@ -28,24 +29,29 @@ def inject_bucket_methods(class_attributes, **kwargs):
     utils.inject_attribute(class_attributes, 'load', bucket_load)
     utils.inject_attribute(class_attributes, 'upload_file', bucket_upload_file)
     utils.inject_attribute(
-        class_attributes, 'download_file', bucket_download_file)
+        class_attributes, 'download_file', bucket_download_file
+    )
     utils.inject_attribute(class_attributes, 'copy', bucket_copy)
     utils.inject_attribute(
-        class_attributes, 'upload_fileobj', bucket_upload_fileobj)
+        class_attributes, 'upload_fileobj', bucket_upload_fileobj
+    )
     utils.inject_attribute(
-        class_attributes, 'download_fileobj', bucket_download_fileobj)
+        class_attributes, 'download_fileobj', bucket_download_fileobj
+    )
 
 
 async def object_summary_load(self, *args, **kwargs):
     response = await self.meta.client.head_object(
-        Bucket=self.bucket_name, Key=self.key)
+        Bucket=self.bucket_name, Key=self.key
+    )
     if 'ContentLength' in response:
         response['Size'] = response.pop('ContentLength')
     self.meta.data = response
 
 
-async def download_file(self, Bucket, Key, Filename, ExtraArgs=None,
-                        Callback=None, Config=None):
+async def download_file(
+    self, Bucket, Key, Filename, ExtraArgs=None, Callback=None, Config=None
+):
     """Download an S3 object to a file.
 
     Usage::
@@ -58,11 +64,20 @@ async def download_file(self, Bucket, Key, Filename, ExtraArgs=None,
     except that parameters are capitalized.
     """
     with open(Filename, 'wb') as open_file:
-        await download_fileobj(self, Bucket, Key, open_file, ExtraArgs=ExtraArgs, Callback=Callback, Config=Config)
+        await download_fileobj(
+            self,
+            Bucket,
+            Key,
+            open_file,
+            ExtraArgs=ExtraArgs,
+            Callback=Callback,
+            Config=Config
+        )
 
 
-async def download_fileobj(self, Bucket, Key, Fileobj, ExtraArgs=None,
-                           Callback=None, Config=None):
+async def download_fileobj(
+    self, Bucket, Key, Fileobj, ExtraArgs=None, Callback=None, Config=None
+):
     """Download an object from S3 to a file-like object.
 
     The file-like object must be in binary mode.
@@ -129,10 +144,16 @@ async def download_fileobj(self, Bucket, Key, Fileobj, ExtraArgs=None,
         await asyncio.sleep(0.0)
 
 
-async def upload_fileobj(self, Fileobj: BinaryIO, Bucket: str, Key: str, ExtraArgs: Optional[Dict[str, Any]] = None,
-                         Callback: Optional[Callable[[int], None]] = None,
-                         Config: Optional[S3TransferConfig] = None,
-                         Processing: Callable[[bytes], bytes] = None):
+async def upload_fileobj(
+    self,
+    Fileobj: BinaryIO,
+    Bucket: str,
+    Key: str,
+    ExtraArgs: Optional[Dict[str, Any]] = None,
+    Callback: Optional[Callable[[int], None]] = None,
+    Config: Optional[S3TransferConfig] = None,
+    Processing: Callable[[bytes], bytes] = None
+):
     """Upload a file-like object to S3.
 
     The file-like object must be in binary mode.
@@ -350,8 +371,9 @@ async def upload_fileobj(self, Fileobj: BinaryIO, Bucket: str, Key: str, ExtraAr
         raise exception
 
 
-async def upload_file(self, Filename, Bucket, Key, ExtraArgs=None,
-                      Callback=None, Config=None):
+async def upload_file(
+    self, Filename, Bucket, Key, ExtraArgs=None, Callback=None, Config=None
+):
     """Upload a file to an S3 object.
 
     Usage::
@@ -364,11 +386,20 @@ async def upload_file(self, Filename, Bucket, Key, ExtraArgs=None,
     except that parameters are capitalized.
     """
     with open(Filename, 'rb') as open_file:
-        await upload_fileobj(self, open_file, Bucket, Key, ExtraArgs=ExtraArgs, Callback=Callback, Config=Config)
+        await upload_fileobj(
+            self,
+            open_file,
+            Bucket,
+            Key,
+            ExtraArgs=ExtraArgs,
+            Callback=Callback,
+            Config=Config
+        )
 
 
-async def copy(self, CopySource, Bucket, Key, ExtraArgs=None, Callback=None,
-               SourceClient=None, Config=None):
+async def copy(
+    self, CopySource, Bucket, Key, ExtraArgs=None, Callback=None, SourceClient=None, Config=None
+):
     assert 'Bucket' in CopySource
     assert 'Key' in CopySource
 
@@ -379,7 +410,9 @@ async def copy(self, CopySource, Bucket, Key, ExtraArgs=None, Callback=None,
         ExtraArgs = {}
 
     try:
-        resp = await SourceClient.get_object(Bucket=CopySource['Bucket'], Key=CopySource['Key'], **ExtraArgs)
+        resp = await SourceClient.get_object(
+            Bucket=CopySource['Bucket'], Key=CopySource['Key'], **ExtraArgs
+        )
     except ClientError as err:
         if err.response['Error']['Code'] == 'NoSuchKey':
             # Convert to 404 so it looks the same when boto3.download_file fails
@@ -388,7 +421,14 @@ async def copy(self, CopySource, Bucket, Key, ExtraArgs=None, Callback=None,
 
     file_obj = resp['Body']
 
-    await self.upload_fileobj(file_obj, Bucket, Key, ExtraArgs=ExtraArgs, Callback=Callback, Config=Config)
+    await self.upload_fileobj(
+        file_obj,
+        Bucket,
+        Key,
+        ExtraArgs=ExtraArgs,
+        Callback=Callback,
+        Config=Config
+    )
 
 
 async def bucket_load(self, *args, **kwargs):

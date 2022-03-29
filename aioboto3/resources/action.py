@@ -19,7 +19,8 @@ class AIOServiceAction(ServiceAction):
         if resource_response_model:
             self._response_handler = AIOResourceHandler(
                 search_path=resource_response_model.path,
-                factory=factory, resource_model=resource_response_model,
+                factory=factory,
+                resource_model=resource_response_model,
                 service_context=service_context,
                 operation_name=action_model.request.operation
             )
