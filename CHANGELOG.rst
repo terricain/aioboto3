@@ -2,6 +2,13 @@
 History
 =======
 
+10.0.0 (2022-08-10)
+-------------------
+
+* Bumped aiobotocore to 2.3.4 - thanks @dacevedo12
+* Fixed async pytest fixtures which now work in pytest-asyncio strict mode
+* Fixed edge case in dynamodb batch writer loosing uncommitted writes - see #270, thanks @JamesVerrill
+
 9.6.0 (2022-05-06)
 ------------------
 
