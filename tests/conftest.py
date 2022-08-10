@@ -6,6 +6,8 @@ import uuid
 from unittest import mock
 from typing import Dict, Type, TypeVar
 
+import pytest_asyncio
+
 from aiobotocore.config import AioConfig
 from aioboto3.session import Session
 
@@ -62,7 +64,7 @@ def s3_key_name() -> str:
     return uuid.uuid4().hex
 
 
-@pytest.fixture
+@pytest_asyncio.fixture
 async def dynamodb_resource(request, region: str, config: AioConfig, event_loop, dynamodb2_server: str) -> "ServiceResource":
     session = Session(region_name=region, **moto_config())
 
@@ -70,7 +72,7 @@ async def dynamodb_resource(request, region: str, config: AioConfig, event_loop,
         yield resource
 
 
-@pytest.fixture
+@pytest_asyncio.fixture
 async def s3_client(request, region: str, config: AioConfig, event_loop, s3_server: str, bucket_name: str) -> "S3":
     session = Session(region_name=region, **moto_config())
 
@@ -78,7 +80,7 @@ async def s3_client(request, region: str, config: AioConfig, event_loop, s3_serv
         yield client
 
 
-@pytest.fixture
+@pytest_asyncio.fixture
 async def s3_resource(request, region: str, config: AioConfig, event_loop, s3_server: str, bucket_name: str) -> "ServiceResource":
     session = Session(region_name=region, **moto_config())
 
