@@ -2,6 +2,11 @@
 History
 =======
 
+10.0.1a0 (2022-08-11)
+---------------------
+
+* Fixes submitting SSE-C arguments in multipart uploads
+
 10.0.0 (2022-08-10)
 -------------------
 
