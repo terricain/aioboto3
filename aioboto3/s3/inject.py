@@ -197,6 +197,15 @@ async def upload_fileobj(
     """
     kwargs = ExtraArgs or {}
 
+    # These are the extra_args that need to be forwarded onto
+    # subsequent upload_parts.
+    UPLOAD_PART_ARGS = {
+        'SSECustomerKey',
+        'SSECustomerAlgorithm',
+        'SSECustomerKeyMD5',
+        'RequestPayer',
+    }
+
     # I was debating setting up a queue etc...
     # If its too slow I'll then be bothered
     multipart_chunksize = 8388608 if Config is None else Config.multipart_chunksize
@@ -301,8 +310,12 @@ async def upload_fileobj(
             if Processing:
                 multipart_payload = Processing(multipart_payload)
 
-            await io_queue.put({'Body': multipart_payload, 'Bucket': Bucket, 'Key': Key,
-                                'PartNumber': part, 'UploadId': upload_id})
+            part_args = {'Body': multipart_payload, 'Bucket': Bucket, 'Key': Key,
+                         'PartNumber': part, 'UploadId': upload_id}
+
+            # Appends any params that need to be submitted during part upload
+            part_args.update({k: v for k, v in kwargs.items() if k in UPLOAD_PART_ARGS})
+            await io_queue.put(part_args)
             logger.debug('Added part to io_queue')
             expected_parts += 1
 
