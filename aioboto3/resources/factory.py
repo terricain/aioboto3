@@ -275,6 +275,7 @@ class AIOBoto3ResourceFactory(ResourceFactory):
                     self.meta.data = None
 
                 return response
+
             lazy_docstring = docstring.ActionDocstring(
                 resource_name=resource_name,
                 event_emitter=factory_self._emitter,

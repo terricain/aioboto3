@@ -44,7 +44,7 @@ _API_DIGESTS = {
     ResourceFactory._create_autoload_property: {'62793a404067069d499246389f1b97601cb9b7a8', '812f8f8cd1445582c83b09ff2fce1e799daba419'},
     ResourceFactory._create_waiter: {'69d8bd493fde2f6e3b32c5a6cf89059885832cff', 'abb12827964c8bab17f4d99466d1a60ab97ec0a9'},
     ResourceFactory._create_class_partial: {'5e421387dd4a4a40e871dc1597af21149eccf85a', 'cba44eb792b11f2ff47146f0f610e0bfb17de1b5'},
-    ResourceFactory._create_action: {'f0d07daf3e4dcf45ed07886fa5aa66e123b0d680', 'f261e6a8be8ab4037d2abe83611f3a6caa3ada71'},
+    ResourceFactory._create_action: {'1cbbe9ee45eeff7b40d3cde21df34f5cff540c94'},
 
     # resources/response.py
     ResourceHandler.__call__: {'4927077955466d5ef3558b2148ba8ff8d19094bf', 'e3bdc52aa8d22642d1118921d984808b9019ce63'},
@@ -58,7 +58,7 @@ _API_DIGESTS = {
     # dynamodb/table.py
     register_table_methods: {'1d9191de712871b92e1e87f94c6583166a315113'},
     TableResource: {'a65f5e64ecca7d3cee3f6f337db36313d84dbad1', '2b803c9437bbee6b369369a279fcb0e34c821ab2', 'b9d2f960fbffafdd8b88f7036c4dbe1a76e93f66'},
-    BatchWriter: {'cc693bab78c81c5d11a308275734cc1815b0199a', '0a8a790d252700038a6aad85a6ff63282fca97e4'},  # Class was pretty much rewritten so wasn't subclassed.
+    BatchWriter: {'d32584de13fb42efb39ae6841d4a55d162f5e7dd'},  # Class was pretty much rewritten so wasn't subclassed.
 
     # s3/inject.py
     inject_s3_transfer_methods: {'8540c89847b80cc1fb34627989eba14972c158d5', '19e91a5002e1d5b30a08024f25a9ba875010bacc'},
@@ -75,8 +75,8 @@ _API_DIGESTS = {
 
 _CHALICE_API_DIGESTS = {
     # experimental/async_chalice.py
-    Chalice.__call__: {'90fec8cb1fac970092429f7956a3a0d0bc021b76'},
-    RestAPIEventHandler._get_view_function_response: {'642f0f45420ad8406702700f09b3126fe582d4d3'}
+    Chalice.__call__: {'d1d4f2b1a1bd6574500dec1f181fcfe8345f5ac6'},
+    RestAPIEventHandler._get_view_function_response: {'ccf22bac60d89704c445baa9c2c881f525b70652'}
 }
 
 def test_patches():
