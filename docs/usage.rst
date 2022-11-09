@@ -162,11 +162,9 @@ Here we pull the object from S3 in chunks and serve it out to a HTTP request via
             resp.content_length = ob_info["content-length"]
             await resp.prepare(request)
 
-            async with s3_ob["Body"] as stream:
-                file_data = await stream.read(chunk_size)
-                while file_data:
-                    await resp.write(file_data)
-                    file_data = await stream.read(chunk_size)
+            stream = s3_ob["Body"]
+            while file_data := stream.read(chunk_size):
+                await resp.write(file_data)
 
         return resp
 
