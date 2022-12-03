@@ -2,6 +2,12 @@
 History
 =======
 
+10.2.0 (2022-12-03)
+-------------------
+
+* Updated S3 streaming example
+* Bumped aiobotocore to 2.4.1
+
 10.1.0 (2022-09-21)
 -------------------
 
