@@ -140,7 +140,9 @@ async def download_fileobj(
             except:  # noqa: E722
                 pass
 
-        Fileobj.write(data)
+        o = Fileobj.write(data)
+        if inspect.isawaitable(o):
+            await o
         await asyncio.sleep(0.0)
 
 
