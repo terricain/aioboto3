@@ -2,6 +2,11 @@
 History
 =======
 
+10.3.0 (2023-01-04)
+-------------------
+
+* Added support for async fileobjects in download_fileobj - thanks @prodeveloper0
+
 10.2.0 (2022-12-03)
 -------------------
 
