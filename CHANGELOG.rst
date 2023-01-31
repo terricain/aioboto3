@@ -2,10 +2,11 @@
 History
 =======
 
-10.4.0 (Unreleased)
+10.4.0 (2023-01-31)
 -------------------
 
 * Bumped aiobotocore to 2.4.2
+* Updated CI action versions
 
 10.3.0 (2023-01-04)
 -------------------
