@@ -17,7 +17,9 @@ Async AWS SDK for Python
      :target: https://pyup.io/repos/github/terrycain/aioboto3/
      :alt: Updates
 
-**Breaking changes for v9, aioboto3.resource and aioboto3.client methods no longer exist, make a session then call session.client etc...**
+**Breaking changes for v11: The S3Transfer config passed into upload/download_file etc.. has been updated to that it matches what boto3 uses**
+
+**Breaking changes for v9: aioboto3.resource and aioboto3.client methods no longer exist, make a session then call session.client etc...**
 This was done for various reasons but mainly that it prevents the default session living longer than it should as that breaks situations where eventloops are replaced.
 
 **The .client and .resource functions must now be used as async context managers.**

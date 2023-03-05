@@ -203,8 +203,8 @@ async def upload_fileobj(
     # If its too slow I'll then be bothered
     multipart_chunksize = 8388608 if Config is None else Config.multipart_chunksize
     io_chunksize = 262144 if Config is None else Config.io_chunksize
-    max_concurrency = 10 if Config is None else Config.max_concurrency
-    max_io_queue = 100 if Config is None else Config.max_io_queue
+    max_concurrency = 10 if Config is None else Config.max_request_concurrency
+    max_io_queue = 100 if Config is None else Config.max_io_queue_size
 
     # Start multipart upload
     resp = await self.create_multipart_upload(Bucket=Bucket, Key=Key, **kwargs)

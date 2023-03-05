@@ -2,6 +2,11 @@
 History
 =======
 
+11.0.0 (2023-03-05)
+-------------------
+
+* Changed keyword arguments for S3Transfer config to match upstream.
+
 10.4.0 (2023-01-31)
 -------------------
 

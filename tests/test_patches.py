@@ -10,6 +10,7 @@ from boto3.dynamodb.table import register_table_methods, TableResource, BatchWri
 from boto3.s3.inject import inject_s3_transfer_methods, download_file, download_fileobj, upload_file, \
     upload_fileobj, copy, inject_object_summary_methods, inject_bucket_methods, object_summary_load, \
     bucket_load
+from boto3.s3.transfer import S3TransferConfig
 from dill.source import getsource
 from chalice.app import Chalice, RestAPIEventHandler, __version__ as chalice_version
 
@@ -71,6 +72,7 @@ _API_DIGESTS = {
     upload_fileobj: {'d1db027e51d37cf1476377cfda436810b813044b', '3b953e17cfc4a3c6ad75c3890af60aebeea4bee8'},
     upload_file: {'ad899c968fdfc294b46c54efbcb9912c5675ba09', 'df7552000d9111f71a05bd9880e9b6ef0f2f21bc'},
     copy: {'c4423d0a6d3352553befdf0387987c09812fcaff', 'e8154a4de3b97dd2ab29d250c005b03e8fc7ed71'},
+    S3TransferConfig.__init__: {'f418b3dab3c6f073f19feaf1172359bdc3863e22'},
 }
 
 _CHALICE_API_DIGESTS = {
