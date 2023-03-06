@@ -2,6 +2,11 @@
 History
 =======
 
+11.0.1 (2023-03-06)
+-------------------
+
+* Fixed erroneous change to the minimum python version.
+
 11.0.0 (2023-03-05)
 -------------------
 
