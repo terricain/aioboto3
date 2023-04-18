@@ -265,7 +265,7 @@ async def upload_fileobj(
         eof = False
         while not eof:
             part += 1
-            multipart_payload = b''
+            multipart_payload = bytearray()
             loop_counter = 0
             while len(multipart_payload) < multipart_chunksize:
                 try:
@@ -284,7 +284,7 @@ async def upload_fileobj(
 
                     # shortcircuit upload logic
                     eof = True
-                    multipart_payload = b''
+                    multipart_payload = bytearray()
                     break
 
                 if data == b'' and loop_counter > 0:  # End of file, handles uploading empty files
