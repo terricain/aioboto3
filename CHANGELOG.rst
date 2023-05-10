@@ -2,6 +2,12 @@
 History
 =======
 
+11.2.0 (2023-05-10)
+-------------------
+
+* Upload_fileobj performance enhancements - thanks @JohnHBrock
+* Contributing documentation updates - thanks @JohnHBrock
+
 11.1.0 (2023-03-30)
 -------------------
 
