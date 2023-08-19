@@ -359,18 +359,6 @@ urllib3 = ">=1.25.4,<1.27"
 crt = ["awscrt (==0.16.26)"]
 
 [[package]]
-name = "cachetools"
-version = "5.3.1"
-description = "Extensible memoizing collections and decorators"
-category = "dev"
-optional = false
-python-versions = ">=3.7"
-files = [
-    {file = "cachetools-5.3.1-py3-none-any.whl", hash = "sha256:95ef631eeaea14ba2e36f06437f36463aac3a096799e876ee55e5cdccb102590"},
-    {file = "cachetools-5.3.1.tar.gz", hash = "sha256:dce83f2d9b4e1f732a8cd44af8e8fab2dbe46201467fc98b3ef8f269092bf62b"},
-]
-
-[[package]]
 name = "certifi"
 version = "2023.7.22"
 description = "Python package for providing Mozilla's CA Bundle."
@@ -511,18 +499,6 @@ wheel = "*"
 cdk = ["aws-cdk.aws-iam (>=1.85.0,<2.0)", "aws-cdk.aws-s3-assets (>=1.85.0,<2.0)", "aws-cdk.cloudformation-include (>=1.85.0,<2.0)", "aws-cdk.core (>=1.85.0,<2.0)"]
 cdkv2 = ["aws-cdk-lib (>2.0,<3.0)"]
 event-file-poller = ["watchdog (==2.3.1)"]
-
-[[package]]
-name = "chardet"
-version = "5.2.0"
-description = "Universal encoding detector for Python 3"
-category = "dev"
-optional = false
-python-versions = ">=3.7"
-files = [
-    {file = "chardet-5.2.0-py3-none-any.whl", hash = "sha256:e1cf59446890a00105fe7b7912492ea04b6e6f06d4b742b2c788469e34c82970"},
-    {file = "chardet-5.2.0.tar.gz", hash = "sha256:1b3b6ff479a8c414bc3fa2c0852995695c4a026dcd6d0633b2dd092ca39c1cf7"},
-]
 
 [[package]]
 name = "charset-normalizer"
@@ -793,18 +769,6 @@ files = [
 graph = ["objgraph (>=1.7.2)"]
 
 [[package]]
-name = "distlib"
-version = "0.3.7"
-description = "Distribution utilities"
-category = "dev"
-optional = false
-python-versions = "*"
-files = [
-    {file = "distlib-0.3.7-py2.py3-none-any.whl", hash = "sha256:2e24928bc811348f0feb63014e97aaae3037f2cf48712d51ae61df7fd6075057"},
-    {file = "distlib-0.3.7.tar.gz", hash = "sha256:9dafe54b34a028eafd95039d5e5d4851a13734540f1331060d31c9916e7147a8"},
-]
-
-[[package]]
 name = "docker"
 version = "6.1.3"
 description = "A Python library for the Docker Engine API."
@@ -828,14 +792,14 @@ ssh = ["paramiko (>=2.4.3)"]
 
 [[package]]
 name = "docutils"
-version = "0.19"
+version = "0.18.1"
 description = "Docutils -- Python Documentation Utilities"
 category = "dev"
 optional = false
-python-versions = ">=3.7"
+python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*"
 files = [
-    {file = "docutils-0.19-py3-none-any.whl", hash = "sha256:5e1de4d849fee02c63b040a4a3fd567f4ab104defd8a5511fbbc24a8a017efbc"},
-    {file = "docutils-0.19.tar.gz", hash = "sha256:33995a6753c30b7f577febfc2c50411fec6aac7f7ffeb7c4cfe5991072dcf9e6"},
+    {file = "docutils-0.18.1-py2.py3-none-any.whl", hash = "sha256:23010f129180089fbcd3bc08cfefccb3b890b0050e1ca00c867036e9d161b98c"},
+    {file = "docutils-0.18.1.tar.gz", hash = "sha256:679987caf361a7539d76e584cbeddc311e3aee937877c87346f31debc63e9d06"},
 ]
 
 [[package]]
@@ -871,22 +835,6 @@ files = [
 
 [package.extras]
 test = ["pytest (>=6)"]
-
-[[package]]
-name = "filelock"
-version = "3.12.2"
-description = "A platform independent file lock."
-category = "dev"
-optional = false
-python-versions = ">=3.7"
-files = [
-    {file = "filelock-3.12.2-py3-none-any.whl", hash = "sha256:cbb791cdea2a72f23da6ac5b5269ab0a0d161e9ef0100e653b69049a7706d1ec"},
-    {file = "filelock-3.12.2.tar.gz", hash = "sha256:002740518d8aa59a26b0c76e10fb8c6e15eae825d34b6fdf670333fd7b938d81"},
-]
-
-[package.extras]
-docs = ["furo (>=2023.5.20)", "sphinx (>=7.0.1)", "sphinx-autodoc-typehints (>=1.23,!=1.23.4)"]
-testing = ["covdefaults (>=2.3)", "coverage (>=7.2.7)", "diff-cover (>=7.5)", "pytest (>=7.3.1)", "pytest-cov (>=4.1)", "pytest-mock (>=3.10)", "pytest-timeout (>=2.1)"]
 
 [[package]]
 name = "flake8"
@@ -1729,25 +1677,6 @@ files = [
 ]
 
 [[package]]
-name = "platformdirs"
-version = "3.10.0"
-description = "A small Python package for determining appropriate platform-specific dirs, e.g. a \"user data dir\"."
-category = "dev"
-optional = false
-python-versions = ">=3.7"
-files = [
-    {file = "platformdirs-3.10.0-py3-none-any.whl", hash = "sha256:d7c24979f292f916dc9cbf8648319032f551ea8c49a4c9bf2fb556a02070ec1d"},
-    {file = "platformdirs-3.10.0.tar.gz", hash = "sha256:b45696dab2d7cc691a3226759c0d3b00c47c8b6e293d96f6436f733303f77f6d"},
-]
-
-[package.dependencies]
-typing-extensions = {version = ">=4.7.1", markers = "python_version < \"3.8\""}
-
-[package.extras]
-docs = ["furo (>=2023.7.26)", "proselint (>=0.13)", "sphinx (>=7.1.1)", "sphinx-autodoc-typehints (>=1.24)"]
-test = ["appdirs (==1.4.4)", "covdefaults (>=2.3)", "pytest (>=7.4)", "pytest-cov (>=4.1)", "pytest-mock (>=3.11.1)"]
-
-[[package]]
 name = "pluggy"
 version = "1.2.0"
 description = "plugin and hook calling mechanisms for python"
@@ -1978,26 +1907,6 @@ files = [
 
 [package.extras]
 diagrams = ["jinja2", "railroad-diagrams"]
-
-[[package]]
-name = "pyproject-api"
-version = "1.5.3"
-description = "API to interact with the python pyproject.toml based projects"
-category = "dev"
-optional = false
-python-versions = ">=3.7"
-files = [
-    {file = "pyproject_api-1.5.3-py3-none-any.whl", hash = "sha256:14cf09828670c7b08842249c1f28c8ee6581b872e893f81b62d5465bec41502f"},
-    {file = "pyproject_api-1.5.3.tar.gz", hash = "sha256:ffb5b2d7cad43f5b2688ab490de7c4d3f6f15e0b819cb588c4b771567c9729eb"},
-]
-
-[package.dependencies]
-packaging = ">=23.1"
-tomli = {version = ">=2.0.1", markers = "python_version < \"3.11\""}
-
-[package.extras]
-docs = ["furo (>=2023.5.20)", "sphinx (>=7.0.1)", "sphinx-autodoc-typehints (>=1.23,!=1.23.4)"]
-testing = ["covdefaults (>=2.3)", "importlib-metadata (>=6.6)", "pytest (>=7.3.1)", "pytest-cov (>=4.1)", "pytest-mock (>=3.10)", "setuptools (>=67.8)", "wheel (>=0.40)"]
 
 [[package]]
 name = "pyrsistent"
@@ -2554,6 +2463,26 @@ testing = ["covdefaults (>=2.2.2)", "coverage (>=7.2.2)", "diff-cover (>=7.5)", 
 type-comment = ["typed-ast (>=1.5.4)"]
 
 [[package]]
+name = "sphinx-rtd-theme"
+version = "1.3.0rc1"
+description = "Read the Docs theme for Sphinx"
+category = "dev"
+optional = false
+python-versions = "!=3.0.*,!=3.1.*,!=3.2.*,!=3.3.*,!=3.4.*,!=3.5.*,>=2.7"
+files = [
+    {file = "sphinx_rtd_theme-1.3.0rc1-py2.py3-none-any.whl", hash = "sha256:ace3640f8951a93fd514fccd02071abac340c28fb0c907f180a7608c416e99a2"},
+    {file = "sphinx_rtd_theme-1.3.0rc1.tar.gz", hash = "sha256:3e321023694842feae0baed4f34004c4c925d812df9c93db49769c5887496d13"},
+]
+
+[package.dependencies]
+docutils = "<0.19"
+sphinx = ">=1.6,<8"
+sphinxcontrib-jquery = ">=4,<5"
+
+[package.extras]
+dev = ["bump2version", "sphinxcontrib-httpdomain", "transifex-client", "wheel"]
+
+[[package]]
 name = "sphinxcontrib-applehelp"
 version = "1.0.2"
 description = "sphinxcontrib-applehelp is a sphinx extension which outputs Apple help books"
@@ -2600,6 +2529,21 @@ files = [
 [package.extras]
 lint = ["docutils-stubs", "flake8", "mypy"]
 test = ["html5lib", "pytest"]
+
+[[package]]
+name = "sphinxcontrib-jquery"
+version = "4.1"
+description = "Extension to include jQuery on newer Sphinx releases"
+category = "dev"
+optional = false
+python-versions = ">=2.7"
+files = [
+    {file = "sphinxcontrib-jquery-4.1.tar.gz", hash = "sha256:1620739f04e36a2c779f1a131a2dfd49b2fd07351bf1968ced074365933abc7a"},
+    {file = "sphinxcontrib_jquery-4.1-py2.py3-none-any.whl", hash = "sha256:f936030d7d0147dd026a4f2b5a57343d233f1fc7b363f68b3d4f1cb0993878ae"},
+]
+
+[package.dependencies]
+Sphinx = ">=1.8"
 
 [[package]]
 name = "sphinxcontrib-jsmath"
@@ -2695,36 +2639,6 @@ files = [
 ]
 
 [[package]]
-name = "tox"
-version = "4.8.0"
-description = "tox is a generic virtualenv management and test command line tool"
-category = "dev"
-optional = false
-python-versions = ">=3.7"
-files = [
-    {file = "tox-4.8.0-py3-none-any.whl", hash = "sha256:4991305a56983d750a0d848a34242be290452aa88d248f1bf976e4036ee8b213"},
-    {file = "tox-4.8.0.tar.gz", hash = "sha256:2adacf435b12ccf10b9dfa9975d8ec0afd7cbae44d300463140d2117b968037b"},
-]
-
-[package.dependencies]
-cachetools = ">=5.3.1"
-chardet = ">=5.1"
-colorama = ">=0.4.6"
-filelock = ">=3.12.2"
-importlib-metadata = {version = ">=6.7", markers = "python_version < \"3.8\""}
-packaging = ">=23.1"
-platformdirs = ">=3.9.1"
-pluggy = ">=1.2"
-pyproject-api = ">=1.5.3"
-tomli = {version = ">=2.0.1", markers = "python_version < \"3.11\""}
-typing-extensions = {version = ">=4.7.1", markers = "python_version < \"3.8\""}
-virtualenv = ">=20.24.1"
-
-[package.extras]
-docs = ["furo (>=2023.5.20)", "sphinx (>=7.0.1)", "sphinx-argparse-cli (>=1.11.1)", "sphinx-autodoc-typehints (>=1.23.3,!=1.23.4)", "sphinx-copybutton (>=0.5.2)", "sphinx-inline-tabs (>=2023.4.21)", "sphinxcontrib-towncrier (>=0.2.1a0)", "towncrier (>=23.6)"]
-testing = ["build[virtualenv] (>=0.10)", "covdefaults (>=2.3)", "detect-test-pollution (>=1.1.1)", "devpi-process (>=0.3.1)", "diff-cover (>=7.7)", "distlib (>=0.3.7)", "flaky (>=3.7)", "hatch-vcs (>=0.3)", "hatchling (>=1.17.1)", "psutil (>=5.9.5)", "pytest (>=7.4)", "pytest-cov (>=4.1)", "pytest-mock (>=3.11.1)", "pytest-xdist (>=3.3.1)", "re-assert (>=1.1)", "time-machine (>=2.10)", "wheel (>=0.40)"]
-
-[[package]]
 name = "types-pyyaml"
 version = "6.0.12.11"
 description = "Typing stubs for PyYAML"
@@ -2764,28 +2678,6 @@ files = [
 brotli = ["brotli (>=1.0.9)", "brotlicffi (>=0.8.0)", "brotlipy (>=0.6.0)"]
 secure = ["certifi", "cryptography (>=1.3.4)", "idna (>=2.0.0)", "ipaddress", "pyOpenSSL (>=0.14)", "urllib3-secure-extra"]
 socks = ["PySocks (>=1.5.6,!=1.5.7,<2.0)"]
-
-[[package]]
-name = "virtualenv"
-version = "20.24.3"
-description = "Virtual Python Environment builder"
-category = "dev"
-optional = false
-python-versions = ">=3.7"
-files = [
-    {file = "virtualenv-20.24.3-py3-none-any.whl", hash = "sha256:95a6e9398b4967fbcb5fef2acec5efaf9aa4972049d9ae41f95e0972a683fd02"},
-    {file = "virtualenv-20.24.3.tar.gz", hash = "sha256:e5c3b4ce817b0b328af041506a2a299418c98747c4b1e68cb7527e74ced23efc"},
-]
-
-[package.dependencies]
-distlib = ">=0.3.7,<1"
-filelock = ">=3.12.2,<4"
-importlib-metadata = {version = ">=6.6", markers = "python_version < \"3.8\""}
-platformdirs = ">=3.9.1,<4"
-
-[package.extras]
-docs = ["furo (>=2023.5.20)", "proselint (>=0.13)", "sphinx (>=7.0.1)", "sphinx-argparse (>=0.4)", "sphinxcontrib-towncrier (>=0.2.1a0)", "towncrier (>=23.6)"]
-test = ["covdefaults (>=2.3)", "coverage (>=7.2.7)", "coverage-enable-subprocess (>=1)", "flaky (>=3.7)", "packaging (>=23.1)", "pytest (>=7.4)", "pytest-env (>=0.8.2)", "pytest-freezer (>=0.4.8)", "pytest-mock (>=3.11.1)", "pytest-randomly (>=3.12)", "pytest-timeout (>=2.1)", "setuptools (>=68)", "time-machine (>=2.10)"]
 
 [[package]]
 name = "wcwidth"
@@ -3058,4 +2950,4 @@ s3cse = ["cryptography"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.7"
-content-hash = "f1078d28bdec6ac41ab73099de6f1c9202d69587f3afad303f860fd0d4e302a8"
+content-hash = "ce5d13df2bccf796ea38818397cea342f8b8260d73c1220f475f22f534ae3031"
