@@ -263,7 +263,7 @@ async def upload_fileobj(
         nonlocal exception
         part = 0
         eof = False
-        while not eof:
+        while not exception and not eof:
             part += 1
             multipart_payload = bytearray()
             loop_counter = 0
