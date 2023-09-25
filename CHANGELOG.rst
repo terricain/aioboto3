@@ -12,6 +12,11 @@ History
 * Upload_fileobj performance enhancements - thanks @JohnHBrock
 * Contributing documentation updates - thanks @JohnHBrock
 
+11.1.1 (2023-09-25)
+-------------------
+
+* Bumped aiobotocore to 2.5.4
+
 11.1.0 (2023-03-30)
 -------------------
 
