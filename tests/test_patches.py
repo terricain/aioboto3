@@ -70,7 +70,7 @@ _API_DIGESTS = {
     download_file: {'5a05472514f9e34c5f64ca8bbcc80a1d27f1f5d1', 'a31ffcb7ba368f951d16babedcc48252cc5cb2af'},
     download_fileobj: {'237370745eb02e93a353fa806a64f3701c47995c', '9299d1abbd9d5c311e8a824a438e150ff24ebcd7', '91c0900c26c0078b623b9550c4fb9ef6afc4a528'},
     upload_fileobj: {'d1db027e51d37cf1476377cfda436810b813044b', '3b953e17cfc4a3c6ad75c3890af60aebeea4bee8'},
-    upload_file: {'ad899c968fdfc294b46c54efbcb9912c5675ba09', 'df7552000d9111f71a05bd9880e9b6ef0f2f21bc'},
+    upload_file: {'ad899c968fdfc294b46c54efbcb9912c5675ba09', 'df7552000d9111f71a05bd9880e9b6ef0f2f21bc', '063eaca7bec14af8ccd041e3a87ff5c9ef7252ca'},
     copy: {'c4423d0a6d3352553befdf0387987c09812fcaff', 'e8154a4de3b97dd2ab29d250c005b03e8fc7ed71'},
     S3TransferConfig.__init__: {'f418b3dab3c6f073f19feaf1172359bdc3863e22'},
 }
