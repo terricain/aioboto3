@@ -2,8 +2,14 @@
 History
 =======
 
+11.3.1 (2023-10-14)
+-------------------
+
+* Fixed stall in `s3.upload_fileobj` - thanks @rlindsberg
+
 11.3.0 (2023-08-19)
 -------------------
+
 * Bumped aiobotocore to 2.6.0
 
 11.2.0 (2023-05-10)
