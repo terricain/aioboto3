@@ -51,8 +51,8 @@ sphinx-rtd-theme = "^1.3.0rc1"
 sphinx-autodoc-typehints = "*"
 
 [build-system]
-requires = ["poetry>=0.12", "poetry-dynamic-versioning"]
-build-backend = "poetry.masonry.api"
+requires = ["poetry_core>=1.0.0", "poetry-dynamic-versioning"]
+build-backend = "poetry.core.masonry.api"
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
