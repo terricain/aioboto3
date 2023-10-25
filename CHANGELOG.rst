@@ -2,6 +2,12 @@
 History
 =======
 
+12.0.0 (2023-10-25)
+-------------------
+
+* Bumped aiobotocore to 2.7.0
+* Python 3.7 support dropped due to aiobotocore requirements.
+
 11.3.1 (2023-10-14)
 -------------------
 
