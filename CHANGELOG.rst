@@ -2,6 +2,12 @@
 History
 =======
 
+12.3.0 (2024-02-02)
+-------------------
+
+* Bumped aiobotocore to 2.11.2
+* Fixed cryptography typing on the CSE module
+
 12.2.0 (2024-01-16)
 -------------------
 

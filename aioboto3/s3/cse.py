@@ -17,8 +17,8 @@ from cryptography.hazmat.primitives.ciphers.algorithms import AES
 from cryptography.hazmat.primitives.ciphers.modes import CBC, CTR, ECB
 from cryptography.hazmat.primitives.padding import PKCS7
 from cryptography.exceptions import InvalidTag
-from cryptography.hazmat.backends.openssl.rsa import _RSAPrivateKey, _RSAPublicKey
 from cryptography.hazmat.primitives.asymmetric import padding
+from cryptography.hazmat.primitives.asymmetric.types import PrivateKeyTypes, PublicKeyTypes
 from cryptography.hazmat.primitives import serialization
 
 
@@ -94,8 +94,8 @@ class AsymmetricCryptoContext(CryptoContext):
     :param loop: Event loop
     """
 
-    def __init__(self, public_key: Optional[_RSAPublicKey] = None,
-                 private_key: Optional[_RSAPrivateKey] = None, loop: Optional[asyncio.AbstractEventLoop] = None):
+    def __init__(self, public_key: Optional[PublicKeyTypes] = None,
+                 private_key: Optional[PrivateKeyTypes] = None, loop: Optional[asyncio.AbstractEventLoop] = None):
 
         self.public_key = public_key
         self.private_key = private_key
@@ -136,7 +136,7 @@ class AsymmetricCryptoContext(CryptoContext):
         return random_bytes, {}, base64.b64encode(ciphertext).decode()
 
     @staticmethod
-    def from_der_public_key(data: bytes) -> _RSAPublicKey:
+    def from_der_public_key(data: bytes) -> PublicKeyTypes:
         """
         Convert public key in DER encoding to a Public key object
 
@@ -146,7 +146,7 @@ class AsymmetricCryptoContext(CryptoContext):
         return serialization.load_der_public_key(data, default_backend())
 
     @staticmethod
-    def from_der_private_key(data: bytes, password: Optional[str] = None) -> _RSAPrivateKey:
+    def from_der_private_key(data: bytes, password: Optional[str] = None) -> PrivateKeyTypes:
         """
         Convert private key in DER encoding to a Private key object
 
