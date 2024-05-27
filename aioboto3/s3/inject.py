@@ -351,6 +351,8 @@ async def upload_fileobj(
     initial_data = Fileobj.read(Config.multipart_threshold)
     if inspect.isawaitable(initial_data):
         initial_data = await initial_data
+    if Processing:
+        initial_data = Processing(initial_data)
 
     if len(initial_data) < Config.multipart_threshold:
         # Do put_object
@@ -360,6 +362,8 @@ async def upload_fileobj(
             Body=initial_data,
             **kwargs
         )
+        if Callback:
+            Callback(len(initial_data))
         return
 
     # File bigger than threshold, start multipart upload
