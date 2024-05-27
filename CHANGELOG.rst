@@ -2,6 +2,16 @@
 History
 =======
 
+13.0.0 (2024-05-27)
+-------------------
+
+* Bumped aiobotocore to 2.13.0
+* Added multipart download options to `s3.download_file` and `s3.download_fileobj` - thanks @kyboi
+* Cleaned up some docs examples - thanks @cuducos
+* Updated S3 transfer patched to handle ExtraArgs better.
+* Rewrote `s3.copy` to make use of `s3.copy_object` or `s3.upload_part_copy`. FYI the threshold of when to use `s3.copy` is based
+  on if the file's size is below `Config.MultipartThreshold` which defaults to 8MiB, even though `s3.copy` can do up to 5GiB.
+
 12.4.0 (2024-04-15)
 -------------------
 

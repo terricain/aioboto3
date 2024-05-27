@@ -67,7 +67,7 @@ _API_DIGESTS = {
     inject_bucket_methods: {'63316226fdd4d7c043eaf35e07b6b2ac331b4872', 'dfe1c2219ced56b0aaa74c4a84210fd20463392e'},
     object_summary_load: {'3e4db1310105ced8ac2af17598603812ca18cbbe', '98a5a726f105388322a845ba97e08f1e53ee9d69'},
     bucket_load: {'2d40d03ca9ec91eb5de8a8f40e0f35634ab1d987'},
-    download_file: {'5a05472514f9e34c5f64ca8bbcc80a1d27f1f5d1', 'a31ffcb7ba368f951d16babedcc48252cc5cb2af'},
+    download_file: {'5a05472514f9e34c5f64ca8bbcc80a1d27f1f5d1', 'a31ffcb7ba368f951d16babedcc48252cc5cb2af', '79bc1c0838e825eb54a3a5b48193c1ceac65947c'},
     download_fileobj: {'237370745eb02e93a353fa806a64f3701c47995c', '9299d1abbd9d5c311e8a824a438e150ff24ebcd7', '91c0900c26c0078b623b9550c4fb9ef6afc4a528'},
     upload_fileobj: {'d1db027e51d37cf1476377cfda436810b813044b', '3b953e17cfc4a3c6ad75c3890af60aebeea4bee8'},
     upload_file: {'063eaca7bec14af8ccd041e3a87ff5c9ef7252ca', 'ad899c968fdfc294b46c54efbcb9912c5675ba09', 'df7552000d9111f71a05bd9880e9b6ef0f2f21bc'},
