@@ -345,10 +345,22 @@ async def upload_fileobj(
     complete_upload_args = {k: v for k, v in kwargs.items() if k in UploadSubmissionTask.COMPLETE_MULTIPART_ARGS}
     Config = Config or S3TransferConfig()
 
-    # I was debating setting up a queue etc...
-    # If its too slow I'll then be bothered
+    # Read
+    initial_data = Fileobj.read(Config.multipart_threshold)
+    if inspect.isawaitable(initial_data):
+        initial_data = await initial_data
 
-    # Start multipart upload
+    if len(initial_data) < Config.multipart_threshold:
+        # Do put_object
+        await self.put_object(
+            Bucket=Bucket,
+            Key=Key,
+            Body=initial_data,
+            **kwargs
+        )
+        return
+
+    # File bigger than threshold, start multipart upload
     resp = await self.create_multipart_upload(Bucket=Bucket, Key=Key, **kwargs)
     upload_id = resp['UploadId']
     finished_parts = []
@@ -408,6 +420,9 @@ async def upload_fileobj(
         while not exception and not eof:
             part += 1
             multipart_payload = bytearray()
+            if part == 1:  # Add in the initial data we've read to check if we've met the multipart threshold
+                multipart_payload += initial_data
+
             loop_counter = 0
             while len(multipart_payload) < Config.multipart_chunksize:
                 try:
