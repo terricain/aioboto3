@@ -163,7 +163,7 @@ Here we pull the object from S3 in chunks and serve it out to a HTTP request via
             await resp.prepare(request)
 
             stream = s3_ob["Body"]
-            while file_data := stream.read(chunk_size):
+            while file_data := await stream.read(chunk_size):
                 await resp.write(file_data)
 
         return resp
