@@ -347,12 +347,24 @@ async def upload_fileobj(
     complete_upload_args = {k: v for k, v in kwargs.items() if k in UploadSubmissionTask.COMPLETE_MULTIPART_ARGS}
     Config = Config or S3TransferConfig()
 
-    # Read
-    initial_data = Fileobj.read(Config.multipart_threshold)
-    if inspect.isawaitable(initial_data):
-        initial_data = await initial_data
-    if Processing:
-        initial_data = Processing(initial_data)
+    async def fileobj_read(num_bytes: int, process: bool = False) -> bytes:
+        data = Fileobj.read(num_bytes)
+        if inspect.isawaitable(data):
+            data = await data
+        else:
+            await asyncio.sleep(0.0)  # Yield to the eventloop incase .read() took ages
+
+        if process:
+            data = Processing(data)
+        return data
+
+    # So some streams might return less than Config.multipart_threshold on a read, but that might not be eof
+    initial_data = b''
+    while len(initial_data) < Config.multipart_threshold:
+        new_data = await fileobj_read(Config.multipart_threshold)
+        if new_data == b'':
+            break
+        initial_data += new_data
 
     if len(initial_data) < Config.multipart_threshold:
         # Do put_object
@@ -433,13 +445,7 @@ async def upload_fileobj(
             while len(multipart_payload) < Config.multipart_chunksize:
                 try:
                     # Handles if .read() returns anything that can be awaited
-                    data_chunk = Fileobj.read(Config.io_chunksize)
-                    if inspect.isawaitable(data_chunk):
-                        # noinspection PyUnresolvedReferences
-                        data = await data_chunk
-                    else:
-                        data = data_chunk
-                        await asyncio.sleep(0.0)  # Yield to the eventloop incase .read() took ages
+                    data = await fileobj_read(Config.io_chunksize, False)
                 except Exception as err:
                     # Caught some random exception whilst reading from a file
                     exception = err

@@ -2,6 +2,12 @@
 History
 =======
 
+13.0.1 (2024-06-05)
+-------------------
+
+* Fixed issue with upload_fileobj where uploads would be incomplete if the async file object returned less bytes than
+  the read requested. This is noticable when passing in async streams like that of `aiohttp`'s response content.
+
 13.0.0 (2024-05-27)
 -------------------
 
