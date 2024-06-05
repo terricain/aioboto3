@@ -4,6 +4,7 @@ import tempfile
 from io import BytesIO
 
 from botocore.exceptions import ClientError
+from boto3.s3.transfer import S3TransferConfig
 import aiofiles
 import pytest
 
@@ -48,6 +49,46 @@ async def test_s3_download_fileobj(event_loop, s3_client, bucket_name, region):
 
     fh.seek(0)
     assert fh.read() == data
+
+
+@pytest.mark.asyncio
+async def test_s3_download_fileobj_nonseekable_asyncwrite(event_loop, s3_client, bucket_name, region):
+    data = b'Hello World\n'
+    await s3_client.create_bucket(Bucket=bucket_name, CreateBucketConfiguration={'LocationConstraint': region})
+    await s3_client.put_object(Bucket=bucket_name, Key='test_file', Body=data)
+
+    class FileObj:
+        def __init__(self) -> None:
+            self.data = b''
+
+        async def write(self, b: bytes) -> int:
+            self.data += b
+            return len(b)
+
+    fh = FileObj()
+    await s3_client.download_fileobj(bucket_name, 'test_file', fh)
+
+    assert fh.data == data
+
+
+@pytest.mark.asyncio
+async def test_s3_download_fileobj_nonseekable_syncwrite(event_loop, s3_client, bucket_name, region):
+    data = b'Hello World\n'
+    await s3_client.create_bucket(Bucket=bucket_name, CreateBucketConfiguration={'LocationConstraint': region})
+    await s3_client.put_object(Bucket=bucket_name, Key='test_file', Body=data)
+
+    class FileObj:
+        def __init__(self) -> None:
+            self.data = b''
+
+        def write(self, b: bytes) -> int:
+            self.data += b
+            return len(b)
+
+    fh = FileObj()
+    await s3_client.download_fileobj(bucket_name, 'test_file', fh)
+
+    assert fh.data == data
 
 
 @pytest.mark.asyncio
@@ -126,6 +167,46 @@ async def test_s3_upload_fileobj_async(event_loop, s3_client, bucket_name, regio
 
 
 @pytest.mark.asyncio
+async def test_s3_upload_fileobj_async_multipart(event_loop, s3_client, bucket_name, region):
+    await s3_client.create_bucket(Bucket=bucket_name, CreateBucketConfiguration={'LocationConstraint': region})
+
+    data = b'Hello World\n'
+
+    tmpfile = tempfile.NamedTemporaryFile(delete=False)
+    tmpfile.close()
+    async with aiofiles.open(tmpfile.name, mode='wb') as fpw:
+        await fpw.write(data)
+
+    async with aiofiles.open(tmpfile.name, mode='rb') as fpr:
+        config = S3TransferConfig(multipart_threshold=4)
+        await s3_client.upload_fileobj(fpr, bucket_name, 'test_file', Config=config)
+
+    resp = await s3_client.get_object(Bucket=bucket_name, Key='test_file')
+    assert (await resp['Body'].read()) == data
+
+
+@pytest.mark.asyncio
+async def test_s3_upload_fileobj_async_slow(event_loop, s3_client, bucket_name, region):
+    await s3_client.create_bucket(Bucket=bucket_name, CreateBucketConfiguration={'LocationConstraint': region})
+
+    data = b'Hello World\n'
+
+    class FakeFile:
+        def __init__(self, filedata: bytes) -> None:
+            self._data = filedata
+
+        async def read(self, numbytes: int) -> bytes:
+            result = self._data[:5]
+            self._data = self._data[5:]
+            return result
+
+    await s3_client.upload_fileobj(FakeFile(data), bucket_name, 'test_file')
+
+    resp = await s3_client.get_object(Bucket=bucket_name, Key='test_file')
+    assert (await resp['Body'].read()) == data
+
+
+@pytest.mark.asyncio
 async def test_s3_upload_broken_fileobj(event_loop, s3_client, bucket_name, region):
     class BrokenFile(object):
         def __init__(self, data: bytes):
@@ -191,6 +272,27 @@ async def test_s3_copy(event_loop, s3_client, bucket_name, region):
     # Copy file
     copy_source = {'Bucket': bucket_name, 'Key': 'test_file'}
     await s3_client.copy(copy_source, bucket_name, 'test_file2')
+
+    # Get copied file
+    resp = await s3_client.get_object(Bucket=bucket_name, Key='test_file2')
+    assert (await resp['Body'].read()) == data
+
+
+@pytest.mark.asyncio
+async def test_s3_copy_multipart(event_loop, s3_client, bucket_name, region):
+    data = b'Hello World\n'
+
+    filename = '/tmp/aioboto3_temp_s3_upload.txt'
+    await s3_client.create_bucket(Bucket=bucket_name, CreateBucketConfiguration={'LocationConstraint': region})
+
+    # Upload file
+    open(filename, 'wb').write(data)
+    await s3_client.upload_file(filename, bucket_name, 'test_file')
+
+    # Copy file
+    copy_source = {'Bucket': bucket_name, 'Key': 'test_file'}
+    config = S3TransferConfig(multipart_threshold=4)
+    await s3_client.copy(copy_source, bucket_name, 'test_file2', Config=config, ExtraArgs={'RequestPayer': 'requester'})
 
     # Get copied file
     resp = await s3_client.get_object(Bucket=bucket_name, Key='test_file2')
