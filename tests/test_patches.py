@@ -34,9 +34,9 @@ _API_DIGESTS = {
 
     # resources/collection.py
     ResourceCollection.__iter__: {'6631cf4c177643738acff01aa7f3fa324a246ba9'},  # Logic inside anext
-    ResourceCollection.pages: {'a26745155edd73004004af12e8fa8f617d2989b0', '28ae6e6fe35b930bbf65a162225bb4e23fc9eec0'},
+    ResourceCollection.pages: {'a26745155edd73004004af12e8fa8f617d2989b0', '28ae6e6fe35b930bbf65a162225bb4e23fc9eec0', '5e57180839503cdd6de71cefe5b8c8b862273ad1'},
     CollectionManager.__init__: {'f40c0a368b747518a7b6998eab98920cb4d7d233', '7007f88626a41fec98a5efd79c24395d89ded879'},
-    CollectionFactory.load_from_definition: {'eadb8897327b2faf812b2a2d6fbf643c8f4f029a', '06c878d737216948ef9cfda476594466d34b5d97'},
+    CollectionFactory.load_from_definition: {'eadb8897327b2faf812b2a2d6fbf643c8f4f029a', '06c878d737216948ef9cfda476594466d34b5d97', '143dccdee71618317880686f3b3ae8f31eee5d2e'},
     CollectionFactory._create_batch_action: {'435ff19f24325a515563fd9716b89158ac676a02', 'a911563aaf703994b63c5e2b51c0205b82f05673'},
 
     # resources/factory.py
@@ -52,7 +52,7 @@ _API_DIGESTS = {
     RawHandler.__call__: {'5ea91e39ab1dc3587a4038805ee90235990b866d'},
 
     # session.py
-    Session.__init__: {'7c25cbd2154cc87e732fe4a343900d7002195973', '8540ad5941a8ad7c88a6f2d7dc446da128be9eaf'},
+    Session.__init__: {'7c25cbd2154cc87e732fe4a343900d7002195973', '8540ad5941a8ad7c88a6f2d7dc446da128be9eaf', '5cd30efc177ceae51ed823224cad711b8c85bcea'},
     Session._register_default_handlers: {'04f247de526b7a0af15737e04019ade52cc65446', '74fa15629c9ea69f79f3a5285357dbf53f734f2d', 'e30e5c3a0f6bc8f002ba679d4bae831914fc67a0'},
     Session.resource: {'5e3568b28281a75eaf9725fab67c33dc16a18144', 'b110781f5a5d148dd1d614e7611650a16cbea372'},
 

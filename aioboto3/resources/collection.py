@@ -41,8 +41,7 @@ class AIOResourceCollection(ResourceCollection):
         cleaned_params = self._params.copy()
         limit = cleaned_params.pop('limit', None)
         page_size = cleaned_params.pop('page_size', None)
-        params = create_request_parameters(
-            self._parent, self._model.request)
+        params = create_request_parameters(self._parent, self._model.request)
         merge_dicts(params, cleaned_params, append_lists=True)
 
         # Is this a paginated operation? If so, we need to get an
@@ -51,20 +50,27 @@ class AIOResourceCollection(ResourceCollection):
         # page in a list. For non-paginated results, we just ignore
         # the page size parameter.
         if client.can_paginate(self._py_operation_name):
-            logger.debug('Calling paginated %s:%s with %r',
-                         self._parent.meta.service_name,
-                         self._py_operation_name, params)
+            logger.debug(
+                'Calling paginated %s:%s with %r',
+                self._parent.meta.service_name,
+                self._py_operation_name,
+                params
+            )
             paginator = client.get_paginator(self._py_operation_name)
             pages = paginator.paginate(
-                PaginationConfig={
-                    'MaxItems': limit, 'PageSize': page_size}, **params)
+                PaginationConfig={'MaxItems': limit, 'PageSize': page_size},
+                **params
+            )
         else:
             async def _aiopaginatordummy():
                 yield await getattr(client, self._py_operation_name)(**params)
 
-            logger.debug('Calling %s:%s with %r',
-                         self._parent.meta.service_name,
-                         self._py_operation_name, params)
+            logger.debug(
+                'Calling %s:%s with %r',
+                self._parent.meta.service_name,
+                self._py_operation_name,
+                params
+            )
             pages = _aiopaginatordummy()
 
         # Now that we have a page iterator or single page of results
@@ -107,8 +113,9 @@ class AIOCollectionManager(CollectionManager):
 
 
 class AIOCollectionFactory(CollectionFactory):
-    def load_from_definition(self, resource_name, collection_model,
-                             service_context, event_emitter):
+    def load_from_definition(
+        self, resource_name, collection_model, service_context, event_emitter
+    ):
         attrs = {}
         collection_name = collection_model.name
 
@@ -118,7 +125,8 @@ class AIOCollectionFactory(CollectionFactory):
             resource_name,
             collection_model,
             service_context.service_model,
-            event_emitter)
+            event_emitter
+        )
         # Add the documentation to the collection class's methods
         self._load_documented_collection_methods(
             attrs=attrs,
@@ -126,17 +134,17 @@ class AIOCollectionFactory(CollectionFactory):
             collection_model=collection_model,
             service_model=service_context.service_model,
             event_emitter=event_emitter,
-            base_class=AIOResourceCollection)
+            base_class=AIOResourceCollection
+        )
 
         if service_context.service_name == resource_name:
-            cls_name = '{0}.{1}Collection'.format(
-                service_context.service_name, collection_name)
+            cls_name = (
+                f'{service_context.service_name}.{collection_name}Collection'
+            )
         else:
-            cls_name = '{0}.{1}.{2}Collection'.format(
-                service_context.service_name, resource_name, collection_name)
+            cls_name = f'{service_context.service_name}.{resource_name}.{collection_name}Collection'
 
-        collection_cls = type(str(cls_name), (AIOResourceCollection,),
-                              attrs)
+        collection_cls = type(str(cls_name), (AIOResourceCollection,), attrs)
 
         # Add the documentation to the collection manager's methods
         self._load_documented_collection_methods(
@@ -145,7 +153,8 @@ class AIOCollectionFactory(CollectionFactory):
             collection_model=collection_model,
             service_model=service_context.service_model,
             event_emitter=event_emitter,
-            base_class=AIOCollectionManager)
+            base_class=AIOCollectionManager
+        )
         attrs['_collection_cls'] = collection_cls
         cls_name += 'Manager'
 

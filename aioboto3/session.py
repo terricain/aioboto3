@@ -55,8 +55,7 @@ class Session(boto3.session.Session):
 
         # Setup custom user-agent string if it isn't already customized
         if self._session.user_agent_name == 'Botocore':
-            botocore_info = 'Botocore/{0}'.format(
-                self._session.user_agent_version)
+            botocore_info = f'Botocore/{self._session.user_agent_version}'
             if self._session.user_agent_extra:
                 self._session.user_agent_extra += ' ' + botocore_info
             else:
@@ -69,7 +68,8 @@ class Session(boto3.session.Session):
 
         if aws_access_key_id or aws_secret_access_key or aws_session_token:
             self._session.set_credentials(
-                aws_access_key_id, aws_secret_access_key, aws_session_token)
+                aws_access_key_id, aws_secret_access_key, aws_session_token
+            )
 
         if region_name is not None:
             self._session.set_config_variable('region', region_name)
