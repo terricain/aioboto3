@@ -2,6 +2,11 @@
 History
 =======
 
+13.1.1 (2024-07-09)
+-------------------
+
+* Removed botocore and jmespath imports and imported them indirectly via boto3 to make static analysers happier.
+
 13.1.0 (2024-06-25)
 -------------------
 

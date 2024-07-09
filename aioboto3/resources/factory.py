@@ -1,4 +1,5 @@
 import logging
+from functools import partial
 
 from boto3.resources.factory import ResourceFactory
 from boto3.resources.model import ResourceModel
@@ -6,8 +7,6 @@ from boto3.resources.base import ResourceMeta
 from boto3.docs import docstring
 from boto3.exceptions import ResourceLoadException
 from boto3.resources.factory import build_identifiers
-from functools import partial
-
 
 from aioboto3.resources.collection import AIOCollectionFactory
 from aioboto3.resources.action import AIOServiceAction, AIOWaiterAction

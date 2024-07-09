@@ -1,9 +1,9 @@
 import asyncio
-from contextlib import asynccontextmanager, AsyncExitStack
 from typing import Optional
 
 from chalice import Chalice
 from chalice.app import RestAPIEventHandler
+
 from aioboto3 import Session
 
 

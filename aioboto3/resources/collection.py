@@ -1,9 +1,8 @@
 import logging
 from typing import AsyncIterator, Any, cast
 
-from botocore.utils import merge_dicts
 from boto3.docs import docstring
-from boto3.resources.collection import CollectionFactory, ResourceCollection, CollectionManager
+from boto3.resources.collection import CollectionFactory, ResourceCollection, CollectionManager, merge_dicts
 from boto3.resources.params import create_request_parameters
 
 from aioboto3.resources.action import AioBatchAction, AIOResourceHandler

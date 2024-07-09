@@ -6,15 +6,14 @@ an async botocore session
 
 import copy
 
-import aiobotocore.session
-from aiobotocore.config import AioConfig
-
 import boto3.session
 import boto3.resources.base
 import boto3.utils
-from botocore.exceptions import DataNotFoundError, UnknownServiceError
+from boto3.session import DataNotFoundError, UnknownServiceError
 from boto3.exceptions import ResourceNotExistsError, UnknownAPIVersionError
 
+import aiobotocore.session
+from aiobotocore.config import AioConfig
 from aioboto3.resources.factory import AIOBoto3ResourceFactory
 
 

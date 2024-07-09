@@ -4,8 +4,8 @@
 import logging
 from aioboto3.session import Session
 
-__author__ = """Terry Cain"""
-__email__ = 'terry@terrys-home.co.uk'
+__author__ = """Terri Cain"""
+__email__ = 'terri@dolphincorp.co.uk'
 __version__ = '0.0.0'
 
 

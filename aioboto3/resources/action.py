@@ -2,7 +2,7 @@ import logging
 
 from boto3.resources.action import ServiceAction, WaiterAction
 from boto3.resources.params import create_request_parameters
-from botocore import xform_name
+from boto3.resources.action import xform_name
 
 from aioboto3.resources.response import AIOResourceHandler, AIORawHandler
 

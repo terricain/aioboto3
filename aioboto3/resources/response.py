@@ -1,5 +1,4 @@
-from boto3.resources.response import RawHandler, ResourceHandler, build_identifiers, build_empty_response, all_not_none
-import jmespath
+from boto3.resources.response import RawHandler, ResourceHandler, build_identifiers, build_empty_response, all_not_none, jmespath
 
 
 class AIOResourceHandler(ResourceHandler):
