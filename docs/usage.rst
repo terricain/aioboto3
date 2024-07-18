@@ -198,6 +198,9 @@ The S3 Bucket object also works but its methods have been asyncified. E.g.
 Misc
 ----
 
+Clients
+~~~~~~~
+
 As you can see, it also works for standard client connections too.
 
 .. code-block:: python3
@@ -220,6 +223,45 @@ As you can see, it also works for standard client connections too.
     # Outputs:
     #  []
 
+Retries
+~~~~~~~
+
+Use **AioConfig**, the async extension of `Config <https://boto3.amazonaws.com/v1/documentation/api/latest/guide/retries.html>`_. Pass it to the client as you would with standard boto3.
+
+The code below will eventually retrieve a list of 20 copies of the organization root response. It prints a list of the number of retries required to get each response.
+
+`ListRoots <https://docs.aws.amazon.com/organizations/latest/APIReference/API_ListRoots.html>`_ is a convenient test function because it only reads data and it has a low `throttling limit <https://docs.aws.amazon.com/organizations/latest/userguide/orgs_reference_limits.html>`_ (per account, 1 per second and 2 burst).
+
+.. code-block:: python3
+
+    import asyncio
+    from aioboto3 import Session
+    from aiobotocore.config import AioConfig
+
+    try_hard = AioConfig(retries={"max_attempts": 100})
+
+    async def main():
+        coro = Session().client("organizations", config=try_hard)
+        async with coro as client:
+            resp_list = await asyncio.gather(
+                *[client.list_roots() for _ in range(20)]
+            )
+            print([r["ResponseMetadata"]["RetryAttempts"] for r in resp_list])
+
+    asyncio.run(main())
+
+It will return a list with objects like this:
+
+.. code-block:: python3
+
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 4, 6, 4, 4, 4, 4, 4, 5, 5]
+
+
+The list is ordered by response timestamp, earliest first. This time the first 10 responses don't retry. The next 10 responses each took between 4 and 6 retries.
+
+The default `max_retries` value is 4. That's not enough for 20 concurrent requests. If you remove the `config` parameter, the code will surely fail like this.
+
+``botocore.errorfactory.TooManyRequestsException: An error occurred (TooManyRequestsException) when calling the ListRoots operation (reached max retries: 4): AWS Organizations can't complete your request because another request is already in progress. Try again later.``
 
 AioHTTP Server Example
 ~~~~~~~~~~~~~~~~~~~~~~
