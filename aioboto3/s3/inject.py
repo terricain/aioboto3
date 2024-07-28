@@ -283,7 +283,7 @@ async def download_fileobj(
         if queue_reader_future:
             await queue_reader_future
 
-        logger.info(f'Downloaded file from {Bucket}/{Key}')
+        logger.debug(f'Downloaded file from {Bucket}/{Key}')
 
     except ClientError as e:
         raise Exception(
