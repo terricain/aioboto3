@@ -621,10 +621,14 @@ async def copy(
     finished_parts = []
     total_size = 0
 
+    sem = asyncio.Semaphore(Config.max_request_concurrency)
+
     async def uploader(size: int, part_args: Dict[str, Any]):
         nonlocal total_size
 
-        upload_part_response = await self.upload_part_copy(**part_args)
+        async with sem:
+            upload_part_response = await self.upload_part_copy(**part_args)
+
         finished_parts.append({'ETag': upload_part_response['CopyPartResult']['ETag'], 'PartNumber': part_args['PartNumber']})
 
         # Call the callback, if it blocks then not good :/
