@@ -2,6 +2,12 @@
 History
 =======
 
+13.2.0 (2024-10-13)
+-------------------
+
+* Bumped aiobotocore to 2.15.2
+* Added `max_request_concurrency` semaphore to S3.copy to prevent starting potentially hundreds of uploads at once.
+
 13.1.1 (2024-07-09)
 -------------------
 
