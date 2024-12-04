@@ -2,6 +2,11 @@
 History
 =======
 
+13.2.1 (????-??-??)
+-------------------
+
+* Fixed missing ExtraArgs propagation on S3.download_fileobj
+
 13.2.0 (2024-10-13)
 -------------------
 

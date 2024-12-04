@@ -104,11 +104,11 @@ async def download_file(
         )
 
 
-async def _download_part(self, bucket: str, key: str, headers: Dict[str, str], start: int, file: AnyFileObject, semaphore: asyncio.Semaphore, write_lock: asyncio.Lock,
+async def _download_part(self, bucket: str, key: str, extraArgs: Dict[str, str], headers: Dict[str, str], start: int, file: AnyFileObject, semaphore: asyncio.Semaphore, write_lock: asyncio.Lock,
                          callback=None, io_queue: Optional[asyncio.Queue] = None) -> None:
     async with semaphore:  # limit number of concurrent downloads
         response = await self.get_object(
-            Bucket=bucket, Key=key, Range=headers['Range']
+            Bucket=bucket, Key=key, Range=headers['Range'], **extraArgs
         )
         content = await response['Body'].read()
 
@@ -274,7 +274,7 @@ async def download_fileobj(
             headers = {'Range': f'bytes={start}-{end - 1}'}
             # Create a task for each part download
             tasks.append(
-                _download_part(self, Bucket, Key, headers, start, Fileobj, semaphore, write_mutex, wrapper_callback, io_queue if not is_seekable else None)
+                _download_part(self, Bucket, Key, ExtraArgs, headers, start, Fileobj, semaphore, write_mutex, wrapper_callback, io_queue if not is_seekable else None)
             )
 
         # Run all the download tasks concurrently
