@@ -2,9 +2,10 @@
 History
 =======
 
-13.2.1 (????-??-??)
+13.2.1 (2024-12-21)
 -------------------
 
+* Bumped aiobotocore to 2.16.0
 * Fixed missing ExtraArgs propagation on S3.download_fileobj
 
 13.2.0 (2024-10-13)
