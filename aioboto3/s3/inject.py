@@ -297,7 +297,7 @@ async def upload_fileobj(
     Bucket: str,
     Key: str,
     ExtraArgs: Optional[Dict[str, Any]] = None,
-    Callback: Optional[Callable[[int], None]] = None,
+    Callback: Optional[TransferCallback] = None,
     Config: Optional[S3TransferConfig] = None,
     Processing: Callable[[bytes], bytes] = None
 ):
@@ -378,7 +378,10 @@ async def upload_fileobj(
             **kwargs
         )
         if Callback:
-            Callback(len(initial_data))
+            if inspect.iscoroutinefunction(Callback):
+                await Callback(len(initial_data))
+            else:
+                Callback(len(initial_data))
         return
 
     # File bigger than threshold, start multipart upload
@@ -423,7 +426,10 @@ async def upload_fileobj(
             # Call the callback, if it blocks then not good :/
             if Callback:
                 try:
-                    Callback(current_bytes)
+                    if inspect.iscoroutinefunction(Callback):
+                        await Callback(current_bytes)
+                    else:
+                        Callback(current_bytes)
                 except:  # noqa: E722
                     pass
 
