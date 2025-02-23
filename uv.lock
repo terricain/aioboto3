@@ -54,7 +54,7 @@ requires-dist = [
     { name = "aiobotocore", extras = ["boto3"], specifier = "==2.20.0" },
     { name = "aiofiles", specifier = ">=23.2.1" },
     { name = "chalice", marker = "extra == 'chalice'", specifier = ">=1.24.0" },
-    { name = "cryptography", marker = "extra == 's3cse'", specifier = ">=2.3.1" },
+    { name = "cryptography", marker = "extra == 's3cse'", specifier = ">=44.0.1" },
 ]
 provides-extras = ["s3cse", "chalice"]
 

@@ -37,7 +37,7 @@ documentation = "https://readthedocs.org/projects/aioboto3/"
 
 [project.optional-dependencies]
 s3cse = [
-    "cryptography>=2.3.1",
+    "cryptography>=44.0.1",
 ]
 chalice = [
     "chalice>=1.24.0",
