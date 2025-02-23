@@ -11,64 +11,88 @@ on:
       - 'main'
 
 jobs:
-  test:
-    name: Test
-    runs-on: ubuntu-latest
-    timeout-minutes: 15
+  build:
+    name: Build distribution 📦
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-        with:
-          submodules: true
-      - name: Setup Python 3.11
-        uses: actions/setup-python@v5
-        with:
-          python-version: "3.11"
+    - uses: actions/checkout@v4
+    - name: Install uv
+      uses: astral-sh/setup-uv@v5
+    - name: Build distribution 📦
+      run: uv build
+    - name: Check distribution 📦
+      run: uvx twine check --strict dist/*
+    - name: Upload distribution 📦
+      uses: actions/upload-artifact@v4
+      with:
+        name: python-package-distributions
+        path: dist/
 
-      - name: Load cached venv
-        id: cached-poetry-dependencies
-        uses: actions/cache@v4
-        with:
-          path: .venv
-          key: venv-${{ runner.os }}-${{ hashFiles('**/poetry.lock') }}
-          restore-keys: |
-            venv-${{ runner.os }}-
-
-      - name: Run setup poetry
-        run: |
-          pip install -U poetry
-          poetry config virtualenvs.in-project true
-          poetry check
-          poetry install
-          poetry show
-
-      - name: Run tests
-        run: |
-          poetry run pytest -v
-
-  publish:
-    name: Publish
-    runs-on: ubuntu-latest
-    if: github.event_name == 'push' && contains(github.ref, 'refs/tags/')
-    needs: [test]
+  test:
+    name: Test Python ${{ matrix.python-version }} on ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    continue-on-error: ${{ matrix.experimental }}
+    strategy:
+      matrix:
+        python-version:
+        - "3.8"
+        - "3.9"
+        - "3.10"
+        - "3.11"
+        - "3.12"
+        - "3.13"
+        os:
+        - ubuntu-24.04
+        - ubuntu-24.04-arm
+        include:
+        - experimental: false
+        - experimental: true
+          os: ubuntu-24.04-arm  # deal with flaky runners
+        - upload-coverage: false
+        - upload-coverage: true
+          python-version: 3.11
+          os: ubuntu-24.04
+      fail-fast: false
+    env:
+      UV_FROZEN: 1
+    timeout-minutes: 5
     steps:
     - name: Checkout
       uses: actions/checkout@v4
       with:
-        fetch-depth: 0
         submodules: true
-    - name: Setup Python 3.11
-      uses: actions/setup-python@v5
+    - name: Install uv
+      uses: astral-sh/setup-uv@v5
       with:
-        python-version: "3.11"
-    - name: Run setup poetry
-      run: |
-        pip install -U poetry poetry-dynamic-versioning
-    - name: Build dist
-      run: |
-        poetry build
-    - name: Publish
+        python-version: ${{ matrix.python-version }}
+    - name: Run unittests
       env:
-        POETRY_PYPI_TOKEN_PYPI: ${{ secrets.PYPI_TOKEN }}
+        COLOR: 'yes'
       run: |
-        poetry publish
+        uv run pytest
+
+  publish:
+    name: Publish Python 🐍 distribution 📦 to PyPI
+    if: github.ref_type == 'tag'
+    needs: [build, test]
+    runs-on: ubuntu-24.04
+    environment:
+      name: pypi
+      url: https://pypi.org/project/aioboto3/${{ github.ref_name }}
+    permissions:
+      id-token: write
+    timeout-minutes: 5
+    steps:
+    - name: Download distribution 📦
+      uses: actions/download-artifact@v4
+      with:
+        name: python-package-distributions
+        path: dist/
+    - name: Check if distribution 📦 names match git tag
+      run: |
+        test -f "dist/aioboto3-${{ github.ref_name }}.tar.gz"
+        test -f "dist/aioboto3-${{ github.ref_name }}-py3-none-any.whl"
+    - name: Publish distribution 📦 to PyPI
+      uses: pypa/gh-action-pypi-publish@release/v1

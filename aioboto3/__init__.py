@@ -6,7 +6,12 @@ from aioboto3.session import Session
 
 __author__ = """Terri Cain"""
 __email__ = 'terri@dolphincorp.co.uk'
-__version__ = '0.0.0'
+
+
+try:
+    from aioboto3._version import __version__
+except PackageNotFoundError:
+    __version__ = "0.0.0"
 
 
 # Set up logging to ``/dev/null`` like a library is supposed to.

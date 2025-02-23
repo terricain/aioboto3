@@ -2,12 +2,13 @@
 History
 =======
 
-13.5.0 (2025-02-23)
+14.0.0 (2025-02-23)
 -------------------
 
 * Bumped `aiobotocore` to 2.20.0
 * @zent1n0 updated upload_fileobj Callback to work with coroutines.
 * Fixed `aioboto3.session.Session` typehints.
+* Switched package manager to UV
 
 13.4.0 (2025-01-19)
 -------------------

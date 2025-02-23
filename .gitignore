@@ -3,6 +3,8 @@ resources/S3-CSE/keys
 resources/S3-CSE/.idea
 resources/S3-CSE/out
 
+aioboto3/_version.py
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]

@@ -6,7 +6,8 @@
       git
 
       python312
-      poetry
+      # poetry
+      uv
     ];
     hardeningDisable = [ "all" ];
 }
