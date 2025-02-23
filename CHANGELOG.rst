@@ -2,74 +2,81 @@
 History
 =======
 
+13.5.0 (2025-02-23)
+-------------------
+
+* Bumped `aiobotocore` to 2.20.0
+* @zent1n0 updated upload_fileobj Callback to work with coroutines.
+* Fixed `aioboto3.session.Session` typehints.
+
 13.4.0 (2025-01-19)
 -------------------
 
-* Bumped aiobotocore to 2.18.0
+* Bumped `aiobotocore` to 2.18.0
 
 13.3.0 (2024-12-21)
 -------------------
 
-* Bumped aiobotocore to 2.16.0
-* Fixed missing ExtraArgs propagation on S3.download_fileobj
+* Bumped `aiobotocore` to 2.16.0
+* Fixed missing `ExtraArgs` propagation on `s3.download_fileobj`.
 
 13.2.0 (2024-10-13)
 -------------------
 
-* Bumped aiobotocore to 2.15.2
-* Added `max_request_concurrency` semaphore to S3.copy to prevent starting potentially hundreds of uploads at once.
+* Bumped `aiobotocore` to 2.15.2
+* Added `max_request_concurrency` semaphore to `s3.copy` to prevent starting potentially hundreds of uploads at once.
 
 13.1.1 (2024-07-09)
 -------------------
 
-* Removed botocore and jmespath imports and imported them indirectly via boto3 to make static analysers happier.
+* Removed `botocore` and `jmespath` imports and imported them indirectly via boto3 to make static analysers happier.
 
 13.1.0 (2024-06-25)
 -------------------
 
-* Bumped aiobotocore to 2.13.1
+* Bumped `aiobotocore` to 2.13.1
 
 13.0.1 (2024-06-05)
 -------------------
 
-* Fixed issue with upload_fileobj where uploads would be incomplete if the async file object returned less bytes than
-  the read requested. This is noticable when passing in async streams like that of `aiohttp`'s response content.
+* Fixed issue with `upload_fileobj` where uploads would be incomplete if the async file object returned less bytes than
+  the read requested. This is noticeable when passing in async streams like that of `aiohttp`'s response content.
 
 13.0.0 (2024-05-27)
 -------------------
 
-* Bumped aiobotocore to 2.13.0
+* Bumped `aiobotocore` to 2.13.0
 * Added multipart download options to `s3.download_file` and `s3.download_fileobj` - thanks @kyboi
 * Cleaned up some docs examples - thanks @cuducos
-* Updated S3 transfer patched to handle ExtraArgs better.
+* Updated S3 transfer patched to handle `ExtraArgs` better.
 * Rewrote `s3.copy` to make use of `s3.copy_object` or `s3.upload_part_copy`. FYI the threshold of when to use `s3.copy` is based
   on if the file's size is below `Config.MultipartThreshold` which defaults to 8MiB, even though `s3.copy` can do up to 5GiB.
 
 12.4.0 (2024-04-15)
 -------------------
 
-* Bumped aiobotocore to 2.12.3 - thanks @zikphil
+* Bumped `aiobotocore` to 2.12.3 - thanks @zikphil
 
 12.3.0 (2024-02-02)
 -------------------
 
-* Bumped aiobotocore to 2.11.2
+* Bumped `aiobotocore` to 2.11.2
 * Fixed cryptography typing on the CSE module
 
 12.2.0 (2024-01-16)
 -------------------
 
-* Bumped aiobotocore to 2.9.0 - thanks @blotero
+* Bumped `aiobotocore` to 2.9.0 - thanks @blotero
 
 12.1.0 (2023-12-08)
 -------------------
 
-* Bumped aiobotocore to 2.8.0 - thanks @huonw
+* Bumped `aiobotocore` to 2.8.0 - thanks @huonw
 
 12.0.0 (2023-10-25)
 -------------------
 
-* Bumped aiobotocore to 2.7.0
+* Bumped `aiobotocore` to 2.7.0
 * Python 3.7 support dropped due to aiobotocore requirements.
 
 11.3.1 (2023-10-14)

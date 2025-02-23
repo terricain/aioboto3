@@ -30,8 +30,8 @@ class Session(boto3.session.Session):
     :param aws_session_token: AWS temporary session token
     :type region_name: string
     :param region_name: Default region when creating new connections
-    :type botocore_session: botocore.session.Session
-    :param botocore_session: Use this Botocore session instead of creating
+    :type botocore_session: aiobotocore.session.AioSession
+    :param botocore_session: Use this AioBotocore session instead of creating
                              a new default one.
     :type profile_name: string
     :param profile_name: The name of a profile to use. If not given, then
