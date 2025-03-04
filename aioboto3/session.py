@@ -14,6 +14,8 @@ from boto3.exceptions import ResourceNotExistsError, UnknownAPIVersionError
 
 import aiobotocore.session
 from aiobotocore.config import AioConfig
+from botocore.exceptions import NoCredentialsError
+
 from aioboto3.resources.factory import AIOBoto3ResourceFactory
 
 
@@ -36,6 +38,8 @@ class Session(boto3.session.Session):
     :type profile_name: string
     :param profile_name: The name of a profile to use. If not given, then
                          the default profile is used.
+    :type aws_account_id: string
+    :param aws_account_id: AWS account ID
     """
     def __init__(
         self,
@@ -44,7 +48,8 @@ class Session(boto3.session.Session):
         aws_session_token=None,
         region_name=None,
         botocore_session=None,
-        profile_name=None
+        profile_name=None,
+        aws_account_id=None,
     ):
         if botocore_session is not None:
             self._session = botocore_session
@@ -65,9 +70,24 @@ class Session(boto3.session.Session):
         if profile_name is not None:
             self._session.set_config_variable('profile', profile_name)
 
-        if aws_access_key_id or aws_secret_access_key or aws_session_token:
+        creds = (
+            aws_access_key_id,
+            aws_secret_access_key,
+            aws_session_token,
+            aws_account_id,
+        )
+
+        if any(creds):
+            if self._account_id_set_without_credentials(
+                aws_account_id, aws_access_key_id, aws_secret_access_key
+            ):
+                raise NoCredentialsError()
+
             self._session.set_credentials(
-                aws_access_key_id, aws_secret_access_key, aws_session_token
+                aws_access_key_id,
+                aws_secret_access_key,
+                aws_session_token,
+                aws_account_id,
             )
 
         if region_name is not None:
