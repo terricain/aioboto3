@@ -192,6 +192,9 @@ async def test_s3_upload_fileobj_async_multipart_completes_with_checksum_on_part
     """This test verifies that when performing a multipart upload with a checksum algorithm:
     1. Each uploaded part includes the specified checksum type (e.g. CRC32 or SHA1)
     2. The complete_multipart_upload call receives all part checksums correctly
+
+    Note that moto does not use checksums properly, hence unittest.mock was used to
+    test the call args of `complete_multipart_upload`
     """
     await s3_client.create_bucket(Bucket=bucket_name, CreateBucketConfiguration={'LocationConstraint': region})
 
