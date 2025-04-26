@@ -526,12 +526,9 @@ async def upload_fileobj(
 
     # Close either the Queue.join() coro, or the event.wait() coro
     for coro in pending:
-        if not coro.done():
-            coro.cancel()
-            try:
-                await coro
-            except:
-                pass
+        coro.cancel()
+
+    await asyncio.gather(*pending, return_exceptions=True)
 
     # Cancel any remaining futures, though if successful they'll be done
     cancelled = []
