@@ -162,6 +162,8 @@ async def test_s3_upload_fileobj_cancel(event_loop, s3_client, bucket_name, regi
     with pytest.raises(asyncio.CancelledError):
         await upload_task
 
+    assert all([task.cancelled() for task in asyncio.all_tasks() if task is not asyncio.current_task()])
+
 
 @pytest.mark.asyncio
 async def test_s3_upload_empty_fileobj(event_loop, s3_client, bucket_name, region):
