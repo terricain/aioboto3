@@ -1,3 +1,4 @@
+import asyncio
 import os
 import datetime
 import tempfile
@@ -125,6 +126,44 @@ async def test_s3_upload_fileobj(event_loop, s3_client, bucket_name, region):
 
     resp = await s3_client.get_object(Bucket=bucket_name, Key='test_file')
     assert (await resp['Body'].read()) == data
+
+
+@pytest.mark.asyncio
+async def test_s3_upload_fileobj_cancel(event_loop, s3_client, bucket_name, region):
+    data = b"x" * 10_000_000
+    await s3_client.create_bucket(
+        Bucket=bucket_name,
+        CreateBucketConfiguration={'LocationConstraint': region}
+    )
+
+    fh = BytesIO(data)
+
+    class SlowFakeFile:
+        def __init__(self, fileobj):
+            self.fileobj = fileobj
+
+        async def read(self, size):
+            await asyncio.sleep(0.1)
+            return self.fileobj.read(size)
+
+    slow_file = SlowFakeFile(fh)
+
+    upload_task = asyncio.create_task(
+        s3_client.upload_fileobj(
+            slow_file,
+            bucket_name,
+            'test_slow_file'
+        )
+    )
+
+    await asyncio.sleep(0.3)
+
+    upload_task.cancel()
+
+    with pytest.raises(asyncio.CancelledError):
+        await upload_task
+
+    assert all([task.cancelled() for task in asyncio.all_tasks() if task is not asyncio.current_task()])
 
 
 @pytest.mark.asyncio
