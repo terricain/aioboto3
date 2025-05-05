@@ -417,7 +417,14 @@ async def upload_fileobj(
                 break
 
             # Success, add the result to the finished_parts, increment the sent_bytes
-            finished_parts.append({'ETag': resp['ETag'], 'PartNumber': part_args['PartNumber']})
+
+            finished_parts_kwargs = {}
+            if 'ChecksumAlgorithm' in kwargs:
+                for key in resp:
+                    if key.startswith('Checksum'):
+                        finished_parts_kwargs[key] = resp[key]
+            finished_parts.append(
+                {'ETag': resp['ETag'], 'PartNumber': part_args['PartNumber'], **finished_parts_kwargs})
             current_bytes = len(part_args['Body'])
             sent_bytes += current_bytes
             uploaded_parts += 1

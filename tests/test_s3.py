@@ -2,6 +2,7 @@ import os
 import datetime
 import tempfile
 from io import BytesIO
+from unittest.mock import AsyncMock
 
 from botocore.exceptions import ClientError
 from boto3.s3.transfer import S3TransferConfig
@@ -183,6 +184,49 @@ async def test_s3_upload_fileobj_async_multipart(event_loop, s3_client, bucket_n
 
     resp = await s3_client.get_object(Bucket=bucket_name, Key='test_file')
     assert (await resp['Body'].read()) == data
+
+@pytest.mark.parametrize('checksum_algo', ['CRC32', 'SHA1', None])
+@pytest.mark.asyncio
+async def test_s3_upload_fileobj_async_multipart_completes_with_checksum_on_parts(
+    event_loop, s3_client, bucket_name, region, checksum_algo):
+    """This test verifies that when performing a multipart upload with a checksum algorithm:
+    1. Each uploaded part includes the specified checksum type (e.g. CRC32 or SHA1)
+    2. The complete_multipart_upload call receives all part checksums correctly
+
+    Note that moto does not use checksums properly, hence unittest.mock was used to
+    test the call args of `complete_multipart_upload`
+    """
+    await s3_client.create_bucket(Bucket=bucket_name, CreateBucketConfiguration={'LocationConstraint': region})
+
+    data = b'Hello World\n'
+
+    tmpfile = tempfile.NamedTemporaryFile(delete=False)
+    tmpfile.close()
+    async with aiofiles.open(tmpfile.name, mode='wb') as fpw:
+        await fpw.write(data)
+
+    mock_complete_multipart_upload = AsyncMock()
+    s3_client.complete_multipart_upload = mock_complete_multipart_upload
+    async with aiofiles.open(tmpfile.name, mode='rb') as fpr:
+        config = S3TransferConfig(multipart_threshold=4)
+
+        upload_fileobj_kwargs = {}
+        if checksum_algo:
+            upload_fileobj_kwargs = {'ExtraArgs': {'ChecksumAlgorithm': checksum_algo}}
+        await s3_client.upload_fileobj(fpr, bucket_name, 'test_file', Config=config, **upload_fileobj_kwargs)
+
+    mock_complete_multipart_upload.assert_called_once()
+    args, kwargs = mock_complete_multipart_upload.call_args
+    parts = kwargs['MultipartUpload']['Parts']
+    if checksum_algo:
+        expected_checksum_key = 'Checksum' + checksum_algo
+        for part in parts:
+            assert expected_checksum_key in part
+    else:
+        for part in parts:
+            for key in part:
+                assert not key.startswith('Checksum')
+
 
 
 @pytest.mark.asyncio
