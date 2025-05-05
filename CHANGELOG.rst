@@ -6,6 +6,7 @@ History
 -------------------
 
 * Bumped `aiobotocore` to 2.22.0
+* Fixes checksum use during S3 multipart upload using upload-file* - thanks @jvrana-tetra
 
 14.1.0 (2025-03-04)
 -------------------
