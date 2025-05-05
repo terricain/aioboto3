@@ -497,7 +497,12 @@ async def upload_fileobj(
     futures = [asyncio.ensure_future(uploader()) for _ in range(0, Config.max_request_concurrency)]
 
     # Wait for file reader to finish
-    await file_reader_future
+    try:
+        await file_reader_future
+    except Exception as err:
+        # if the file reader raises, we need to clean up the uploaders
+        exception = err
+        exception_event.set()
     # So by this point all of the file is read and in a queue
 
     # wait for either io queue is finished, or an exception has been raised
