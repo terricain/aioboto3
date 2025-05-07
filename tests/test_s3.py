@@ -128,8 +128,15 @@ async def test_s3_upload_fileobj(event_loop, s3_client, bucket_name, region):
     assert (await resp['Body'].read()) == data
 
 
+def _count_running_tasks_excluding_current():
+    current = asyncio.current_task()
+    return len([t for t in asyncio.all_tasks() if t is not current and not t.done() and not t.cancelled()])
+
+
 @pytest.mark.asyncio
 async def test_s3_upload_fileobj_cancel(event_loop, s3_client, bucket_name, region):
+    before = _count_running_tasks_excluding_current()
+
     data = b"x" * 10_000_000
     await s3_client.create_bucket(
         Bucket=bucket_name,
@@ -143,7 +150,7 @@ async def test_s3_upload_fileobj_cancel(event_loop, s3_client, bucket_name, regi
             self.fileobj = fileobj
 
         async def read(self, size):
-            await asyncio.sleep(0.1)
+            await asyncio.sleep(0.3)
             return self.fileobj.read(size)
 
     slow_file = SlowFakeFile(fh)
@@ -163,7 +170,8 @@ async def test_s3_upload_fileobj_cancel(event_loop, s3_client, bucket_name, regi
     with pytest.raises(asyncio.CancelledError):
         await upload_task
 
-    assert all([task.cancelled() for task in asyncio.all_tasks() if task is not asyncio.current_task()])
+    after = _count_running_tasks_excluding_current()
+    assert before == after, "Task leak detected"
 
 
 @pytest.mark.asyncio
