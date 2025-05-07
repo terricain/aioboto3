@@ -17,7 +17,7 @@ def test_chalice_async_http(moto_patch, region, bucket_name):
         assert response.json_body['hello'] == 'myname'
 
 
-def test_chalice_async_http_s3_client(event_loop, moto_patch, region, bucket_name):
+def test_chalice_async_http_s3_client(moto_patch, region, bucket_name):
     session = aioboto3.Session()
 
     app.aioboto3 = session

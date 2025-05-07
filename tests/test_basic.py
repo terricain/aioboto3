@@ -10,7 +10,7 @@ import aioboto3
 
 
 @pytest.mark.asyncio
-async def test_getting_client(event_loop):
+async def test_getting_client():
     """Simple getting of client."""
     session = aioboto3.Session()
 
@@ -19,7 +19,7 @@ async def test_getting_client(event_loop):
 
 
 @pytest.mark.asyncio
-async def test_getting_resource_cm(event_loop):
+async def test_getting_resource_cm():
     """Simple getting of resource."""
     session = aioboto3.Session()
 

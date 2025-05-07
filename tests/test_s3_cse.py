@@ -66,7 +66,7 @@ DATA = b'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed efficitur,
 
 @pytest.mark.xfail(reason="Waiting for moto to accept PR and release")
 @pytest.mark.asyncio
-async def test_kms_crypto_context_success(event_loop, moto_patch, region, bucket_name, kms_key_alias):
+async def test_kms_crypto_context_success(moto_patch, region, bucket_name, kms_key_alias):
     session = aioboto3.Session()
 
     async with session.client('kms', region_name=region) as kms_client:
@@ -94,7 +94,7 @@ async def test_kms_crypto_context_success(event_loop, moto_patch, region, bucket
 
 
 @pytest.mark.asyncio
-async def test_kms_crypto_context_decrypt_no_key(event_loop, moto_patch, region, bucket_name, kms_key_alias):
+async def test_kms_crypto_context_decrypt_no_key(moto_patch, region, bucket_name, kms_key_alias):
     # Create context
     kms_context = cse.KMSCryptoContext(kms_client_args={'region_name': region})
     await kms_context.setup()
@@ -107,7 +107,7 @@ async def test_kms_crypto_context_decrypt_no_key(event_loop, moto_patch, region,
 
 
 @pytest.mark.asyncio
-async def test_kms_cse_encrypt_decrypt_aes_gcm(event_loop, moto_patch, region, bucket_name, s3_key_name):
+async def test_kms_cse_encrypt_decrypt_aes_gcm(moto_patch, region, bucket_name, s3_key_name):
     session = aioboto3.Session()
 
     async with session.client('s3', region_name=region) as s3_client:
@@ -155,7 +155,7 @@ async def test_kms_cse_encrypt_decrypt_aes_gcm(event_loop, moto_patch, region, b
 
 
 @pytest.mark.asyncio
-async def test_symmetric_cse_encrypt_decrypt_aes_cbc(event_loop, moto_patch, region, bucket_name, s3_key_name):
+async def test_symmetric_cse_encrypt_decrypt_aes_cbc(moto_patch, region, bucket_name, s3_key_name):
     session = aioboto3.Session()
 
     async with session.client('s3', region_name=region) as s3_client:
@@ -200,7 +200,7 @@ async def test_symmetric_cse_encrypt_decrypt_aes_cbc(event_loop, moto_patch, reg
 
 
 @pytest.mark.asyncio
-async def test_asymmetric_cse_encrypt_decrypt_aes_cbc(event_loop, moto_patch, region, bucket_name, s3_key_name):
+async def test_asymmetric_cse_encrypt_decrypt_aes_cbc(moto_patch, region, bucket_name, s3_key_name):
     session = aioboto3.Session()
 
     async with session.client('s3', region_name=region) as s3_client:

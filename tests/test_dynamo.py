@@ -5,7 +5,7 @@ import pytest
 
 
 @pytest.mark.asyncio
-async def test_dynamo_resource_query(event_loop, dynamodb_resource, random_table_name):
+async def test_dynamo_resource_query(dynamodb_resource, random_table_name):
 
     await dynamodb_resource.create_table(
         TableName=random_table_name,
@@ -26,7 +26,7 @@ async def test_dynamo_resource_query(event_loop, dynamodb_resource, random_table
 
 
 @pytest.mark.asyncio
-async def test_dynamo_resource_put(event_loop, dynamodb_resource, random_table_name):
+async def test_dynamo_resource_put(dynamodb_resource, random_table_name):
     await dynamodb_resource.create_table(
         TableName=random_table_name,
         KeySchema=[{'AttributeName': 'pk', 'KeyType': 'HASH'}],
@@ -44,7 +44,7 @@ async def test_dynamo_resource_put(event_loop, dynamodb_resource, random_table_n
 
 
 @pytest.mark.asyncio
-async def test_dynamo_resource_batch_write_flush_on_exit_context(event_loop, dynamodb_resource, random_table_name):
+async def test_dynamo_resource_batch_write_flush_on_exit_context(dynamodb_resource, random_table_name):
     await dynamodb_resource.create_table(
         TableName=random_table_name,
         KeySchema=[{'AttributeName': 'pk', 'KeyType': 'HASH'}],
@@ -61,7 +61,7 @@ async def test_dynamo_resource_batch_write_flush_on_exit_context(event_loop, dyn
 
 
 @pytest.mark.asyncio
-async def test_dynamo_resource_batch_write_flush_amount(event_loop, dynamodb_resource, random_table_name):
+async def test_dynamo_resource_batch_write_flush_amount(dynamodb_resource, random_table_name):
     await dynamodb_resource.create_table(
         TableName=random_table_name,
         KeySchema=[{'AttributeName': 'pk', 'KeyType': 'HASH'}],
@@ -95,7 +95,7 @@ async def test_dynamo_resource_batch_write_flush_amount(event_loop, dynamodb_res
 
 
 @pytest.mark.asyncio
-async def test_flush_doesnt_reset_item_buffer(event_loop, dynamodb_resource, random_table_name):
+async def test_flush_doesnt_reset_item_buffer(dynamodb_resource, random_table_name):
     await dynamodb_resource.create_table(
         TableName=random_table_name,
         KeySchema=[{'AttributeName': 'pk', 'KeyType': 'HASH'}],
@@ -139,7 +139,7 @@ async def test_flush_doesnt_reset_item_buffer(event_loop, dynamodb_resource, ran
 
 
 @pytest.mark.asyncio
-async def test_dynamo_resource_property(event_loop, dynamodb_resource, random_table_name):
+async def test_dynamo_resource_property(dynamodb_resource, random_table_name):
     await dynamodb_resource.create_table(
         TableName=random_table_name,
         KeySchema=[{'AttributeName': 'pk', 'KeyType': 'HASH'}],
@@ -157,7 +157,7 @@ async def test_dynamo_resource_property(event_loop, dynamodb_resource, random_ta
 
 
 @pytest.mark.asyncio
-async def test_dynamo_resource_waiter(event_loop, dynamodb_resource, random_table_name):
+async def test_dynamo_resource_waiter(dynamodb_resource, random_table_name):
     await dynamodb_resource.create_table(
         TableName=random_table_name,
         KeySchema=[{'AttributeName': 'pk', 'KeyType': 'HASH'}],
