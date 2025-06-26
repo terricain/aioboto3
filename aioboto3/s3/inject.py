@@ -3,11 +3,14 @@ import aiofiles
 import inspect
 import logging
 import math
+from functools import partial
 from io import BytesIO
 from typing import Optional, Callable, BinaryIO, Dict, Any, Union
 from abc import abstractmethod
 
+from aiobotocore.context import with_current_context
 from botocore.exceptions import ClientError
+from botocore.useragent import register_feature_id
 from boto3 import utils
 from boto3.s3.transfer import S3TransferConfig, S3Transfer
 from boto3.s3.inject import bucket_upload_file, bucket_download_file, bucket_copy, bucket_upload_fileobj, bucket_download_fileobj
@@ -71,6 +74,7 @@ async def object_summary_load(self, *args, **kwargs):
     self.meta.data = response
 
 
+@with_current_context(partial(register_feature_id, 'S3_TRANSFER'))
 async def download_file(
     self,
     Bucket: str,
@@ -135,6 +139,7 @@ async def _download_part(self, bucket: str, key: str, extraArgs: Dict[str, str],
                 pass
 
 
+@with_current_context(partial(register_feature_id, 'S3_TRANSFER'))
 async def download_fileobj(
     self,
     Bucket: str,
@@ -291,6 +296,7 @@ async def download_fileobj(
         ) from e
 
 
+@with_current_context(partial(register_feature_id, 'S3_TRANSFER'))
 async def upload_fileobj(
     self,
     Fileobj: AnyFileObject,
@@ -564,6 +570,7 @@ async def upload_fileobj(
         raise exception
 
 
+@with_current_context(partial(register_feature_id, 'S3_TRANSFER'))
 async def upload_file(
     self,
     Filename: str,
@@ -596,6 +603,7 @@ async def upload_file(
         )
 
 
+@with_current_context(partial(register_feature_id, 'S3_TRANSFER'))
 async def copy(
     self,
     CopySource: Dict[str, Any],

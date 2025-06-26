@@ -5,9 +5,9 @@ authors = [
     {name = "Terri Cain", email = "terri@dolphincorp.co.uk"},
 ]
 license = {text = "Apache-2.0"}
-requires-python = "<4.0,>=3.8"
+requires-python = "<4.0,>=3.9"
 dependencies = [
-    "aiobotocore[boto3]==2.22.0",
+    "aiobotocore[boto3]==2.23.0",
     "aiofiles>=23.2.1",
 ]
 
@@ -23,7 +23,6 @@ classifiers = [
     "License :: OSI Approved :: Apache Software License",
     "Natural Language :: English",
     "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.8",
     "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",

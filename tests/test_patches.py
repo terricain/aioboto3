@@ -67,11 +67,11 @@ _API_DIGESTS = {
     inject_bucket_methods: {'63316226fdd4d7c043eaf35e07b6b2ac331b4872', 'dfe1c2219ced56b0aaa74c4a84210fd20463392e'},
     object_summary_load: {'3e4db1310105ced8ac2af17598603812ca18cbbe', '98a5a726f105388322a845ba97e08f1e53ee9d69'},
     bucket_load: {'2d40d03ca9ec91eb5de8a8f40e0f35634ab1d987'},
-    download_file: {'5a05472514f9e34c5f64ca8bbcc80a1d27f1f5d1', 'a31ffcb7ba368f951d16babedcc48252cc5cb2af', '79bc1c0838e825eb54a3a5b48193c1ceac65947c', '5f0d6be6c3e86fd8fff2bc260d185a777327db27'},
-    download_fileobj: {'237370745eb02e93a353fa806a64f3701c47995c', '9299d1abbd9d5c311e8a824a438e150ff24ebcd7', '91c0900c26c0078b623b9550c4fb9ef6afc4a528', 'b4189d56b7a61a7dee6e643489cca4e65da95b98'},
-    upload_fileobj: {'d1db027e51d37cf1476377cfda436810b813044b', '3b953e17cfc4a3c6ad75c3890af60aebeea4bee8', 'e03eb92c3b2f260b1c036382f2ca9fcb1f293fcd'},
-    upload_file: {'063eaca7bec14af8ccd041e3a87ff5c9ef7252ca', 'ad899c968fdfc294b46c54efbcb9912c5675ba09', 'df7552000d9111f71a05bd9880e9b6ef0f2f21bc', 'ace4ec5d8f8f0ebb70715faff51b95a1d2c02b69'},
-    copy: {'c4423d0a6d3352553befdf0387987c09812fcaff', 'e8154a4de3b97dd2ab29d250c005b03e8fc7ed71', '7f9edd96f418e09c00d26538a7382b217e0843e5', '95d246b78893b525d30508870afc6b00297312f5'},
+    download_file.__wrapped__: {'0cb74058f3d771b69ffa55c449915b8ae2d79d5a'},
+    download_fileobj.__wrapped__: {'3987566bbd712aa81c332b1c2684327a9fd0de38'},
+    upload_fileobj.__wrapped__: {'7d344505b3ea95168603e534c75a1a51551b35d5'},
+    upload_file.__wrapped__: {'9949e77ef9c98c5017388d8150c3cbf00e412077'},
+    copy.__wrapped__: {'ecf80dcb0fc794e941fce078862ad5e83147b7c1'},
     S3TransferConfig.__init__: {'f418b3dab3c6f073f19feaf1172359bdc3863e22'},
 }
 
