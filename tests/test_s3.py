@@ -495,3 +495,8 @@ async def test_s3_bucket_creation_date(s3_client, s3_resource, bucket_name, regi
     bucket = await s3_resource.Bucket(bucket_name)
     creation_date = await bucket.creation_date
     assert isinstance(creation_date, datetime.datetime)
+
+
+@pytest.mark.asyncio
+async def test_s3vectors_client_creation(s3vectors_client):
+    assert s3vectors_client.meta.service_model.service_name == 's3vectors'

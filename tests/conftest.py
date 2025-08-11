@@ -55,6 +55,11 @@ def bucket_name() -> str:
 
 
 @pytest.fixture
+def vector_bucket_name() -> str:
+    return 'test-vector-bucket-' + str(uuid.uuid4())
+
+
+@pytest.fixture
 def kms_key_alias() -> str:
     return 'alias/test-' + uuid.uuid4().hex
 
@@ -86,6 +91,14 @@ async def s3_resource(request, region: str, config: AioConfig, s3_server: str, b
 
     async with session.resource('s3', region_name=region, endpoint_url=s3_server, config=config) as resource:
         yield resource
+
+
+@pytest_asyncio.fixture
+async def s3vectors_client(request, region: str, config: AioConfig, s3_server: str) -> "S3Vectors":
+    session = Session(region_name=region, **moto_config())
+
+    async with session.client('s3vectors', region_name=region, endpoint_url=s3_server, config=config) as client:
+        yield client
 
 
 T = TypeVar('T')
