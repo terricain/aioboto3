@@ -5,8 +5,8 @@ History
 15.1.0 (2025-08-12)
 -------------------
 
-* Bumped `aiobotocore` to to 2.24.0
-* Add Python 3.14 support.
+* Bumped `aiobotocore` to to 2.24.0 - thanks @claytonparnell
+* Add Python 3.14 support - thanks @claytonparnell
 
 15.0.0 (2025-06-26)
 -------------------
