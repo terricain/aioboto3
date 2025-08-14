@@ -24,7 +24,7 @@ _API_DIGESTS = {
     boto3._get_default_session: {'5249535ea408e9497b1363f73b9fd46dcb068b06'},
     boto3.client: {'20c73aeb9feb10d1e5d7f6b3f7dedcab00c7fbcf'},
     boto3.resource: {'316deeb96e6af699be73670c7478357c6882eab3'},
-    boto3.NullHandler: {'7f33bbce5d634afba1f0fff359644f288dcf671e'},
+    boto3.NullHandler: {'6e0c2ed3ca7e42b851afb79694bdfb0e4fea26f2'},
 
     # resources/action.py
     ServiceAction.__init__: {'b8b759abbe8fbfa9bad332b8ce8d30f55daf97f3', '21c079bf5e234c3fcb632c7f689eccf0c4d2935b'},
@@ -59,7 +59,7 @@ _API_DIGESTS = {
     # dynamodb/table.py
     register_table_methods: {'1d9191de712871b92e1e87f94c6583166a315113'},
     TableResource: {'a65f5e64ecca7d3cee3f6f337db36313d84dbad1', '2b803c9437bbee6b369369a279fcb0e34c821ab2', 'b9d2f960fbffafdd8b88f7036c4dbe1a76e93f66'},
-    BatchWriter: {'d32584de13fb42efb39ae6841d4a55d162f5e7dd'},  # Class was pretty much rewritten so wasn't subclassed.
+    BatchWriter: {'bc1994154ceefd6c50b778eb497eb613c1b49f67'},  # Class was pretty much rewritten so wasn't subclassed.
 
     # s3/inject.py
     inject_s3_transfer_methods: {'8540c89847b80cc1fb34627989eba14972c158d5', '19e91a5002e1d5b30a08024f25a9ba875010bacc'},
