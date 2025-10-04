@@ -70,27 +70,22 @@ class Session(boto3.session.Session):
         if profile_name is not None:
             self._session.set_config_variable('profile', profile_name)
 
-        creds = (
-            aws_access_key_id,
-            aws_secret_access_key,
-            aws_session_token,
-            aws_account_id,
-        )
+        credentials_kwargs = {
+            "aws_access_key_id": aws_access_key_id,
+            "aws_secret_access_key": aws_secret_access_key,
+            "aws_session_token": aws_session_token,
+            "aws_account_id": aws_account_id,
+        }
 
-        if any(creds):
-            if self._account_id_set_without_credentials(
-                aws_account_id=aws_account_id,
-                aws_access_key_id=aws_access_key_id,
-                aws_secret_access_key=aws_secret_access_key
-            ):
+        if any(credentials_kwargs.values()):
+            if self._account_id_set_without_credentials(**credentials_kwargs):
                 raise NoCredentialsError()
 
-            self._session.set_credentials(
-                aws_access_key_id,
-                aws_secret_access_key,
-                aws_session_token,
-                aws_account_id,
-            )
+            if aws_account_id is None:
+                del credentials_kwargs["aws_account_id"]
+
+            # This only works as dictionaries happen to be ordered.
+            self._session.set_credentials(*credentials_kwargs.values())
 
         if region_name is not None:
             self._session.set_config_variable('region', region_name)

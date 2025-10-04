@@ -65,26 +65,26 @@ def s3_key_name() -> str:
 
 
 @pytest_asyncio.fixture
-async def dynamodb_resource(request, region: str, config: AioConfig, dynamodb2_server: str) -> "ServiceResource":
+async def dynamodb_resource(request, region: str, config: AioConfig, moto_server: str) -> "ServiceResource":
     session = Session(region_name=region, **moto_config())
 
-    async with session.resource('dynamodb', region_name=region, endpoint_url=dynamodb2_server, config=config) as resource:
+    async with session.resource('dynamodb', region_name=region, endpoint_url=moto_server, config=config) as resource:
         yield resource
 
 
 @pytest_asyncio.fixture
-async def s3_client(request, region: str, config: AioConfig, s3_server: str, bucket_name: str) -> "S3":
+async def s3_client(request, region: str, config: AioConfig, moto_server: str, bucket_name: str) -> "S3":
     session = Session(region_name=region, **moto_config())
 
-    async with session.client('s3', region_name=region, endpoint_url=s3_server, config=config) as client:
+    async with session.client('s3', region_name=region, endpoint_url=moto_server, config=config) as client:
         yield client
 
 
 @pytest_asyncio.fixture
-async def s3_resource(request, region: str, config: AioConfig, s3_server: str, bucket_name: str) -> "ServiceResource":
+async def s3_resource(request, region: str, config: AioConfig, moto_server: str, bucket_name: str) -> "ServiceResource":
     session = Session(region_name=region, **moto_config())
 
-    async with session.resource('s3', region_name=region, endpoint_url=s3_server, config=config) as resource:
+    async with session.resource('s3', region_name=region, endpoint_url=moto_server, config=config) as resource:
         yield resource
 
 
@@ -123,13 +123,13 @@ def create_fake_session(base_class: Type[T], url_overrides: Dict[str, str]) -> T
 
 
 @pytest.fixture(scope='function')
-def moto_patch(request, region, config, s3_server, kms_server):
+def moto_patch(request, region, config, moto_server):
     FakeAioboto3Session = create_fake_session(Session, {
-        's3': s3_server,
-        'kms': kms_server
+        's3': moto_server,
+        'kms': moto_server
     })
     FakeBoto3Session = create_fake_session(boto3.Session, {
-        's3': s3_server,
+        's3': moto_server,
     })
 
     sessions = [

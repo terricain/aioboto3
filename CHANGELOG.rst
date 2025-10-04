@@ -2,10 +2,11 @@
 History
 =======
 
-15.2.0 (TBD)
+15.2.0 (2025-10-04)
 -------------------
 
-* Bumped `aiobotocore` to to 2.24.2 - thanks @n8felton
+* Bumped `aiobotocore` to to 2.24.2 - thanks @n8felton & @mweinelt
+* Fixed inconsistency in patched S3 download/upload method documentation - thanks @shari-ful
 
 15.1.0 (2025-08-12)
 -------------------
