@@ -158,8 +158,8 @@ async def download_fileobj(
 
     Usage::
 
-        import boto3
-        s3 = boto3.client('s3')
+        import aioboto3
+        s3 = aioboto3.client('s3')
 
         async with aiofiles.open('filename', 'wb') as data:
             await s3.download_fileobj('mybucket', 'mykey', data)
@@ -316,11 +316,11 @@ async def upload_fileobj(
 
     Usage::
 
-        import boto3
-        s3 = boto3.client('s3')
+        import aioboto3
+        s3 = aioboto3.client('s3')
 
-        with open('filename', 'rb') as data:
-            s3.upload_fileobj(data, 'mybucket', 'mykey')
+        async with aiofiles.open('filename', 'rb') as data:
+            await s3.upload_fileobj(data, 'mybucket', 'mykey')
 
     :type Fileobj: a file-like object
     :param Fileobj: A file-like object to upload. At a minimum, it must
@@ -584,7 +584,7 @@ async def upload_file(
 
     Usage::
 
-        import boto3
+        import aioboto3
         async with aioboto3.resource('s3') as s3:
             await s3.meta.client.upload_file('/tmp/hello.txt', 'mybucket', 'hello.txt')
 
