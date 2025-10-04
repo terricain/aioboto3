@@ -2,6 +2,11 @@
 History
 =======
 
+15.2.0 (TBD)
+-------------------
+
+* Bumped `aiobotocore` to to 2.24.2 - thanks @n8felton
+
 15.1.0 (2025-08-12)
 -------------------
 
