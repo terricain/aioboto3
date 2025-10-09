@@ -67,7 +67,7 @@ Ready to contribute? Here's how to set up `aioboto3` for local development.
 3. Install your local copy into a virtualenv::
 
     cd aioboto3/
-    poetry install
+    uv sync
 
 4. Create a branch for local development::
 
@@ -106,5 +106,5 @@ Tips
 
 To run a subset of the tests you can specify a specific test module or function, e.g.::
 
- poetry run pytest tests/test_basic.py
- poetry run pytest tests/test_basic.py::test_getting_client
+ uv run pytest tests/test_basic.py
+ uv run pytest tests/test_basic.py::test_getting_client

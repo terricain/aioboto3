@@ -2,6 +2,13 @@
 History
 =======
 
+15.3.0 (TBD)
+-------------------
+
+* Bumped `aiobotocore` to to 2.24.3 - thanks @thyhax
+* Contributing documentation updates - thanks @thyhax
+* Updated Makefile to use `uv` over `poetry` - thanks @thyhax
+
 15.2.0 (2025-10-04)
 -------------------
 

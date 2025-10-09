@@ -71,7 +71,7 @@ _API_DIGESTS = {
     download_fileobj.__wrapped__: {'3987566bbd712aa81c332b1c2684327a9fd0de38'},
     upload_fileobj.__wrapped__: {'7d344505b3ea95168603e534c75a1a51551b35d5'},
     upload_file.__wrapped__: {'9949e77ef9c98c5017388d8150c3cbf00e412077'},
-    copy.__wrapped__: {'ecf80dcb0fc794e941fce078862ad5e83147b7c1'},
+    copy.__wrapped__: {'534f68820a410ba41072026994badca7f66fe1b9'},
     S3TransferConfig.__init__: {'f418b3dab3c6f073f19feaf1172359bdc3863e22'},
 }
 
