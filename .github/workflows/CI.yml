@@ -24,7 +24,7 @@ jobs:
       - name: Check distribution 📦
         run: uvx twine check --strict dist/*
       - name: Upload distribution 📦
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: python-package-distributions
           path: dist/
@@ -101,7 +101,7 @@ jobs:
     timeout-minutes: 5
     steps:
       - name: Download distribution 📦
-        uses: actions/download-artifact@v5
+        uses: actions/download-artifact@v6
         with:
           name: python-package-distributions
           path: dist/
