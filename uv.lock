@@ -1,5 +1,5 @@
 version = 1
-revision = 2
+revision = 3
 requires-python = ">=3.9"
 resolution-markers = [
     "python_full_version >= '3.14' and platform_python_implementation != 'PyPy'",
@@ -51,7 +51,7 @@ docs = [
 
 [package.metadata]
 requires-dist = [
-    { name = "aiobotocore", extras = ["boto3"], specifier = "==2.25.0" },
+    { name = "aiobotocore", extras = ["boto3"], specifier = "==2.25.1" },
     { name = "aiofiles", specifier = ">=23.2.1" },
     { name = "chalice", marker = "extra == 'chalice'", specifier = ">=1.24.0" },
     { name = "cryptography", marker = "extra == 's3cse'", specifier = ">=44.0.1" },
@@ -79,7 +79,7 @@ docs = [
 
 [[package]]
 name = "aiobotocore"
-version = "2.25.0"
+version = "2.25.1"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "aiohttp" },
@@ -90,9 +90,9 @@ dependencies = [
     { name = "python-dateutil" },
     { name = "wrapt" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/29/89/b1ae494cfd12520c5d3b19704a14ffa19153634be47d48052e45223eee86/aiobotocore-2.25.0.tar.gz", hash = "sha256:169d07de312fd51292292f2c8faf8f67d0f466f525cea03855fe065ddc85f79d", size = 120514, upload-time = "2025-10-10T17:39:12.291Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/62/94/2e4ec48cf1abb89971cb2612d86f979a6240520f0a659b53a43116d344dc/aiobotocore-2.25.1.tar.gz", hash = "sha256:ea9be739bfd7ece8864f072ec99bb9ed5c7e78ebb2b0b15f29781fbe02daedbc", size = 120560, upload-time = "2025-10-28T22:33:21.787Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/a8/4e/3592d88436bbd60984a08440793c0ba245f538f9f6287b59c1e2c0aead8c/aiobotocore-2.25.0-py3-none-any.whl", hash = "sha256:0524fd36f6d522ddc9d013df2c19fb56369ffdfbffd129895918fbfe95216dad", size = 86028, upload-time = "2025-10-10T17:39:10.423Z" },
+    { url = "https://files.pythonhosted.org/packages/95/2a/d275ec4ce5cd0096665043995a7d76f5d0524853c76a3d04656de49f8808/aiobotocore-2.25.1-py3-none-any.whl", hash = "sha256:eb6daebe3cbef5b39a0bb2a97cffbe9c7cb46b2fcc399ad141f369f3c2134b1f", size = 86039, upload-time = "2025-10-28T22:33:19.949Z" },
 ]
 
 [package.optional-dependencies]
