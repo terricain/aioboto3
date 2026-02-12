@@ -41,7 +41,7 @@ _API_DIGESTS = {
 
     # resources/factory.py
     ResourceFactory.__init__: {'dc2b647537ce3cecfe76e172cc4042eca4ed5b86'},
-    ResourceFactory.load_from_definition: {'1f6c0b9298d63d3d50c64abdb3c7025c03cbbdf9', 'c995f96439b1837d6caaf461e37f01580cd840d5'},
+    ResourceFactory.load_from_definition: {'1f6c0b9298d63d3d50c64abdb3c7025c03cbbdf9', 'c995f96439b1837d6caaf461e37f01580cd840d5', '2d565f2b9927ed72d876c56900d086c8159f3e61'},
     ResourceFactory._create_autoload_property: {'62793a404067069d499246389f1b97601cb9b7a8', '812f8f8cd1445582c83b09ff2fce1e799daba419', '49c51a5503d40a8be2aba6cf99b3896cd8f97bac'},
     ResourceFactory._create_waiter: {'69d8bd493fde2f6e3b32c5a6cf89059885832cff', 'abb12827964c8bab17f4d99466d1a60ab97ec0a9'},
     ResourceFactory._create_class_partial: {'5e421387dd4a4a40e871dc1597af21149eccf85a', 'cba44eb792b11f2ff47146f0f610e0bfb17de1b5'},
@@ -52,7 +52,7 @@ _API_DIGESTS = {
     RawHandler.__call__: {'5ea91e39ab1dc3587a4038805ee90235990b866d'},
 
     # session.py
-    Session.__init__: {'3f494c3eb0987251cae373873499e917f264571b'},
+    Session.__init__: {'3f494c3eb0987251cae373873499e917f264571b', '5ecb638ab182cfcab0bdcb1998c3bd415689caff'},
     Session._register_default_handlers: {'04f247de526b7a0af15737e04019ade52cc65446', '74fa15629c9ea69f79f3a5285357dbf53f734f2d', 'e30e5c3a0f6bc8f002ba679d4bae831914fc67a0'},
     Session.resource: {'5e3568b28281a75eaf9725fab67c33dc16a18144', 'b110781f5a5d148dd1d614e7611650a16cbea372'},
 
