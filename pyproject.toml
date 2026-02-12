@@ -7,9 +7,9 @@ authors = [
 license = {text = "Apache-2.0"}
 requires-python = ">=3.9"
 dependencies = [
-    "aiobotocore>=3.1.2",
-    "boto3==1.42.42",
-    "botocore==1.42.42",
+    "aiobotocore>=3.1.2,<4",
+    "boto3>=1.41.0,<2",
+    "botocore>=1.41.0,<2",
     "aiofiles>=23.2.1",
 ]
 

@@ -53,10 +53,10 @@ docs = [
 
 [package.metadata]
 requires-dist = [
-    { name = "aiobotocore", specifier = ">=3.1.2" },
+    { name = "aiobotocore", specifier = ">=3.1.2,<4" },
     { name = "aiofiles", specifier = ">=23.2.1" },
-    { name = "boto3", specifier = "==1.42.42" },
-    { name = "botocore", specifier = "==1.42.42" },
+    { name = "boto3", specifier = ">=1.41.0,<2" },
+    { name = "botocore", specifier = ">=1.41.0,<2" },
     { name = "chalice", marker = "extra == 'chalice'", specifier = ">=1.24.0" },
     { name = "cryptography", marker = "extra == 's3cse'", specifier = ">=44.0.1" },
 ]
