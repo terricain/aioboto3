@@ -2,6 +2,21 @@
 History
 =======
 
+Unreleased
+----------
+
+* Fix issue `#362 <https://github.com/terricain/aioboto3/issues/362>`_:
+  concurrent ``aioboto3.Session()`` + ``session.resource(...)`` calls inside
+  ``asyncio.gather`` no longer serialise on the event loop. ``aioboto3.Session``
+  now injects a **process-wide botocore ``Loader``** (keyed on ``AWS_DATA_PATH``),
+  shares the default ``EventAliaser`` alias-name cache, and memoises
+  ``botocore.compat.accepts_kwargs``. This eliminates the per-Session JSON
+  parse / handler-registration cost that previously starved the event loop;
+  in the issue's reproduction (N=200 concurrent ``download_fileobj``)
+  wall-clock drops from ~22 s to ~3.8 s with zero user-code change.
+  Custom ``botocore_session=`` and per-Session ``AWS_DATA_PATH`` semantics
+  are preserved.
+
 15.5.0 (2025-10-29)
 -------------------
 
