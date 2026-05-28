@@ -5,6 +5,9 @@ an async botocore session
 """
 
 import copy
+import functools
+import os
+import threading
 
 import boto3.session
 import boto3.resources.base
@@ -14,9 +17,137 @@ from boto3.exceptions import ResourceNotExistsError, UnknownAPIVersionError
 
 import aiobotocore.session
 from aiobotocore.config import AioConfig
+from botocore import compat as _botocore_compat
 from botocore.exceptions import NoCredentialsError
+from botocore.loaders import create_loader
 
 from aioboto3.resources.factory import AIOBoto3ResourceFactory
+
+
+# ---------------------------------------------------------------------------
+# Cache ``accepts_kwargs`` results process-wide.
+#
+# Why: ``HierarchicalEmitter.register`` calls
+# ``_verify_accept_kwargs(handler)`` once per handler registered, which in
+# turn calls ``botocore.compat.accepts_kwargs`` -> ``inspect.getfullargspec``.
+# When N coroutines each instantiate their own ``aioboto3.Session``, each
+# session re-registers all 119 entries in ``handlers.BUILTIN_HANDLERS`` and
+# pays the ``getfullargspec`` cost again for the same set of function
+# objects. The result of ``accepts_kwargs(func)`` depends only on the
+# function object's signature, which is immutable, so the result is safe
+# to cache for the lifetime of the process. This is a strict subset of the
+# work cached by ``functools.lru_cache``.
+def _install_accepts_kwargs_cache():
+    if getattr(_botocore_compat.accepts_kwargs, '_aioboto3_cached', False):
+        return
+    _original_accepts_kwargs = _botocore_compat.accepts_kwargs
+
+    @functools.lru_cache(maxsize=None)
+    def _cached_accepts_kwargs(func):
+        return _original_accepts_kwargs(func)
+
+    _cached_accepts_kwargs._aioboto3_cached = True  # type: ignore[attr-defined]
+    # Patch the canonical reference. ``botocore/hooks.py`` looks up the
+    # function via ``from botocore.compat import accepts_kwargs`` at import
+    # time, so we also need to patch that local binding to make the cache
+    # effective.
+    _botocore_compat.accepts_kwargs = _cached_accepts_kwargs
+    try:
+        from botocore import hooks as _botocore_hooks
+        _botocore_hooks.accepts_kwargs = _cached_accepts_kwargs
+    except ImportError:  # pragma: no cover
+        pass
+
+
+_install_accepts_kwargs_cache()
+
+
+# ---------------------------------------------------------------------------
+# Share ``EventAliaser._alias_name_cache`` process-wide.
+#
+# Why: each ``HierarchicalEmitter`` created (one per
+# ``aiobotocore.session.AioSession``) starts with an empty
+# ``_alias_name_cache``. The cache is then warmed up during ``register``
+# and ``emit`` calls. Because the alias rules (``EVENT_ALIASES``) are a
+# module-level constant and the cache key is just the event name string,
+# the cache contents are deterministic given the input event name. Sharing
+# the cache across all emitters that use the default ``EVENT_ALIASES``
+# saves the per-session string-splitting cost in ``_alias_event_name``.
+# Cache lookups and writes on a Python ``dict`` are GIL-atomic, so this is
+# safe under asyncio.
+def _install_shared_alias_cache():
+    try:
+        from botocore.hooks import EventAliaser, EVENT_ALIASES
+    except ImportError:  # pragma: no cover
+        return
+    if getattr(EventAliaser, '_aioboto3_alias_cache_shared', False):
+        return
+
+    _shared_default_cache: dict = {}
+    _original_init = EventAliaser.__init__
+
+    def _patched_init(self, event_emitter, event_aliases=None):
+        _original_init(self, event_emitter, event_aliases)
+        if self._event_aliases is EVENT_ALIASES:
+            self._alias_name_cache = _shared_default_cache
+
+    EventAliaser.__init__ = _patched_init  # type: ignore[method-assign]
+    EventAliaser._aioboto3_alias_cache_shared = True  # type: ignore[attr-defined]
+
+
+_install_shared_alias_cache()
+
+
+# Process-wide shared data-loader cache, keyed by the effective AWS data
+# path (i.e. ``self._session.get_config_variable('data_path')``).
+#
+# Why: each ``aiobotocore.session.get_session()`` builds its own loader,
+# and each loader does its own JSON parsing of the botocore service
+# models the first time a client is created on it. When N coroutines
+# each create their own ``aioboto3.Session`` (the pattern in issue #362),
+# they each pay ~60 ms of synchronous parse work, which serialises on the
+# event loop and causes the "all responses arrive at the very end"
+# symptom. The loader's cache is read-only after the initial load and
+# safe to share across coroutines and threads (Python dict reads/writes
+# of distinct keys are GIL-atomic; double-compute on a miss is
+# idempotent).
+#
+# We key by data_path so that callers using ``AWS_DATA_PATH`` to inject
+# custom service models still get a loader scoped to that path.
+_SHARED_LOADER_CACHE: dict = {}
+_SHARED_LOADER_LOCK = threading.Lock()
+
+
+def _get_shared_loader(data_path):
+    """Return a process-wide shared botocore Loader for the given data path.
+
+    ``data_path`` is the resolved value of the ``data_path`` session config
+    variable (typically the contents of ``AWS_DATA_PATH``); ``None`` means
+    "use the default botocore + ~/.aws/models paths".
+    """
+    key = data_path
+    loader = _SHARED_LOADER_CACHE.get(key)
+    if loader is not None:
+        return loader
+    with _SHARED_LOADER_LOCK:
+        loader = _SHARED_LOADER_CACHE.get(key)
+        if loader is None:
+            loader = create_loader(data_path)
+            _SHARED_LOADER_CACHE[key] = loader
+    return loader
+
+
+def _install_shared_loader(botocore_session):
+    """Replace the lazy ``data_loader`` component on ``botocore_session``
+    with the shared process-wide loader.
+
+    Must be called before anything else asks the session for the
+    ``data_loader`` component.
+    """
+    data_path = botocore_session.get_config_variable('data_path')
+    loader = _get_shared_loader(data_path)
+    botocore_session.register_component('data_loader', loader)
+    return loader
 
 
 class Session(boto3.session.Session):
@@ -56,6 +187,13 @@ class Session(boto3.session.Session):
         else:
             # Create a new default session
             self._session = aiobotocore.session.get_session()
+            # Inject a process-wide shared data loader so the first
+            # ``get_component('data_loader')`` call (during ``client(...)``
+            # / ``resource(...)``) does not re-parse the botocore service
+            # model JSON for every Session instance. Only do this when we
+            # *own* the session; if the caller passed their own
+            # ``botocore_session`` we leave its loader semantics alone.
+            _install_shared_loader(self._session)
 
         # Setup custom user-agent string if it isn't already customized
         if self._session.user_agent_name == 'Botocore':
@@ -95,6 +233,21 @@ class Session(boto3.session.Session):
         )
         self._setup_loader()
         self._register_default_handlers()
+
+    def _setup_loader(self):
+        """Override boto3.session.Session._setup_loader.
+
+        The default implementation unconditionally appends ``boto3/data`` to
+        the loader's ``search_paths``. With the shared loader, that would
+        accumulate one duplicate entry per ``aioboto3.Session()`` call. We
+        dedupe so the search path stays bounded.
+        """
+        self._loader = self._session.get_component('data_loader')
+        boto3_data = os.path.join(
+            os.path.dirname(boto3.session.__file__), 'data'
+        )
+        if boto3_data not in self._loader.search_paths:
+            self._loader.search_paths.append(boto3_data)
 
     def resource(
         self,
