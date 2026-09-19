@@ -175,6 +175,55 @@ async def test_s3_upload_fileobj_cancel(s3_client, bucket_name, region):
 
 
 @pytest.mark.asyncio
+async def test_s3_upload_fileobj_cancel_during_multipart(s3_client, bucket_name, region):
+    before = _count_running_tasks_excluding_current()
+
+    await s3_client.create_bucket(
+        Bucket=bucket_name,
+        CreateBucketConfiguration={'LocationConstraint': region}
+    )
+
+    class SlowFakeFile:
+        def __init__(self, fileobj):
+            self.fileobj = fileobj
+
+        async def read(self, size):
+            await asyncio.sleep(0.3)
+            return self.fileobj.read(size)
+
+    slow_file = SlowFakeFile(BytesIO(b'x' * 10_000_000))
+
+    # A small threshold starts the multipart upload on the first read, so the
+    # cancellation below lands after it exists rather than during the initial read.
+    config = S3TransferConfig(multipart_threshold=4)
+
+    upload_task = asyncio.create_task(
+        s3_client.upload_fileobj(
+            slow_file,
+            bucket_name,
+            'test_slow_multipart_file',
+            Config=config
+        )
+    )
+
+    await asyncio.sleep(0.5)
+
+    resp = await s3_client.list_multipart_uploads(Bucket=bucket_name)
+    assert resp.get('Uploads'), 'Multipart upload should have started'
+
+    upload_task.cancel()
+
+    with pytest.raises(asyncio.CancelledError):
+        await upload_task
+
+    after = _count_running_tasks_excluding_current()
+    assert before == after, "Task leak detected"
+
+    resp = await s3_client.list_multipart_uploads(Bucket=bucket_name)
+    assert not resp.get('Uploads'), 'Multipart upload was not aborted'
+
+
+@pytest.mark.asyncio
 async def test_s3_upload_empty_fileobj(s3_client, bucket_name, region):
     await s3_client.create_bucket(Bucket=bucket_name, CreateBucketConfiguration={'LocationConstraint': region})
 
